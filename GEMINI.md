@@ -96,6 +96,7 @@ cargo test
 ## Documentation Habits
 
 *   **`GEMINI.md`:** This file is the primary source of truth for understanding the project at a high level. Keep it updated as the architecture, build process, or core concepts evolve.
+*   **`.github/copilot-instructions.md`:** The equivalent instructions file for GitHub Copilot. Keep it in sync with `GEMINI.md` and `.gemini/instructions.md` as the project evolves.
 *   **Rustdoc:** All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`). This is crucial for generating useful library documentation.
 *   **Design Documents:** For significant changes or new features, consider updating or adding to the design documents in the `/docs` directory. This includes the `manifesto.md` and architectural decision records.
 *   **Commit Messages:** Write clear and concise commit messages that explain the "what" and "why" of a change.
