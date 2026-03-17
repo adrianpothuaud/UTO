@@ -1,0 +1,12 @@
+/Users/adrian/UTO/target/debug/deps/gif-b543fc5008c001f9.d: /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/lib.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/traits.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/common.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/mod.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/decoder.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/converter.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/encoder.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/../README.md
+
+/Users/adrian/UTO/target/debug/deps/libgif-b543fc5008c001f9.rmeta: /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/lib.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/traits.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/common.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/mod.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/decoder.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/converter.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/encoder.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/../README.md
+
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/lib.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/traits.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/common.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/mod.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/decoder.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/reader/converter.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/encoder.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gif-0.13.3/src/../README.md:

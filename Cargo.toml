@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "uto-core",
+]
+resolver = "2"

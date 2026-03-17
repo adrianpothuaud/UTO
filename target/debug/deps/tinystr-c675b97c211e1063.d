@@ -1,0 +1,12 @@
+/Users/adrian/UTO/target/debug/deps/tinystr-c675b97c211e1063.d: /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/lib.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/macros.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ascii.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/asciibyte.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/error.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/int_ops.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/unvalidated.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ule.rs
+
+/Users/adrian/UTO/target/debug/deps/libtinystr-c675b97c211e1063.rmeta: /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/lib.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/macros.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ascii.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/asciibyte.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/error.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/int_ops.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/unvalidated.rs /Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ule.rs
+
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/lib.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/macros.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ascii.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/asciibyte.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/error.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/int_ops.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/unvalidated.rs:
+/Users/adrian/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tinystr-0.8.2/src/ule.rs:

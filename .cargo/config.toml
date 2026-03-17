@@ -1,0 +1,5 @@
+# This configuration tells the onnxruntime-sys build script to use the
+# system-installed library instead of trying to download a pre-built one.
+[env]
+ORT_STRATEGY = "system"
+ORT_LIB_LOCATION = "/opt/homebrew/opt/onnxruntime/lib" # Path for Apple Silicon Homebrew
