@@ -1,0 +1,56 @@
+[package]
+name = "uto-core"
+version = "0.1.0"
+edition = "2021"
+description = "Unified Testing Object - The Cross-Platform Automation Engine"
+
+[[bin]]
+name = "uto-core"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime for multi-session handling
+tokio = { version = "1", features = ["full"] }
+
+# WebDriver client for communicating with ChromeDriver and Appium
+thirtyfour = "0.34"
+
+# HTTP client for driver provisioning (downloads)
+reqwest = { version = "0.11", features = ["json", "stream"] }
+
+# Serialization for WebDriver capabilities and API responses
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Ergonomic error type definitions
+thiserror = "1"
+
+# Async trait support (required for the UtoSession trait)
+async-trait = "0.1"
+
+# Structured logging
+log = "0.4"
+env_logger = "0.11"
+
+# Spawns child processes in their own OS process group for clean hook
+command-group = "5"
+
+# Resolves platform-specific cache and config directories
+dirs = "5"
+
+# Locates system binaries (adb, appium) in PATH
+which = "6"
+
+# Extracts downloaded driver archives
+zip = "0.6"
+
+# Picks a free TCP port for driver processes
+portpicker = "0.1"
+
+# Unix process group management (SIGTERM to entire group)
+[target.'cfg(unix)'.dependencies]
+nix = { version = "0.27", features = ["process", "signal"] }
+
+# Windows Job Object management (ties child lifetime to parent)
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["jobapi2", "processthreadsapi"] }
