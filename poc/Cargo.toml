@@ -1,0 +1,19 @@
+[package]
+name = "uto-poc"
+version = "0.1.0"
+edition = "2021"
+description = "UTO proof-of-concept demo scripts"
+
+[[bin]]
+name = "phase1_verify_or_deploy_drivers"
+path = "src/bin/phase1_verify_or_deploy_drivers.rs"
+
+[[bin]]
+name = "phase2_interact_with_session"
+path = "src/bin/phase2_interact_with_session.rs"
+
+[dependencies]
+uto-core = { path = "../uto-core" }
+tokio = { version = "1", features = ["full"] }
+log = "0.4"
+env_logger = "0.11"

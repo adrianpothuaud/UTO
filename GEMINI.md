@@ -22,23 +22,34 @@ The project is designed around four pillars:
 3.  **Human-Centric Interaction (`uto-api`):** Provides a high-level API focused on user intent (e.g., `select("Add to Cart")`).
 4.  **The Hybrid Orchestrator (`uto-link`):** A high-performance Rust backbone for orchestrating complex, multi-device tests.
 
-The current implementation is a Proof-of-Concept (POC) that demonstrates the Zero-Config Infrastructure pillar by discovering the local Chrome browser, automatically downloading the corresponding ChromeDriver, and launching a browser session.
+The current implementation covers the **Zero-Config Infrastructure** (Phase 1) and the **Driver Communication Layer** (Phase 2):
+
+- `src/env/` — browser/SDK discovery and ChromeDriver provisioning.
+- `src/driver/` — process lifecycle management for ChromeDriver and Appium.
+- `src/session/` — W3C WebDriver communication for web (`WebSession`) and mobile (`MobileSession`), unified behind the `UtoSession` trait.
 
 ## Current Status
 
-The initial Proof-of-Concept (POC) for the `uto-env` pillar is complete and successful. The `main` branch contains a working implementation that can:
+The Phase 2 POC for the `uto-env` + `uto-session` pillars is complete. The `main` branch contains a working implementation that can:
 
-1.  **Discover:** Automatically find the installed version of Google Chrome on the host system.
-2.  **Provision:** Download the matching version of ChromeDriver from the official Google repository.
-3.  **Execute:** Launch the browser and create a controllable session using the `thirtyfour` WebDriver client.
+1.  **Discover:** Automatically find the installed version of Google Chrome and the Android SDK on the host system.
+2.  **Provision:** Download the matching version of ChromeDriver from the official Google Chrome for Testing repository.
+3.  **Execute:** Launch both ChromeDriver and Appium processes in OS-level process groups (clean hook).
+4.  **Communicate (Web):** Create a `WebSession` via ChromeDriver and navigate/interact with Chrome using the W3C WebDriver protocol.
+5.  **Communicate (Mobile):** Create a `MobileSession` via Appium and interact with an Android/iOS device using the same W3C WebDriver protocol.
 
-This establishes the foundation for the UTO engine.
+Both session types implement the `UtoSession` trait, which provides a platform-agnostic API for cross-platform test logic.
 
 ## Next Steps
 
-With the `uto-env` foundation in place, the next focus is to develop the `uto-api` pillar. This involves creating a high-level, human-centric API that abstracts away the underlying WebDriver commands.
+With the `uto-session` communication layer in place, the next focus is to develop the **`uto-vision`** and **`uto-api`** pillars.
 
-The immediate goal is to create a simple, chainable API that models user interactions. For example:
+**Phase 3 — AI Recognition Loop:**
+- Integrate screenshot capture with an ONNX ML model to detect UI components visually.
+- Build the "Weighted Consensus" resolver that combines visual confidence with accessibility tree data.
+
+**Phase 4 — Human-Centric API:**
+- Create a high-level, chainable API that abstracts away selectors and gestures, modelling user intent:
 
 ```rust
 // (Future) Example of the target API
@@ -52,8 +63,6 @@ uto::run!(|session| {
         .click("Login")
 });
 ```
-
-This will require building a new `uto-api` crate and defining the core interaction traits and structs.
 
 ## Building and Running
 

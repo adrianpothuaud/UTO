@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "uto-core",
+    "poc",
 ]
 resolver = "2"
