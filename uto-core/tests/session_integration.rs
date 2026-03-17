@@ -240,6 +240,135 @@ async fn web_session_find_element_and_get_text() {
     driver_proc.stop().unwrap();
 }
 
+/// Resolve an element by intent label and click it.
+#[tokio::test]
+async fn web_session_select_by_label_and_click() {
+    let Some(driver_proc) = start_system_chromedriver().await else {
+        println!("Skipping: chromedriver not available");
+        return;
+    };
+
+    let session = WebSession::new_with_args(&driver_proc.url, HEADLESS_ARGS)
+        .await
+        .expect("session creation");
+
+    session
+        .goto(concat!(
+            "data:text/html,",
+            "<html><body>",
+            "<button id='cancel' aria-label='Cancel Action' onclick=\"document.getElementById('out').textContent='cancel'\">X</button>",
+            "<button id='submit' aria-label='Submit Order' onclick=\"document.getElementById('out').textContent='submit'\">Send</button>",
+            "<p id='out'>initial</p>",
+            "</body></html>"
+        ))
+        .await
+        .expect("goto");
+
+    let selected = session
+        .select("Submit Order")
+        .await
+        .expect("select should resolve submit button");
+    session.click(&selected).await.expect("click selected");
+
+    let out = session.find_element("#out").await.expect("find output");
+    let text = session.get_text(&out).await.expect("get output text");
+    assert_eq!(text, "submit");
+
+    Box::new(session).close().await.unwrap();
+    driver_proc.stop().unwrap();
+}
+
+/// Fill a field and click a button using intent helpers.
+#[tokio::test]
+async fn web_session_fill_and_click_intent_helpers() {
+    let Some(driver_proc) = start_system_chromedriver().await else {
+        println!("Skipping: chromedriver not available");
+        return;
+    };
+
+    let session = WebSession::new_with_args(&driver_proc.url, HEADLESS_ARGS)
+        .await
+        .expect("session creation");
+
+    session
+        .goto(concat!(
+            "data:text/html,",
+            "<html><body>",
+            "<input id='email' aria-label='Email Address' type='text'/>",
+            "<button id='submit' aria-label='Submit Order' ",
+            "onclick=\"document.getElementById('out').textContent=document.getElementById('email').value\">",
+            "Submit</button>",
+            "<p id='out'>initial</p>",
+            "</body></html>"
+        ))
+        .await
+        .expect("goto");
+
+    session
+        .fill_intent("Email Address", "phase3@uto.dev")
+        .await
+        .expect("fill_intent");
+    session
+        .click_intent("Submit Order")
+        .await
+        .expect("click_intent");
+
+    let out = session.find_element("#out").await.expect("find output");
+    let text = session.get_text(&out).await.expect("get output text");
+    assert_eq!(text, "phase3@uto.dev");
+
+    Box::new(session).close().await.unwrap();
+    driver_proc.stop().unwrap();
+}
+
+/// Fill two fields and submit via intent helpers.
+#[tokio::test]
+async fn web_session_multi_field_intent_flow() {
+    let Some(driver_proc) = start_system_chromedriver().await else {
+        println!("Skipping: chromedriver not available");
+        return;
+    };
+
+    let session = WebSession::new_with_args(&driver_proc.url, HEADLESS_ARGS)
+        .await
+        .expect("session creation");
+
+    session
+        .goto(concat!(
+            "data:text/html,",
+            "<html><body>",
+            "<input id='first' aria-label='First Name' type='text'/>",
+            "<input id='email' aria-label='Email Address' type='text'/>",
+            "<button id='submit' aria-label='Submit Order' ",
+            "onclick=\"document.getElementById('out').textContent=document.getElementById('first').value+':'+document.getElementById('email').value\">",
+            "Submit</button>",
+            "<p id='out'>initial</p>",
+            "</body></html>"
+        ))
+        .await
+        .expect("goto");
+
+    session
+        .fill_intent("First Name", "Alex")
+        .await
+        .expect("fill_intent first name");
+    session
+        .fill_intent("Email Address", "alex@uto.dev")
+        .await
+        .expect("fill_intent email");
+    session
+        .click_intent("Submit Order")
+        .await
+        .expect("click_intent submit");
+
+    let out = session.find_element("#out").await.expect("find output");
+    let text = session.get_text(&out).await.expect("get output text");
+    assert_eq!(text, "Alex:alex@uto.dev");
+
+    Box::new(session).close().await.unwrap();
+    driver_proc.stop().unwrap();
+}
+
 /// Click a button and verify the DOM change it triggers.
 #[tokio::test]
 async fn web_session_click_element() {

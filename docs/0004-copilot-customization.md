@@ -30,3 +30,19 @@ Adopt a layered Copilot customization setup in `.github/`:
 - Copilot guidance is more discoverable and better scoped to the task at hand.
 - Prompt files now reflect the current workspace shape instead of obsolete `main.rs` workflows.
 - Architecture-heavy changes can use a project-specific agent without replacing the default coding workflow for every task.
+
+## Synchronization Automation (Copilot <-> Gemini)
+
+To keep both contributor paths available while preventing drift, this repository uses a generated Gemini configuration model:
+
+- `.github/` customization files are the canonical source
+- `.gemini/` files are generated from `.github/` via `./scripts/sync_ai_configs.sh`
+- CI enforces parity with `./scripts/check_ai_config_sync.sh`
+
+Generated files:
+
+- `.gemini/instructions.md` from `.github/copilot-instructions.md`
+- `.gemini/prompts.md` from `.github/prompts/*.prompt.md`
+- `.gemini/agent.json` from `.github/agents/uto-architect.agent.md`
+
+This preserves the same architecture guidance for both Copilot and Gemini users while keeping maintenance in one place.

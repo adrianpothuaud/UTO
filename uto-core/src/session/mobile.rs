@@ -182,6 +182,18 @@ fn is_appium_base_path_mismatch_error(message: &str) -> bool {
     lower.contains("unknown command") && lower.contains("404")
 }
 
+fn xpath_literal(value: &str) -> String {
+    if !value.contains('"') {
+        return format!("\"{value}\"");
+    }
+    if !value.contains('\'') {
+        return format!("'{value}'");
+    }
+
+    let parts: Vec<String> = value.split('"').map(|s| format!("\"{s}\"")).collect();
+    format!("concat({})", parts.join(", '\"', "))
+}
+
 #[derive(Debug, Deserialize)]
 struct AppiumSessionResponse {
     #[serde(default, rename = "sessionId")]
@@ -482,6 +494,36 @@ impl UtoSession for MobileSession {
         })
     }
 
+    async fn select(&self, label: &str) -> UtoResult<UtoElement> {
+        let literal = xpath_literal(label);
+
+        let exact_xpath = format!(
+            "//*[@text={l} or @label={l} or @name={l} or @content-desc={l}]",
+            l = literal
+        );
+
+        let contains_xpath = format!(
+            "//*[contains(@text, {l}) or contains(@label, {l}) or contains(@name, {l}) or contains(@content-desc, {l})]",
+            l = literal
+        );
+
+        let (elem, selector_used) = match self.driver.find(By::XPath(&exact_xpath)).await {
+            Ok(e) => (e, exact_xpath),
+            Err(_) => self.driver.find(By::XPath(&contains_xpath)).await.map_err(|e| {
+                UtoError::VisionResolutionFailed(format!(
+                    "select('{label}') failed on mobile with exact xpath `{exact_xpath}` and contains xpath `{contains_xpath}`: {e}"
+                ))
+            }).map(|e| (e, contains_xpath))?,
+        };
+
+        let resolved_label = elem.text().await.unwrap_or_else(|_| label.to_string());
+        Ok(UtoElement {
+            label: resolved_label,
+            selector: selector_used,
+            handle: ElementHandle::Mobile(elem),
+        })
+    }
+
     async fn click(&self, element: &UtoElement) -> UtoResult<()> {
         let elem = match &element.handle {
             ElementHandle::Mobile(e) => e,
@@ -546,7 +588,7 @@ impl UtoSession for MobileSession {
 
 #[cfg(test)]
 mod tests {
-    use super::{appium_alternate_base_url, is_appium_base_path_mismatch_error};
+    use super::{appium_alternate_base_url, is_appium_base_path_mismatch_error, xpath_literal};
 
     #[test]
     fn alternate_base_url_removes_wd_hub_suffix() {
@@ -570,5 +612,17 @@ mod tests {
     fn base_path_mismatch_detector_ignores_non_404_failures() {
         let msg = "Could not find a connected Android device";
         assert!(!is_appium_base_path_mismatch_error(msg));
+    }
+
+    #[test]
+    fn xpath_literal_handles_double_quotes() {
+        let lit = xpath_literal("Say \"Hello\"");
+        assert_eq!(lit, "'Say \"Hello\"'");
+    }
+
+    #[test]
+    fn xpath_literal_handles_both_quote_types() {
+        let lit = xpath_literal("it's \"fine\"");
+        assert!(lit.starts_with("concat("));
     }
 }

@@ -4,6 +4,8 @@ Vision-first, cross-platform automation engine in Rust.
 
 UTO (Unified Testing Object) aims to make web and mobile automation feel less brittle by combining a zero-config infrastructure layer with a shared session abstraction, then moving toward vision-driven interaction.
 
+The project is also moving toward a framework-style UX with a first-class CLI lifecycle (`init`, `run`, `report`) and reporting-first diagnostics.
+
 ## Why UTO
 
 - Zero-config mindset: discover first, provision when missing.
@@ -25,9 +27,11 @@ Phase 1 and Phase 2 are operational:
 ## Workspace Layout
 
 - `uto-core`: core automation engine (env, driver, session, vision foundation)
+- `uto-cli`: framework command-line interface (`uto init`, `uto run`, `uto report`)
 - `poc`: executable demos for Phase 1 and Phase 2
 - `uto-site`: static site generator for the project landing site
 - `docs`: ADRs and project direction documents
+- `examples`: CLI-driven generated project samples used to validate the framework workflow
 
 ## Quick Start
 
@@ -45,6 +49,22 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 ```
 
+## AI Contributor Config Sync
+
+UTO supports both GitHub Copilot (`.github/`) and Gemini CLI (`.gemini/`) contributor workflows.
+
+Copilot files are the canonical source, and Gemini files are generated to stay aligned:
+
+```bash
+./scripts/sync_ai_configs.sh
+```
+
+CI validates this parity with:
+
+```bash
+./scripts/check_ai_config_sync.sh
+```
+
 ## Run Demos
 
 ### Phase 1: Verify/Provision Drivers
@@ -59,10 +79,104 @@ cargo run -p uto-poc --bin phase1_verify_or_deploy_drivers
 cargo run -p uto-poc --bin phase2_interact_with_session
 ```
 
+### Phase 3: Intent Resolution POC (Web and Mobile)
+
+**Web (default):**
+
+```bash
+cargo run -p uto-poc --bin phase3_intent_poc
+```
+
+**Mobile:**
+
+```bash
+UTO_DEMO=mobile cargo run -p uto-poc --bin phase3_intent_poc
+```
+
+**JSON Report Output:**
+
+```bash
+UTO_REPORT_FORMAT=json cargo run -p uto-poc --bin phase3_intent_poc
+UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./report.json cargo run -p uto-poc --bin phase3_intent_poc
+```
+
+## Framework CLI
+
+UTO provides a first-class CLI for project scaffolding, execution, and reporting:
+
+### Init: Create a New Test Project
+
+```bash
+cargo run -p uto-cli -- init ./my-tests --template web --uto-root "$PWD"
+```
+
+Generates:
+- `Cargo.toml` with uto-core dependency
+- `src/bin/uto_project_runner.rs` (local test runner)
+- `tests/web_example.rs` and `tests/mobile_example.rs` (sample tests)
+- `uto.json` (project config)
+- `.uto/reports/` (report directory)
+
+### Run: Execute Tests
+
+```bash
+cargo run -p uto-cli -- run --project ./my-tests --target web --report-json ./my-tests/.uto/reports/last-run.json
+```
+
+### Report: View Results
+
+```bash
+cargo run -p uto-cli -- report --project ./my-tests
+```
+
+### Validate CLI End-to-End
+
+```bash
+./examples/validate-cli.sh
+```
+
 ### Phase 2: Mobile Session Demo (Appium)
 
 ```bash
 UTO_DEMO=mobile cargo run -p uto-poc --bin phase2_interact_with_session
+```
+
+### Phase 3: Intent API POC
+
+```bash
+# Web intent demo
+cargo run -p uto-poc --bin phase3_intent_poc
+
+# Mobile intent demo
+UTO_DEMO=mobile cargo run -p uto-poc --bin phase3_intent_poc
+
+# JSON report output (stdout)
+UTO_REPORT_FORMAT=json cargo run -p uto-poc --bin phase3_intent_poc
+
+# JSON report output to file
+UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./phase3-report.json cargo run -p uto-poc --bin phase3_intent_poc
+```
+
+## Framework CLI
+
+```bash
+# Show help
+cargo run -p uto-cli -- help
+
+# Initialize a project
+cargo run -p uto-cli -- init ./my-uto-tests --template web --uto-root "$PWD"
+
+# Run tests with JSON report output
+cargo run -p uto-cli -- run --project ./my-uto-tests --target web --report-json ./my-uto-tests/.uto/reports/last-run.json
+
+# Summarize the last report
+cargo run -p uto-cli -- report --project ./my-uto-tests
+```
+
+Validate the end-to-end CLI workflow with generated projects:
+
+```bash
+./examples/validate-cli.sh
 ```
 
 The mobile flow now includes:
@@ -99,5 +213,6 @@ Site source is under `uto-site/`, generated output goes to `uto-site/dist/`.
 
 - Phase 3: ONNX-backed UI detection and accessibility fusion
 - Phase 4: intent-centric API (`select`, `fill`, etc.)
+- Framework UX: CLI lifecycle (`init`, `run`, `report`) and reporting-first test execution visibility
 
 See ADRs in `docs/` and project context in `GEMINI.md`.

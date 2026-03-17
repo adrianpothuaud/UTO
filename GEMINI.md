@@ -23,11 +23,22 @@ The project is designed around five pillars:
 4.  **Simplicity by Default (`uto-simplicity`):** Hides routine automation mechanics (for example iframe context switching on web, and scroll/fling handling on mobile) behind predictable defaults.
 5.  **The Hybrid Orchestrator (`uto-link`):** A high-performance Rust backbone for orchestrating complex, multi-device tests.
 
+Product direction now also includes a framework-facing UX objective:
+
+- first-class CLI lifecycle (`init`, `run`, `report`)
+- reporting-first execution visibility from setup to assertion outcomes
+- structured report output for CI and diagnostics
+
 The current implementation covers the **Zero-Config Infrastructure** (Phase 1) and the **Driver Communication Layer** (Phase 2):
 
 - `src/env/` — browser/SDK discovery and ChromeDriver provisioning.
 - `src/driver/` — process lifecycle management for ChromeDriver and Appium.
 - `src/session/` — W3C WebDriver communication for web (`WebSession`) and mobile (`MobileSession`), unified behind the `UtoSession` trait.
+
+Framework-facing workflow components now include:
+
+- `uto-cli/` — CLI entrypoint for project lifecycle commands (`init`, `run`, `report`)
+- `examples/` — generated-project validation flow for CLI smoke testing
 
 For mobile readiness, `src/env/` now also performs best-effort auto-fixes:
 
@@ -48,13 +59,36 @@ The Phase 2 POC for the `uto-env` + `uto-session` pillars is complete. The `main
 
 Both session types implement the `UtoSession` trait, which provides a platform-agnostic API for cross-platform test logic.
 
+Phase 3 MVP is now **complete** in `src/vision/` and `src/session/` with:
+
+- **Vision Foundation (3.1):** deterministic preprocessing and post-processing (including NMS) with ONNX inference abstraction
+- **Weighted Consensus Resolver (3.2):** fusion of vision confidence + accessibility metadata with explicit mismatch diagnostics
+- **Latency Guardrails (3.3):** median/P95 tracking with phase-specific SLA enforcement (≤50ms median, ≤100ms p95 for vision-only; ≤60ms/≤120ms with accessibility)
+- **Intent-Style Session API:** `select(label)`, `click_intent(label)`, `fill_intent(label, value)` with web-first resolver and mobile fallback
+- **Cross-platform:** web and mobile via `UtoSession` trait with graceful skip behavior when host tools unavailable
+
+## Phase 3 Deliverables
+
+All five **Phase 3 MVP completion criteria** met:
+
+1. ✅ **Deterministic recognition:** preprocessing + NMS + consensus ranking with unit tests
+2. ✅ **Accessibility-boosted resolution:** weighted scoring demonstrably improves recall on ambiguous targets
+3. ✅ **Intent actions operational:** `select/click_intent/fill_intent` validated on web and mobile flows
+4. ✅ **Cross-platform parity:** mobile path uses same resolver+fallback, skips gracefully when Appium unavailable
+5. ✅ **CI stability:** 94 unit tests green, latency SLA tests deterministic, no host tool dependencies in core tests
+
 ## Next Steps
 
-With the `uto-session` communication layer in place, the next focus is to develop the **`uto-vision`** and **`uto-api`** pillars.
+With Phase 3 MVP in place, immediate focus shifts to:
 
-**Phase 3 — AI Recognition Loop:**
-- Integrate screenshot capture with an ONNX ML model to detect UI components visually.
-- Build the "Weighted Consensus" resolver that combines visual confidence with accessibility tree data.
+1. **Phase 3 Hardening:** Real-world fixture collection and consensus weight tuning
+2. **Phase 4 — Human-Centric API:** Chainable, intent-centric session APIs
+
+**Framework UX Objective:**
+- Execute `docs/0009-framework-cli-and-reporting-first.md`:
+    - converge toward `uto init`, `uto run`, and `uto report`
+    - make structured reporting a default capability, with clear step-level traceability
+    - keep web/mobile parity for setup, intent resolution, actions, and assertions
 
 **Phase 4 — Human-Centric API:**
 - Create a high-level, chainable API that abstracts away selectors and gestures, modelling user intent:
@@ -94,6 +128,33 @@ cargo run --package uto-core
 
 This will execute the `main.rs` file, which discovers Chrome, provisions ChromeDriver, and opens a browser window to Google.com for 5 seconds.
 
+For workspace POCs:
+
+```sh
+# Phase 2 communication layer POC
+cargo run -p uto-poc --bin phase2_interact_with_session
+
+# Phase 3 intent API POC (web)
+cargo run -p uto-poc --bin phase3_intent_poc
+
+# Phase 3 intent API POC (mobile)
+UTO_DEMO=mobile cargo run -p uto-poc --bin phase3_intent_poc
+
+# Phase 3 intent API POC with JSON report
+UTO_REPORT_FORMAT=json cargo run -p uto-poc --bin phase3_intent_poc
+
+# JSON report to file
+UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./phase3-report.json cargo run -p uto-poc --bin phase3_intent_poc
+
+# Framework CLI usage
+cargo run -p uto-cli -- init ./my-uto-tests --template web --uto-root "$PWD"
+cargo run -p uto-cli -- run --project ./my-uto-tests --target web --report-json ./my-uto-tests/.uto/reports/last-run.json
+cargo run -p uto-cli -- report --project ./my-uto-tests
+
+# Validate CLI with generated examples
+./examples/validate-cli.sh
+```
+
 ### Test
 
 To run any tests, use:
@@ -126,6 +187,7 @@ cross-platform test job remains stable without custom runner provisioning.
 
 *   **`GEMINI.md`:** This file is the primary source of truth for understanding the project at a high level. Keep it updated as the architecture, build process, or core concepts evolve.
 *   **GitHub Copilot customization:** Keep `.github/copilot-instructions.md`, `.github/instructions/`, `.github/prompts/`, and `.github/agents/` aligned with `GEMINI.md` and the ADRs as the project evolves.
+*   **Gemini/Copilot parity automation:** Run `./scripts/sync_ai_configs.sh` after updating `.github/` customization files, and verify parity with `./scripts/check_ai_config_sync.sh`.
 *   **Rustdoc:** All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`). This is crucial for generating useful library documentation.
 *   **Design Documents:** For significant changes or new features, consider updating or adding to the design documents in the `/docs` directory. This includes the `manifesto.md` and architectural decision records.
 *   **Commit Messages:** Write clear and concise commit messages that explain the "what" and "why" of a change.

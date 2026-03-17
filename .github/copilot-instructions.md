@@ -4,6 +4,12 @@
 
 UTO is a Rust automation framework built around zero-config infrastructure and a unified web/mobile execution model.
 
+Framework product direction:
+
+- Build toward a first-class CLI lifecycle (`init`, `run`, `report`) for end users.
+- Treat reporting and observability as core features, not optional add-ons.
+- Ensure test execution visibility is clear from environment setup to intent resolution, element/action steps, assertions, and relevant driver communication outcomes.
+
 - Prefer solutions that preserve the "discover or deploy" workflow described in `docs/0001-zero-config-infrastructure.md`.
 - Never leave orphaned child processes behind. Driver lifecycle work must preserve the clean-hook model via process groups on Unix and Job Objects on Windows.
 - Design for macOS, Linux, and Windows from the start. Do not hardcode single-platform assumptions into environment discovery, provisioning, or driver management.
@@ -13,7 +19,9 @@ UTO is a Rust automation framework built around zero-config infrastructure and a
 - `uto-core/src/env` handles host discovery and provisioning.
 - `uto-core/src/driver` owns WebDriver-compatible process startup, readiness checks, and shutdown.
 - `uto-core/src/session` owns the W3C WebDriver communication layer and the shared `UtoSession` abstraction.
+- `uto-cli/src` owns framework-style command lifecycle workflows (`init`, `run`, `report`).
 - `poc/src/bin` contains the executable proof-of-concept flows for Phase 1 and Phase 2.
+- `examples/` contains CLI-generated project validation flows that should remain runnable as smoke checks.
 
 Read `GEMINI.md`, `docs/0001-zero-config-infrastructure.md`, and `docs/0002-driver-communication-layer.md` before making architectural changes.
 
@@ -30,3 +38,4 @@ Read `GEMINI.md`, `docs/0001-zero-config-infrastructure.md`, and `docs/0002-driv
 - Keep `GEMINI.md` and the relevant ADR in `docs/` in sync when architecture, workflow, or project direction changes.
 - Preserve the current crate split and keep the `env`, `driver`, and `session` responsibilities clearly separated.
 - Keep Readme.md and static site content in sync with project evolution
+- Prefer structured report output (JSON baseline) for new workflow surfaces so CI and diagnostics tooling can consume results reliably.

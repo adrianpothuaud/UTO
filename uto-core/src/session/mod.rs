@@ -83,6 +83,22 @@ pub trait UtoSession: Send + Sync {
     /// mobile).
     async fn find_element(&self, selector: &str) -> UtoResult<UtoElement>;
 
+    /// Resolves an element by human-readable label using platform-specific
+    /// intent matching.
+    async fn select(&self, label: &str) -> UtoResult<UtoElement>;
+
+    /// Resolves and clicks an element by intent label.
+    async fn click_intent(&self, label: &str) -> UtoResult<()> {
+        let element = self.select(label).await?;
+        self.click(&element).await
+    }
+
+    /// Resolves a field-like element by label and types text into it.
+    async fn fill_intent(&self, label: &str, value: &str) -> UtoResult<()> {
+        let element = self.select(label).await?;
+        self.type_text(&element, value).await
+    }
+
     /// Clicks / taps the given element.
     async fn click(&self, element: &UtoElement) -> UtoResult<()>;
 

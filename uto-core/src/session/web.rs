@@ -3,6 +3,10 @@ use thirtyfour::common::capabilities::chromium::ChromiumLikeCapabilities;
 use thirtyfour::{By, ChromeCapabilities, WebDriver};
 
 use crate::error::{UtoError, UtoResult};
+use crate::vision::{
+    resolve_candidates, select_by_label, summarize_ranked_candidates, AccessibilityNode,
+    ConsensusConfig, DetectedElement,
+};
 
 use super::{ElementHandle, UtoElement, UtoSession};
 
@@ -73,6 +77,123 @@ impl WebSession {
         log::info!("Web session created (ChromeDriver at {driver_url})");
         Ok(Self { driver })
     }
+
+    async fn collect_select_candidates(
+        &self,
+    ) -> UtoResult<
+        Vec<(
+            DetectedElement,
+            AccessibilityNode,
+            thirtyfour::WebElement,
+            String,
+        )>,
+    > {
+        // Focus on commonly interactive elements first.
+        const CANDIDATE_SELECTOR: &str =
+            "button,a,input,textarea,select,[role='button'],[role='link'],[role='textbox']";
+
+        let nodes = self
+            .driver
+            .find_all(By::Css(CANDIDATE_SELECTOR))
+            .await
+            .map_err(|e| {
+                UtoError::SessionCommandFailed(format!(
+                    "collect_select_candidates({CANDIDATE_SELECTOR}): {e}"
+                ))
+            })?;
+
+        let mut out = Vec::with_capacity(nodes.len());
+        for (idx, elem) in nodes.into_iter().enumerate() {
+            let tag = elem
+                .tag_name()
+                .await
+                .unwrap_or_else(|_| "unknown".to_string());
+            let role = elem.attr("role").await.unwrap_or(None);
+            let text = elem.text().await.unwrap_or_default();
+            let aria_label = elem.attr("aria-label").await.unwrap_or(None);
+            let placeholder = elem.attr("placeholder").await.unwrap_or(None);
+            let value = elem.attr("value").await.unwrap_or(None);
+            let id_attr = elem.attr("id").await.unwrap_or(None);
+
+            let label = first_non_empty(&[
+                aria_label.clone(),
+                non_empty(text),
+                placeholder.clone(),
+                value.clone(),
+            ]);
+            let element_type = role.clone().unwrap_or_else(|| tag.clone());
+
+            let rect = elem.rect().await.map_err(|e| {
+                UtoError::SessionCommandFailed(format!("select() rect lookup failed: {e}"))
+            })?;
+            let bbox = (
+                rect.x.round() as i32,
+                rect.y.round() as i32,
+                rect.width.max(1.0).round() as i32,
+                rect.height.max(1.0).round() as i32,
+            );
+
+            let detected = DetectedElement {
+                bbox,
+                confidence: 0.75,
+                element_type: element_type.clone(),
+                label: label.clone(),
+            };
+
+            let accessibility = AccessibilityNode {
+                label,
+                role: Some(element_type),
+                bbox: Some(bbox),
+            };
+
+            let selector = if let Some(id) = id_attr {
+                format!("#{id}")
+            } else {
+                format!("{tag}:nth-match({idx})")
+            };
+
+            out.push((detected, accessibility, elem, selector));
+        }
+
+        Ok(out)
+    }
+
+    /// Returns a human-readable ranking summary for an intent label.
+    pub async fn debug_select_ranking(&self, label: &str, max_items: usize) -> UtoResult<String> {
+        let candidates = self.collect_select_candidates().await?;
+        if candidates.is_empty() {
+            return Ok("<no-candidates>".to_string());
+        }
+
+        let detected: Vec<DetectedElement> = candidates.iter().map(|c| c.0.clone()).collect();
+        let accessibility: Vec<AccessibilityNode> =
+            candidates.iter().map(|c| c.1.clone()).collect();
+        let ranked = resolve_candidates(
+            &detected,
+            &accessibility,
+            label,
+            &ConsensusConfig::default(),
+        );
+
+        Ok(summarize_ranked_candidates(&ranked, max_items))
+    }
+}
+
+fn non_empty(value: String) -> Option<String> {
+    if value.trim().is_empty() {
+        None
+    } else {
+        Some(value)
+    }
+}
+
+fn first_non_empty(candidates: &[Option<String>]) -> Option<String> {
+    candidates
+        .iter()
+        .filter_map(|v| v.as_ref())
+        .map(|s| s.trim())
+        .find(|s| !s.is_empty())
+        .map(ToString::to_string)
 }
 
 // ---------------------------------------------------------------------------
@@ -105,6 +226,56 @@ impl UtoSession for WebSession {
         Ok(UtoElement {
             label,
             selector: selector.to_string(),
+            handle: ElementHandle::Web(elem),
+        })
+    }
+
+    async fn select(&self, label: &str) -> UtoResult<UtoElement> {
+        let candidates = self.collect_select_candidates().await?;
+        if candidates.is_empty() {
+            return Err(UtoError::VisionResolutionFailed(
+                "select(): no interactive web candidates found".to_string(),
+            ));
+        }
+
+        let detected: Vec<DetectedElement> = candidates.iter().map(|c| c.0.clone()).collect();
+        let accessibility: Vec<AccessibilityNode> =
+            candidates.iter().map(|c| c.1.clone()).collect();
+
+        if log::log_enabled!(log::Level::Debug) {
+            let ranked = resolve_candidates(
+                &detected,
+                &accessibility,
+                label,
+                &ConsensusConfig::default(),
+            );
+            log::debug!(
+                "select('{}') candidate ranking: {}",
+                label,
+                summarize_ranked_candidates(&ranked, 3)
+            );
+        }
+
+        let resolved = select_by_label(&detected, &accessibility, label)?;
+
+        let selected = candidates
+            .into_iter()
+            .find(|(d, _, _, _)| {
+                d.bbox == resolved.element.bbox
+                    && d.element_type == resolved.element.element_type
+                    && d.label == resolved.element.label
+            })
+            .ok_or_else(|| {
+                UtoError::VisionResolutionFailed(
+                    "select(): resolver produced a candidate that could not be mapped to a DOM node"
+                        .to_string(),
+                )
+            })?;
+
+        let (detected, _ax, elem, selector) = selected;
+        Ok(UtoElement {
+            label: detected.label.unwrap_or_else(|| label.to_string()),
+            selector,
             handle: ElementHandle::Web(elem),
         })
     }

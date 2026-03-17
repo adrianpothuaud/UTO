@@ -10,3 +10,4 @@ applyTo: "GEMINI.md, docs/**/*.md, .github/copilot-instructions.md"
 - Keep Copilot-facing guidance aligned with the same architectural facts already recorded in `GEMINI.md` and the ADRs.
 - Prefer concise, decision-oriented documentation over marketing copy or broad restatements.
 - Document the "what" and the "why", especially for cross-platform tradeoffs, provisioning strategy, and driver/session boundaries.
+- Keep framework UX direction (CLI lifecycle and reporting-first observability) synchronized across ADRs, `GEMINI.md`, README, and Copilot/Gemini instruction files.

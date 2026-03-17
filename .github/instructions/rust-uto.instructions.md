@@ -10,6 +10,7 @@ applyTo: "uto-core/src/**/*.rs, uto-core/tests/**/*.rs, poc/src/**/*.rs"
 - Process-management code must preserve clean shutdown semantics across Unix and Windows.
 - Prefer extending the shared session abstractions over adding one-off flows in the POC binaries.
 - For new public APIs, add Rustdoc and keep error messages actionable.
+- For framework-facing workflow features, include structured reporting hooks so users can understand setup, intent resolution, actions, assertions, and driver-level outcomes.
 
 Validate Rust changes with:
 

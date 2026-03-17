@@ -31,6 +31,9 @@ jobs:
       - name: Cache Rust build artifacts
         uses: Swatinem/rust-cache@v2
 
+      - name: Check AI config synchronization
+        run: ./scripts/check_ai_config_sync.sh
+
       - name: Check formatting
         run: cargo fmt --all --check
 

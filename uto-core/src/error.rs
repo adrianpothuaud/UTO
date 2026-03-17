@@ -46,6 +46,10 @@ pub enum UtoError {
     #[error("Session command failed: {0}")]
     SessionCommandFailed(String),
 
+    /// Vision candidate resolution failed for the requested intent.
+    #[error("Vision resolution failed: {0}")]
+    VisionResolutionFailed(String),
+
     // --- I/O and network errors ---
     /// An HTTP request failed during provisioning.
     #[error("HTTP request failed: {0}")]

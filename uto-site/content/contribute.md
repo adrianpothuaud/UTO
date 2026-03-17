@@ -27,11 +27,11 @@ from seasoned Rust engineers to curious newcomers who want to learn.
 
 ## What We're Building
 
-UTO is structured around four major work streams.  Pick the one that excites you most:
+UTO is structured around four major work streams. Pick the one that excites you most:
 
-### 🏗️ Zero-Config Infrastructure *(Ready for polish)*
+### 🏗️ Zero-Config Infrastructure *(Mature)*
 
-The foundation is working — Chrome discovery, ChromeDriver provisioning, clean process hooks.
+The foundation is working and battle-tested — Chrome/SDK discovery, driver provisioning, clean process hooks.
 We need help with:
 
 - **Firefox & Safari** driver support
@@ -39,16 +39,24 @@ We need help with:
 - Improved error messages and recovery strategies
 - Integration tests on Windows and macOS
 
-### 👁️ The Recognition Loop *(Actively seeking contributors)*
+### 👁️ The Recognition Loop *(Phase 3 MVP Complete; Hardening Phase)*
 
-This is the heart of UTO's "vision-first" approach.
+The heart of UTO's "vision-first" approach is now functional:
 
-- Integrate an ONNX ML model for UI component detection
-- Build the **Weighted Consensus** resolver (ML confidence + Accessibility Tree)
-- High-DPI coordinate normalisation across Web and Mobile
+- **3.1 Foundation:** Deterministic preprocessing (resize/normalize) + postprocessing (NMS)
+- **3.2 Resolver:** Weighted consensus (ML confidence + accessibility tree) with intelligent fallbacks
+- **3.3 Latency:** Median/P95 SLA enforcement (≤50ms vision-only, ≤60ms with accessibility)
+- **Intent API:** `select(label)`, `click_intent(label)`, `fill_intent(label, value)` on web and mobile
 
-> **Good first area:** If you have experience with ONNX Runtime, Rust ML bindings,
-> or computer vision — this is your home.
+Next priorities:
+
+- Real ONNX model integration (currently stub)
+- Fixture library expansion and consensus weight tuning
+- Performance profiling and p99/max latency trends
+- Accessibility quality improvement for mobile
+
+> **Good area for contribution:** real model sourcing, ground-truth fixture collection,
+> latency trend analytics, or accessibility tree improvements on mobile.
 
 ### 🧑 Human-Centric API *(Design phase)*
 
