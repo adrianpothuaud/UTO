@@ -1,0 +1,36 @@
+[package]
+name = "uto-site"
+version = "0.1.0"
+edition = "2021"
+description = "UTO project landing site — in-project static site generator"
+
+[[bin]]
+name = "uto-site"
+path = "src/main.rs"
+
+[dependencies]
+# Jinja2-style template engine for rendering HTML
+tera = "1"
+
+# CommonMark Markdown parser and renderer
+pulldown-cmark = "0.12"
+
+# TOML front-matter parsing (page metadata)
+toml = "0.8"
+
+# Serialization for Tera context
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Error handling
+thiserror = "1"
+
+# Filesystem traversal for content discovery
+walkdir = "2"
+
+# Argument parsing for the generator CLI
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+# Temporary files and directories for filesystem-based tests
+tempfile = "3"

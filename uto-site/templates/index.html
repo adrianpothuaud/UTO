@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">🦀 Built in Rust</div>
+    <h1 class="hero-title">
+      The Automation<br />Revolution
+    </h1>
+    <p class="hero-tagline">
+      UTO is a next-generation, cross-platform automation engine that interacts
+      with UIs <em>as humans do</em> — through vision and intent, not brittle
+      DOM selectors.
+    </p>
+    <div class="hero-actions">
+      <a href="https://github.com/adrianpothuaud/UTO" class="btn btn-primary" target="_blank" rel="noopener">
+        View on GitHub
+      </a>
+      <a href="/contribute/" class="btn btn-secondary">
+        Contribute
+      </a>
+    </div>
+  </div>
+  <div class="hero-code">
+    <div class="code-window">
+      <div class="code-window-bar">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="code-window-title">test_checkout.rs</span>
+      </div>
+      <pre class="code-block"><code><span class="kw">let</span> session = uto.<span class="fn">session</span>(<span class="str">"Chrome"</span>);
+
+session
+    .<span class="fn">goto</span>(<span class="str">"https://shop.example.com"</span>)
+    .<span class="fn">select</span>(<span class="str">"Add to Cart"</span>)
+    .<span class="fn">select</span>(<span class="str">"Checkout"</span>)
+    .<span class="fn">fill</span>(<span class="str">"Email"</span>, <span class="str">"user@example.com"</span>)
+    .<span class="fn">should_be_visible</span>(<span class="str">"Order Confirmed"</span>)
+    .<span class="fn">await</span>;</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ===== STATUS BANNER ===== -->
+<section class="status-banner">
+  <div class="status-container">
+    <span class="status-dot"></span>
+    <strong>Phase 2 Complete:</strong>&nbsp; ChromeDriver auto-provisioning &amp;
+    WebDriver session management are fully operational.
+    <a href="https://github.com/adrianpothuaud/UTO/tree/main/poc" target="_blank" rel="noopener">See the POC →</a>
+  </div>
+</section>
+
+<!-- ===== PILLARS ===== -->
+<section class="pillars" id="features">
+  <div class="section-container">
+    <h2 class="section-title">Four Pillars of the Revolution</h2>
+    <p class="section-sub">Every layer is designed with a single goal: let you write tests that read like English.</p>
+
+    <div class="pillars-grid">
+
+      <div class="pillar-card">
+        <div class="pillar-icon">🏗️</div>
+        <h3>Zero-Config Infrastructure</h3>
+        <p>
+          Forget setup nightmares.  UTO auto-discovers installed browsers and
+          SDKs; if nothing is found it silently provisions a version-pinned
+          driver into a local cache.  OS-level process groups guarantee no
+          zombie processes are ever left behind.
+        </p>
+        <span class="pillar-status pillar-done">✓ Complete</span>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-icon">👁️</div>
+        <h3>The Recognition Loop</h3>
+        <p>
+          UTO <em>perceives</em> elements visually using an embedded ONNX ML
+          model, then anchors its guess against the Accessibility Tree via a
+          Weighted Consensus algorithm.  High-DPI coordinate normalization is
+          built in.
+        </p>
+        <span class="pillar-status pillar-wip">⚙ In Progress</span>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-icon">🧑</div>
+        <h3>Human-Centric API</h3>
+        <p>
+          Tests are written in the language of user intent.
+          <code>.select()</code>, <code>.fill()</code>,
+          <code>.should_be_visible()</code> — if a human can describe the
+          action, UTO can perform it.
+        </p>
+        <span class="pillar-status pillar-planned">◷ Planned</span>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-icon">⚡</div>
+        <h3>Hybrid Orchestrator</h3>
+        <p>
+          A high-performance Rust backbone using gRPC for multi-device
+          synchronisation and binary streams for real-time visual feedback.
+          Web and Mobile are a single unified canvas.
+        </p>
+        <span class="pillar-status pillar-planned">◷ Planned</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY UTO ===== -->
+<section class="why-uto">
+  <div class="section-container two-col">
+    <div class="why-text">
+      <h2>Why UTO?</h2>
+      <p>
+        Current tools fail because they act like <em>machines looking at code</em>
+        rather than <em>humans looking at an interface</em>.
+      </p>
+      <ul class="why-list">
+        <li>
+          <strong>Selenium / Appium</strong> — slowed by outdated request-response
+          protocols and separate tool chains for web vs. mobile.
+        </li>
+        <li>
+          <strong>Cypress / Playwright</strong> — limited to web-only or
+          browser-isolated kernels; no unified cross-platform story.
+        </li>
+        <li>
+          <strong>UTO</strong> — treats Web and Mobile as a single canvas,
+          compiled to machine code, zero JVM or Node.js overhead.
+        </li>
+      </ul>
+    </div>
+    <div class="why-stats">
+      <div class="stat-card">
+        <div class="stat-value">0</div>
+        <div class="stat-label">Manual setup steps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">2</div>
+        <div class="stat-label">Platforms, one API</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">Rust</div>
+        <div class="stat-label">Machine-code performance</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ROADMAP ===== -->
+<section class="roadmap" id="roadmap">
+  <div class="section-container">
+    <h2 class="section-title">Roadmap</h2>
+    <div class="roadmap-timeline">
+
+      <div class="roadmap-item roadmap-done">
+        <div class="roadmap-marker"></div>
+        <div class="roadmap-content">
+          <span class="roadmap-phase">Phase 1 &amp; 2</span>
+          <h3>Zero-Config + Driver Communication</h3>
+          <p>Chrome / Android SDK discovery, ChromeDriver provisioning, WebSession and MobileSession via W3C WebDriver.</p>
+        </div>
+      </div>
+
+      <div class="roadmap-item roadmap-next">
+        <div class="roadmap-marker"></div>
+        <div class="roadmap-content">
+          <span class="roadmap-phase">Phase 3 — Next</span>
+          <h3>AI Recognition Loop</h3>
+          <p>ONNX ML model integration, visual element detection, Weighted Consensus resolver with Accessibility Tree anchoring.</p>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-marker"></div>
+        <div class="roadmap-content">
+          <span class="roadmap-phase">Phase 4</span>
+          <h3>Human-Centric API</h3>
+          <p>High-level chainable API, natural language interpretation, self-healing test trials.</p>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-marker"></div>
+        <div class="roadmap-content">
+          <span class="roadmap-phase">Phase 5</span>
+          <h3>Hybrid Orchestrator</h3>
+          <p>gRPC command plane, binary data streams, multi-user / multi-device synchronisation.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== CALL TO ACTION ===== -->
+<section class="cta">
+  <div class="cta-content">
+    <h2>Ready to join the revolution?</h2>
+    <p>UTO is open-source and actively seeking contributors.  Whether you're
+    a Rust enthusiast, an ML engineer, or a test-automation veteran — there
+    is a place for you here.</p>
+    <a href="/contribute/" class="btn btn-primary btn-large">Get Involved →</a>
+  </div>
+</section>
+
+{% endblock content %}

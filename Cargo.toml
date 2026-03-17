@@ -2,5 +2,6 @@
 members = [
     "uto-core",
     "poc",
+    "uto-site",
 ]
 resolver = "2"
