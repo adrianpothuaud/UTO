@@ -11,7 +11,7 @@ Cypress/Playwright are limited by their web-centric or browser-isolated kernels.
 
 UTO breaks these barriers by treating Web and Mobile as a single unified canvas.
 
-## 🏗️ The Four Pillars of the Revolution
+## 🏗️ The Five Pillars of the Revolution
 
 ### 1. Zero-Config Infrastructure (uto-env)
 
@@ -45,10 +45,17 @@ Command Plane: Low-latency gRPC for synchronizing multi-user/multi-device scenar
 
 Data Plane: High-speed binary streams for real-time visual feedback and state analysis.
 
-### 4bis/5 Simplicity
+### 5. Simplicity by Default (uto-simplicity)
 
-- Hide from user usual test automation complexity like handling scroll/fling in mobile testing
-...
+UTO hides routine automation complexity so tests stay focused on intent, not platform mechanics.
+
+- Web iframes: auto-detect and switch frame context when target elements live in embedded documents.
+- Mobile scroll surfaces: abstract scroll/fling gestures on long settings screens and lists.
+- Dynamic UIs: auto-retry when elements become stale after re-rendering.
+- Context transitions: smooth handling between native and WebView contexts where available.
+- Permission/UI interruptions: standardized handling for recurring system prompts and modals.
+
+This pillar is not about adding magic behavior blindly; it is about codifying common automation pain points into explicit, reusable defaults.
 
 ## 🚀 Strategic POC Roadmap
 

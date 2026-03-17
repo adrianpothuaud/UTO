@@ -16,11 +16,12 @@ The core philosophy is to interact with UIs (Web and Mobile) as a human would, b
 
 ### Architecture
 
-The project is designed around four pillars:
+The project is designed around five pillars:
 1.  **Zero-Config Infrastructure (`uto-env`):** Automatically discovers browsers/SDKs and provisions the necessary drivers in isolated environments.
 2.  **The Recognition Loop (`uto-vision`):** Uses ML to identify UI components visually, anchored by traditional accessibility data for resilience.
 3.  **Human-Centric Interaction (`uto-api`):** Provides a high-level API focused on user intent (e.g., `select("Add to Cart")`).
-4.  **The Hybrid Orchestrator (`uto-link`):** A high-performance Rust backbone for orchestrating complex, multi-device tests.
+4.  **Simplicity by Default (`uto-simplicity`):** Hides routine automation mechanics (for example iframe context switching on web, and scroll/fling handling on mobile) behind predictable defaults.
+5.  **The Hybrid Orchestrator (`uto-link`):** A high-performance Rust backbone for orchestrating complex, multi-device tests.
 
 The current implementation covers the **Zero-Config Infrastructure** (Phase 1) and the **Driver Communication Layer** (Phase 2):
 

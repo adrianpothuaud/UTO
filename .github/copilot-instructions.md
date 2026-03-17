@@ -29,3 +29,4 @@ Read `GEMINI.md`, `docs/0001-zero-config-infrastructure.md`, and `docs/0002-driv
 - Fix problems at the root instead of layering special cases around them.
 - Keep `GEMINI.md` and the relevant ADR in `docs/` in sync when architecture, workflow, or project direction changes.
 - Preserve the current crate split and keep the `env`, `driver`, and `session` responsibilities clearly separated.
+- Keep Readme.md and static site content in sync with project evolution
