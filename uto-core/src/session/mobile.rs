@@ -121,6 +121,12 @@ impl MobileCapabilities {
 
         caps
     }
+
+    /// Public version of [`to_json`] intended for tests that live outside
+    /// this crate (e.g. in `uto-core/tests/`).
+    pub fn to_json_pub(&self) -> Value {
+        self.to_json()
+    }
 }
 
 // ---------------------------------------------------------------------------

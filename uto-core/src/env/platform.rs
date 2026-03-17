@@ -72,7 +72,7 @@ fn chrome_binary_candidates() -> Vec<PathBuf> {
 }
 
 /// Invokes `<binary> --version` and parses the version number from the output.
-fn query_chrome_version(binary: &PathBuf) -> Option<String> {
+pub(crate) fn query_chrome_version(binary: &PathBuf) -> Option<String> {
     if !binary.exists() {
         return None;
     }
@@ -114,7 +114,13 @@ pub struct AndroidSdk {
 /// Returns `None` if no SDK with a valid `adb` binary is found.
 pub fn find_android_sdk() -> Option<AndroidSdk> {
     let candidates = android_sdk_candidates();
+    find_android_sdk_from_candidates(candidates)
+}
 
+/// Like [`find_android_sdk`] but searches an explicit list of root directories.
+///
+/// Useful in tests where you want to point at a temporary fake SDK directory.
+pub(crate) fn find_android_sdk_from_candidates(candidates: Vec<PathBuf>) -> Option<AndroidSdk> {
     for root in candidates {
         let adb = root.join("platform-tools").join(adb_binary_name());
         if adb.exists() {
@@ -189,6 +195,10 @@ pub fn find_appium() -> Option<PathBuf> {
 mod tests {
     use super::*;
 
+    // -----------------------------------------------------------------------
+    // parse_version_from_output
+    // -----------------------------------------------------------------------
+
     #[test]
     fn parse_version_number_from_chrome_output() {
         let line = "Google Chrome 124.0.6367.60";
@@ -210,5 +220,73 @@ mod tests {
     #[test]
     fn parse_version_returns_none_for_empty_string() {
         assert_eq!(parse_version_from_output(""), None);
+    }
+
+    // -----------------------------------------------------------------------
+    // query_chrome_version — positive / negative
+    // -----------------------------------------------------------------------
+
+    /// A fake Chrome binary is a tiny shell script that prints a version line.
+    /// We create it in a temp directory so it does not affect the real system.
+    #[cfg(unix)]
+    #[test]
+    fn query_chrome_version_returns_version_for_valid_binary() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = tempfile::tempdir().expect("tempdir");
+        let script = dir.path().join("chrome");
+        std::fs::write(&script, "#!/bin/sh\necho 'Google Chrome 124.0.6367.60'\n")
+            .expect("write script");
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755))
+            .expect("chmod");
+
+        let result = query_chrome_version(&script);
+        assert_eq!(result, Some("124.0.6367.60".to_string()));
+    }
+
+    #[test]
+    fn query_chrome_version_returns_none_for_nonexistent_binary() {
+        let path = PathBuf::from("/nonexistent/__uto_fake_chrome__");
+        assert!(query_chrome_version(&path).is_none());
+    }
+
+    // -----------------------------------------------------------------------
+    // find_android_sdk_from_candidates — positive / negative
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn find_android_sdk_locates_sdk_with_adb() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let platform_tools = dir.path().join("platform-tools");
+        std::fs::create_dir_all(&platform_tools).expect("mkdir");
+
+        let adb_name = adb_binary_name();
+        let adb_path = platform_tools.join(adb_name);
+        std::fs::write(&adb_path, "").expect("write adb stub");
+
+        // Make the stub executable on Unix so the `exists()` check passes.
+        // (The function only checks existence, not whether it is executable.)
+        let result =
+            find_android_sdk_from_candidates(vec![dir.path().to_path_buf()]);
+
+        let sdk = result.expect("should find SDK");
+        assert_eq!(sdk.root, dir.path());
+        assert_eq!(sdk.adb_path, adb_path);
+    }
+
+    #[test]
+    fn find_android_sdk_returns_none_when_adb_missing() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        // Create the platform-tools dir but do NOT put adb inside.
+        std::fs::create_dir_all(dir.path().join("platform-tools")).expect("mkdir");
+
+        let result =
+            find_android_sdk_from_candidates(vec![dir.path().to_path_buf()]);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn find_android_sdk_returns_none_for_empty_candidates() {
+        assert!(find_android_sdk_from_candidates(vec![]).is_none());
     }
 }

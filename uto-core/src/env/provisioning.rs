@@ -65,7 +65,7 @@ pub async fn find_or_provision_chromedriver(chrome_version: &str) -> UtoResult<P
 // ---------------------------------------------------------------------------
 
 /// Returns the expected path of the cached `chromedriver` binary.
-fn chromedriver_cache_path(chrome_version: &str) -> UtoResult<PathBuf> {
+pub(crate) fn chromedriver_cache_path(chrome_version: &str) -> UtoResult<PathBuf> {
     let major = major_version(chrome_version);
     let base = dirs::home_dir()
         .ok_or_else(|| UtoError::Internal("Could not determine home directory".to_string()))?
@@ -180,7 +180,7 @@ async fn download_chromedriver(chrome_version: &str, dest_path: &PathBuf) -> Uto
 }
 
 /// Extracts the `chromedriver` binary from a ZIP archive held in `bytes`.
-fn extract_chromedriver_from_zip(bytes: &[u8], dest: &PathBuf) -> UtoResult<()> {
+pub(crate) fn extract_chromedriver_from_zip(bytes: &[u8], dest: &PathBuf) -> UtoResult<()> {
     let cursor = std::io::Cursor::new(bytes);
     let mut archive = zip::ZipArchive::new(cursor)
         .map_err(|e| UtoError::Internal(format!("Failed to open ZIP archive: {e}")))?;
@@ -222,10 +222,119 @@ fn extract_chromedriver_from_zip(bytes: &[u8], dest: &PathBuf) -> UtoResult<()> 
 mod tests {
     use super::*;
 
+    // -----------------------------------------------------------------------
+    // major_version
+    // -----------------------------------------------------------------------
+
     #[test]
     fn major_version_extraction() {
         assert_eq!(major_version("124.0.6367.60"), "124");
         assert_eq!(major_version("120"), "120");
         assert_eq!(major_version(""), "");
+    }
+
+    // -----------------------------------------------------------------------
+    // chromedriver_cache_path
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn cache_path_contains_major_version() {
+        let path = chromedriver_cache_path("124.0.6367.60").expect("cache path");
+        // The path must contain "124" as a directory segment.
+        assert!(
+            path.components().any(|c| c.as_os_str() == "124"),
+            "expected '124' segment in {path:?}"
+        );
+        // And the final component must be the chromedriver binary name.
+        assert_eq!(
+            path.file_name().and_then(|n| n.to_str()),
+            Some(chromedriver_binary_name()),
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // extract_chromedriver_from_zip
+    // -----------------------------------------------------------------------
+
+    /// Build a minimal in-memory ZIP that contains a fake `chromedriver`
+    /// binary nested inside a platform sub-directory (matching the real
+    /// Chrome for Testing archive layout).
+    fn make_fake_chromedriver_zip() -> Vec<u8> {
+        use std::io::Write;
+
+        let cursor = std::io::Cursor::new(Vec::new());
+        let mut zip = zip::ZipWriter::new(cursor);
+        let options = zip::write::FileOptions::default();
+
+        // Mirror the real archive layout: <platform>/<binary>
+        let entry = format!("chromedriver-linux64/{}", chromedriver_binary_name());
+        zip.start_file(entry, options).expect("zip start_file");
+        zip.write_all(b"fake chromedriver binary content")
+            .expect("zip write");
+
+        zip.finish().expect("zip finish").into_inner()
+    }
+
+    #[test]
+    fn extract_chromedriver_from_zip_writes_binary_to_dest() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let dest = dir.path().join(chromedriver_binary_name());
+
+        let zip_bytes = make_fake_chromedriver_zip();
+        extract_chromedriver_from_zip(&zip_bytes, &dest).expect("extract");
+
+        assert!(dest.exists(), "chromedriver binary should exist after extraction");
+        let content = std::fs::read(&dest).expect("read extracted file");
+        assert_eq!(content, b"fake chromedriver binary content");
+    }
+
+    #[test]
+    fn extract_chromedriver_from_zip_errors_when_binary_missing() {
+        use std::io::Write;
+
+        // Build a ZIP that does NOT contain the chromedriver binary.
+        let cursor = std::io::Cursor::new(Vec::new());
+        let mut zip = zip::ZipWriter::new(cursor);
+        let options = zip::write::FileOptions::default();
+        zip.start_file("unrelated-file.txt", options).expect("zip start_file");
+        zip.write_all(b"nothing useful").expect("zip write");
+        let zip_bytes = zip.finish().expect("zip finish").into_inner();
+
+        let dir = tempfile::tempdir().expect("tempdir");
+        let dest = dir.path().join(chromedriver_binary_name());
+
+        let result = extract_chromedriver_from_zip(&zip_bytes, &dest);
+        assert!(
+            result.is_err(),
+            "should fail when binary is absent from archive"
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // find_or_provision_chromedriver — cache-hit (no network required)
+    // -----------------------------------------------------------------------
+
+    /// If the chromedriver binary already exists at the expected cache path,
+    /// `find_or_provision_chromedriver` must return that path immediately
+    /// without attempting any network request.
+    #[tokio::test]
+    async fn find_or_provision_chromedriver_returns_cached_path() {
+        // Determine the cache path for a dummy version.
+        let version = "124.0.6367.60";
+        let cache_path = chromedriver_cache_path(version).expect("cache path");
+
+        // Pre-create the binary so the cache-hit branch is taken.
+        if let Some(parent) = cache_path.parent() {
+            std::fs::create_dir_all(parent).expect("mkdir cache dir");
+        }
+        std::fs::write(&cache_path, b"stub").expect("write stub chromedriver");
+
+        let result = find_or_provision_chromedriver(version).await;
+
+        // Clean up before asserting so a failing assert doesn't leave garbage.
+        let _ = std::fs::remove_file(&cache_path);
+
+        let returned = result.expect("should return cached path");
+        assert_eq!(returned, cache_path);
     }
 }
