@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 description = "Unified Testing Object - The Cross-Platform Automation Engine"
 
-[[bin]]
-name = "uto-core"
-path = "src/main.rs"
+[lib]
+name = "uto_core"
+path = "src/lib.rs"
 
 [dependencies]
 # Async runtime for multi-session handling

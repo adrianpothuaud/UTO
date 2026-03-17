@@ -2366,6 +2366,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "uto-poc"
+version = "0.1.0"
+dependencies = [
+ "env_logger",
+ "log",
+ "tokio",
+ "uto-core",
+]
+
+[[package]]
 name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,20 +1,29 @@
-//! UTO Phase 2 POC — Driver Communication
+//! # Phase 2 POC — Interact with Web and Mobile Sessions
 //!
-//! This entry point demonstrates the communication layer for both the **web**
+//! This script demonstrates the UTO communication layer for both the **web**
 //! world (ChromeDriver + Chrome) and the **mobile** world (Appium + Android
-//! emulator).
+//! emulator).  It assumes the relevant driver is already running, or can be
+//! found/provisioned automatically.
 //!
-//! The appropriate demo is selected via the `UTO_DEMO` environment variable:
-//!   * `UTO_DEMO=web`    (default) — Chrome web demo
-//!   * `UTO_DEMO=mobile`           — Appium Android demo
+//! ## Usage
 //!
-//! Prerequisites for the web demo:
-//!   * Google Chrome installed on the host machine.
+//! ```sh
+//! # Web demo (default)
+//! cargo run -p uto-poc --bin phase2_interact_with_session
 //!
-//! Prerequisites for the mobile demo:
-//!   * Appium installed globally (`npm install -g appium`).
-//!   * An Android emulator running (e.g. `emulator-5554`).
-//!   * `ANDROID_HOME` / `ANDROID_SDK_ROOT` set, or the SDK in a default path.
+//! # Mobile demo
+//! UTO_DEMO=mobile cargo run -p uto-poc --bin phase2_interact_with_session
+//! ```
+//!
+//! ## Prerequisites
+//!
+//! **Web demo:**
+//! * Google Chrome installed on the host machine.
+//!
+//! **Mobile demo:**
+//! * Appium installed globally (`npm install -g appium`).
+//! * An Android emulator running (e.g. `emulator-5554`).
+//! * `ANDROID_HOME` / `ANDROID_SDK_ROOT` set, or the SDK in a default path.
 
 use uto_core::{
     driver,
@@ -31,7 +40,7 @@ use uto_core::{
 
 #[tokio::main]
 async fn main() {
-    // Simple log output — INFO by default, configurable via RUST_LOG.
+    // INFO by default, configurable via RUST_LOG.
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     let demo = std::env::var("UTO_DEMO").unwrap_or_else(|_| "web".to_string());
@@ -48,12 +57,12 @@ async fn main() {
 
 /// Demonstrates the web communication layer:
 /// 1. Discover Chrome version.
-/// 2. Provision (download if needed) matching ChromeDriver.
+/// 2. Provision (download if needed) the matching ChromeDriver.
 /// 3. Start ChromeDriver.
 /// 4. Open a session, navigate, read the title.
 /// 5. Clean shutdown.
 async fn run_web_demo() {
-    log::info!("=== UTO Web Communication Demo ===");
+    log::info!("=== UTO Phase 2 — Web Session Demo ===");
 
     // Step 1 — discover Chrome.
     let chrome_version = match find_chrome_version() {
@@ -117,20 +126,16 @@ async fn run_web_demo() {
 
 /// Exercises the UTO session API against a running Chrome browser.
 async fn web_interaction(session: &WebSession) -> uto_core::error::UtoResult<()> {
-    // Navigate.
     session.goto("https://example.com").await?;
     log::info!("Navigated to https://example.com");
 
-    // Read the page title.
     let title = session.title().await?;
     log::info!("Page title: '{title}'");
 
-    // Find an element using a CSS selector.
     let heading = session.find_element("h1").await?;
     let text = session.get_text(&heading).await?;
     log::info!("Heading text: '{text}'");
 
-    // Capture a screenshot.
     let png = session.screenshot().await?;
     log::info!("Screenshot captured ({} bytes)", png.len());
 
@@ -148,7 +153,7 @@ async fn web_interaction(session: &WebSession) -> uto_core::error::UtoResult<()>
 /// 4. Read the current activity / accessibility tree.
 /// 5. Clean shutdown.
 async fn run_mobile_demo() {
-    log::info!("=== UTO Mobile Communication Demo ===");
+    log::info!("=== UTO Phase 2 — Mobile Session Demo ===");
 
     // Step 1 — ensure the Android SDK and adb are available.
     match find_android_sdk() {
@@ -186,8 +191,7 @@ async fn run_mobile_demo() {
     };
 
     // Step 4 — create a mobile session targeting the default Android emulator.
-    let caps = MobileCapabilities::android("emulator-5554")
-        .with_platform_version("13.0");
+    let caps = MobileCapabilities::android("emulator-5554").with_platform_version("13.0");
 
     match MobileSession::new(&driver_proc.url, caps).await {
         Ok(session) => {
@@ -214,15 +218,12 @@ async fn run_mobile_demo() {
 
 /// Exercises the UTO session API against a running Android emulator.
 async fn mobile_interaction(session: &MobileSession) -> uto_core::error::UtoResult<()> {
-    // Read current activity title.
     let title = session.title().await?;
     log::info!("Current activity: '{title}'");
 
-    // Dump the accessibility tree (page source).
     let source = session.page_source().await?;
     log::info!("Page source length: {} bytes", source.len());
 
-    // Capture a screenshot.
     let png = session.screenshot().await?;
     log::info!("Screenshot captured ({} bytes)", png.len());
 
