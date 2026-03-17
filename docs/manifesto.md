@@ -11,26 +11,25 @@ Cypress/Playwright are limited by their web-centric or browser-isolated kernels.
 
 UTO breaks these barriers by treating Web and Mobile as a single unified canvas.
 
-🏗️ The Four Pillars of the Revolution
-1. Zero-Config Infrastructure (uto-env)
+## 🏗️ The Four Pillars of the Revolution
+
+### 1. Zero-Config Infrastructure (uto-env)
+
 UTO eliminates the "Setup Nightmare." Upon execution, it:
 
-Auto-Discovers local browsers and mobile SDKs.
+- Auto-Discovers local browsers and mobile SDKs.
+- Auto-Provisions required drivers and binary runtimes in isolated, portable environments.
+- Guarantees Clean Hooks using OS-level Job Objects/Process Groups to prevent zombie processes.
 
-Auto-Provisions required drivers and binary runtimes in isolated, portable environments.
+### 2. The Recognition Loop (uto-vision)
 
-Guarantees Clean Hooks using OS-level Job Objects/Process Groups to prevent zombie processes.
-
-2. The Recognition Loop (uto-vision)
 UTO doesn't just "find" elements; it perceives them.
 
-Vision-First: Uses ML to identify UI components (buttons, inputs, icons) based on their visual appearance.
+- Vision-First: Uses ML to identify UI components (buttons, inputs, icons) based on their visual appearance.
+- Heuristic Anchoring: Secures visual guesses by cross-referencing them with Accessibility Trees (DOM/Native) using Weighted Consensus.
+- Coordinate Normalization: Automatically scales visual pixels to technical driver coordinates across high-DPI web and mobile screens.
 
-Heuristic Anchoring: Secures visual guesses by cross-referencing them with Accessibility Trees (DOM/Native) using Weighted Consensus.
-
-Coordinate Normalization: Automatically scales visual pixels to technical driver coordinates across high-DPI web and mobile screens.
-
-3. Human-Centric Interaction (uto-api)
+### 3. Human-Centric Interaction (uto-api)
 Tests are written in the language of user intent, not technical gestures.
 
 Verbs: .select(), .fill(), .shouldBeVisible().
