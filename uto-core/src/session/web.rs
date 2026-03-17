@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use thirtyfour::common::capabilities::chromium::ChromiumLikeCapabilities;
 use thirtyfour::{By, ChromeCapabilities, WebDriver};
 
 use crate::error::{UtoError, UtoResult};
@@ -39,7 +40,32 @@ impl WebSession {
     /// before this is called. Use [`crate::driver::start_chromedriver`] to
     /// start a managed ChromeDriver process.
     pub async fn new(driver_url: &str) -> UtoResult<Self> {
-        let caps = ChromeCapabilities::new();
+        Self::new_with_args(driver_url, &[]).await
+    }
+
+    /// Like [`WebSession::new`] but with additional Chrome command-line arguments.
+    ///
+    /// Useful for running Chrome in headless or sandboxless environments:
+    ///
+    /// ```rust,no_run
+    /// # use uto_core::session::web::WebSession;
+    /// # #[tokio::main]
+    /// # async fn main() -> uto_core::error::UtoResult<()> {
+    /// let session = WebSession::new_with_args(
+    ///     "http://localhost:9515",
+    ///     &["--headless=new", "--no-sandbox", "--disable-dev-shm-usage"],
+    /// )
+    /// .await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn new_with_args(driver_url: &str, extra_args: &[&str]) -> UtoResult<Self> {
+        let mut caps = ChromeCapabilities::new();
+        for arg in extra_args {
+            caps.add_arg(arg).map_err(|e| {
+                UtoError::SessionCreationFailed(format!("invalid chrome arg '{arg}': {e}"))
+            })?;
+        }
         let driver = WebDriver::new(driver_url, caps).await.map_err(|e| {
             UtoError::SessionCreationFailed(format!("ChromeDriver at {driver_url}: {e}"))
         })?;

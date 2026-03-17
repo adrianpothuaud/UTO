@@ -54,3 +54,10 @@ nix = { version = "0.27", features = ["process", "signal"] }
 # Windows Job Object management (ties child lifetime to parent)
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["jobapi2", "processthreadsapi"] }
+
+[dev-dependencies]
+# Temporary files and directories for filesystem-based tests
+tempfile = "3"
+
+# Mock HTTP server for driver-readiness and W3C WebDriver session tests
+wiremock = "0.6"

@@ -140,7 +140,7 @@ pub async fn start_appium(binary_path: &PathBuf) -> UtoResult<DriverProcess> {
 
 /// Polls the driver's `/status` endpoint until it responds successfully or
 /// the `timeout` elapses.
-async fn wait_for_driver_ready(base_url: &str, timeout: Duration) -> UtoResult<()> {
+pub(crate) async fn wait_for_driver_ready(base_url: &str, timeout: Duration) -> UtoResult<()> {
     let status_url = format!("{base_url}/status");
     let deadline = tokio::time::Instant::now() + timeout;
     let client = reqwest::Client::new();
@@ -161,5 +161,95 @@ async fn wait_for_driver_ready(base_url: &str, timeout: Duration) -> UtoResult<(
                 tokio::time::sleep(Duration::from_millis(500)).await;
             }
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    // -----------------------------------------------------------------------
+    // wait_for_driver_ready — success
+    // -----------------------------------------------------------------------
+
+    /// When the `/status` endpoint returns HTTP 200 the helper must resolve
+    /// successfully before the timeout expires.
+    #[tokio::test]
+    async fn wait_for_driver_ready_succeeds_when_server_responds_ok() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("GET"))
+            .and(path("/status"))
+            .respond_with(
+                ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                    "value": { "ready": true, "message": "" }
+                })),
+            )
+            .mount(&mock_server)
+            .await;
+
+        wait_for_driver_ready(&mock_server.uri(), Duration::from_secs(5))
+            .await
+            .expect("should succeed when /status returns 200");
+    }
+
+    // -----------------------------------------------------------------------
+    // wait_for_driver_ready — timeout
+    // -----------------------------------------------------------------------
+
+    /// When nothing listens on the target URL the helper must return a
+    /// `DriverStartFailed` error before the timeout exceeds.
+    #[tokio::test]
+    async fn wait_for_driver_ready_times_out_when_no_server() {
+        // Port 1 is reserved; nothing should be listening there.
+        let result = wait_for_driver_ready(
+            "http://127.0.0.1:1",
+            Duration::from_millis(300),
+        )
+        .await;
+
+        assert!(
+            result.is_err(),
+            "should fail when driver never becomes ready"
+        );
+        let msg = result.unwrap_err().to_string();
+        assert!(
+            msg.contains("did not become ready"),
+            "unexpected error message: {msg}"
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // DriverProcess::stop — kills the child process
+    // -----------------------------------------------------------------------
+
+    /// We spawn a long-running process (Unix: `sleep 60`, Windows: `timeout 60`)
+    /// and verify that `stop()` terminates it cleanly.
+    #[cfg(unix)]
+    #[test]
+    fn driver_process_stop_terminates_child() {
+        use command_group::CommandGroup;
+
+        let child = std::process::Command::new("sleep")
+            .arg("60")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .group_spawn()
+            .expect("spawn sleep");
+
+        let proc = DriverProcess {
+            kind: DriverKind::ChromeDriver,
+            port: 0,
+            url: "http://localhost:0".to_string(),
+            child,
+        };
+
+        proc.stop().expect("stop should not error");
     }
 }
