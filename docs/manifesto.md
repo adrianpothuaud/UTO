@@ -38,25 +38,31 @@ Precision: Interactions target the Center-Point of the perceived element, ensuri
 
 Exploratory Trial: If UTO finds multiple "Settings" buttons, it intelligently tries the most likely one and uses "Instructional Flow" to verify success, rolling back if the path is wrong.
 
-4. The Hybrid Orchestrator (uto-link)
+### 4. The Hybrid Orchestrator (uto-link)
 A performance-optimized backbone built in Rust.
 
 Command Plane: Low-latency gRPC for synchronizing multi-user/multi-device scenarios.
 
 Data Plane: High-speed binary streams for real-time visual feedback and state analysis.
 
-🚀 Strategic POC Roadmap
-Phase 1: Genesis (Now)
+### 4bis/5 Simplicity
+
+- Hide from user usual test automation complexity like handling scroll/fling in mobile testing
+...
+
+## 🚀 Strategic POC Roadmap
+
+### Phase 1: Genesis (Now)
 Goal: A single Rust binary that auto-downloads Chromium and performs a "Vision-First" click on a web button.
 
 Key Tech: Rust Core + ONNX Runtime + OS-level Process Management.
 
-Phase 2: Convergence
+### Phase 2: Convergence
 Goal: Integrate Mobile (Android/iOS) into the same script.
 
 Key Tech: ADB/XCUITest direct hooks + Unified Accessibility Schema.
 
-Phase 3: Intelligence
+### Phase 3: Intelligence
 Goal: Natural Language interpretation and Self-Healing trials.
 
 Key Tech: Semantic Parser + Exploratory State Machine.

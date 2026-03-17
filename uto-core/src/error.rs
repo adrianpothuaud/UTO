@@ -7,12 +7,18 @@ pub enum UtoError {
     BrowserNotFound(String),
 
     /// The Android SDK could not be located.
-    #[error("Android SDK not found. Set the ANDROID_HOME environment variable or install the SDK.")]
+    #[error(
+        "Android SDK not found. Set the ANDROID_HOME environment variable or install the SDK."
+    )]
     AndroidSdkNotFound,
 
     /// Appium was not found in PATH and could not be provisioned automatically.
     #[error("Appium not found. Install it with: npm install -g appium")]
     AppiumNotFound,
+
+    /// Mobile environment setup failed.
+    #[error("Environment setup failed: {0}")]
+    EnvironmentSetupFailed(String),
 
     /// A required system binary (e.g. `adb`) was not found in PATH.
     #[error("Required binary '{0}' not found in PATH")]

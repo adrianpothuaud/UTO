@@ -28,7 +28,8 @@
 use uto_core::{
     driver,
     env::{
-        platform::{find_appium, find_android_sdk, find_chrome_version},
+        mobile_setup::{prepare_mobile_environment, MobileSetupOptions},
+        platform::find_chrome_version,
         provisioning::find_or_provision_chromedriver,
     },
     session::{
@@ -147,7 +148,7 @@ async fn web_interaction(session: &WebSession) -> uto_core::error::UtoResult<()>
 // ---------------------------------------------------------------------------
 
 /// Demonstrates the mobile communication layer:
-/// 1. Discover Appium.
+/// 1. Auto-prepare Android + Appium prerequisites.
 /// 2. Start Appium.
 /// 3. Open a mobile session with Android capabilities.
 /// 4. Read the current activity / accessibility tree.
@@ -155,31 +156,33 @@ async fn web_interaction(session: &WebSession) -> uto_core::error::UtoResult<()>
 async fn run_mobile_demo() {
     log::info!("=== UTO Phase 2 — Mobile Session Demo ===");
 
-    // Step 1 — ensure the Android SDK and adb are available.
-    match find_android_sdk() {
-        Some(sdk) => log::info!("Android SDK found at {}", sdk.root.display()),
-        None => log::warn!(
-            "Android SDK not found — continuing, but the session may fail without adb."
-        ),
-    }
+    // Step 1 — auto-prepare Android + Appium runtime prerequisites.
+    let setup_options = MobileSetupOptions {
+        require_online_device: true,
+        ..MobileSetupOptions::default()
+    };
 
-    // Step 2 — discover Appium.
-    let appium_path = match find_appium() {
-        Some(p) => {
-            log::info!("Appium found at {}", p.display());
-            p
+    let mobile_setup = match prepare_mobile_environment(&setup_options) {
+        Ok(result) => {
+            log::info!("Android SDK found at {}", result.android_sdk.root.display());
+            log::info!("adb available at {}", result.android_sdk.adb_path.display());
+            log::info!("Appium found at {}", result.appium_path.display());
+            if let Some(serial) = &result.device_serial {
+                log::info!("Android device/emulator online: {serial}");
+            }
+            for action in &result.actions {
+                log::info!("[AUTO-FIX] {action}");
+            }
+            result
         }
-        None => {
-            log::error!(
-                "Appium not found in PATH. \
-                 Install it with: npm install -g appium"
-            );
+        Err(e) => {
+            log::error!("Mobile setup failed: {e}");
             return;
         }
     };
 
-    // Step 3 — start Appium.
-    let driver_proc = match driver::start_appium(&appium_path).await {
+    // Step 2 — start Appium.
+    let driver_proc = match driver::start_appium(&mobile_setup.appium_path).await {
         Ok(p) => {
             log::info!("Appium running on port {}", p.port);
             p
@@ -190,8 +193,12 @@ async fn run_mobile_demo() {
         }
     };
 
-    // Step 4 — create a mobile session targeting the default Android emulator.
-    let caps = MobileCapabilities::android("emulator-5554").with_platform_version("13.0");
+    // Step 3 — create a mobile session targeting the prepared Android device.
+    let device_name = mobile_setup
+        .device_serial
+        .unwrap_or_else(|| "emulator-5554".to_string());
+
+    let caps = MobileCapabilities::android(device_name);
 
     match MobileSession::new(&driver_proc.url, caps).await {
         Ok(session) => {
@@ -208,7 +215,7 @@ async fn run_mobile_demo() {
         }
     }
 
-    // Step 5 — clean shutdown.
+    // Step 4 — clean shutdown.
     if let Err(e) = driver_proc.stop() {
         log::warn!("Appium stop error: {e}");
     }
@@ -218,14 +225,35 @@ async fn run_mobile_demo() {
 
 /// Exercises the UTO session API against a running Android emulator.
 async fn mobile_interaction(session: &MobileSession) -> uto_core::error::UtoResult<()> {
-    let title = session.title().await?;
-    log::info!("Current activity: '{title}'");
+    // Launch Android Settings.
+    log::info!("Launching Android Settings...");
+    session
+        .launch_activity("com.android.settings", ".Settings")
+        .await?;
 
-    let source = session.page_source().await?;
-    log::info!("Page source length: {} bytes", source.len());
+    // Give the Settings app a moment to fully render.
+    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
+    // Take a screenshot of the Settings app.
     let png = session.screenshot().await?;
     log::info!("Screenshot captured ({} bytes)", png.len());
+
+    // Capture the page source (accessibility tree) to show Settings structure.
+    let source = session.page_source().await?;
+    log::info!(
+        "Page source (Settings accessibility tree): {} bytes",
+        source.len()
+    );
+
+    // Lightweight assertion for demo confidence.
+    let source_lower = source.to_ascii_lowercase();
+    if source_lower.contains("settings") || source_lower.contains("com.android.settings") {
+        log::info!("Settings launch confirmed via accessibility source");
+    } else {
+        log::warn!(
+            "Settings launch not explicitly confirmed from source text; app may still be open"
+        );
+    }
 
     Ok(())
 }

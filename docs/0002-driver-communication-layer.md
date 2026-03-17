@@ -33,6 +33,11 @@ Both drivers implement the **W3C WebDriver protocol** — a JSON-over-HTTP stand
 
 4. **`async-trait`** is used to allow `UtoSession` to be used as a trait object (`Box<dyn UtoSession>`), enabling test logic to be written against the unified API without caring whether it runs on a browser or a device.
 
+5. **Appium base-path compatibility is handled in the session layer.**
+   - `MobileSession::new` first attempts session creation with the URL provided by the managed driver process.
+   - If Appium responds with an `unknown command` + HTTP 404 signature (common when `/wd/hub` vs root base paths differ between Appium versions/configuration), UTO retries once using the alternate base path.
+   - This keeps `driver` focused on lifecycle concerns while preserving robust cross-version communication behavior in `session`.
+
 ## Module Structure
 
 ```
@@ -40,6 +45,7 @@ uto-core/src/
 ├── error.rs          — UtoError / UtoResult
 ├── env/
 │   ├── platform.rs   — Chrome version detection, Android SDK discovery, Appium discovery
+│   ├── mobile_setup.rs — Android/Appium auto-fix (adb start, emulator boot, Appium + UiAutomator2 install)
 │   └── provisioning.rs — ChromeDriver download / extraction from Chrome for Testing API
 ├── driver/
 │   └── mod.rs        — DriverProcess: start/stop ChromeDriver and Appium (process groups)
@@ -58,4 +64,6 @@ uto-core/src/
 
 **Negative:**
 - **Appium nuance:** While both use W3C WebDriver, Appium has additional endpoints and capabilities (e.g. `mobile:` commands). These are accessible via `MobileSession`-specific methods.
+- **Environment-dependent mobile readiness:** Mobile integration tests can only create a full session when Appium plus a compatible automation backend/device are available; tests therefore skip gracefully when those host dependencies are missing.
+- **Toolchain assumptions for auto-fix:** Automatic Appium installation depends on a working Node.js/npm toolchain, and emulator auto-start requires at least one existing AVD image on the host.
 - **No BiDi yet:** Real-time push events (WebDriver BiDi / CDP) are a future improvement.

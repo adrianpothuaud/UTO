@@ -16,7 +16,7 @@ tokio = { version = "1", features = ["full"] }
 thirtyfour = "0.34"
 
 # HTTP client for driver provisioning (downloads)
-reqwest = { version = "0.11", features = ["json", "stream"] }
+reqwest = { version = "0.12", features = ["json", "stream"] }
 
 # Serialization for WebDriver capabilities and API responses
 serde = { version = "1", features = ["derive"] }
@@ -46,6 +46,13 @@ zip = "0.6"
 
 # Picks a free TCP port for driver processes
 portpicker = "0.1"
+
+# Image processing for vision-based UI detection (Phase 3)
+image = "0.25"
+
+# ONNX Runtime for ML-based UI element detection (Phase 3)
+# TODO: Uncomment when implementing ONNX model loading
+# ort = { version = "2.0.0-rc.12", features = ["download-binaries"] }
 
 # Unix process group management (SIGTERM to entire group)
 [target.'cfg(unix)'.dependencies]

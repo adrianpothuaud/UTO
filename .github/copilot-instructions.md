@@ -1,37 +1,31 @@
-# UTO Project - Copilot Instructions
+# UTO Project Guidelines
 
-## Agent Persona
+## Core Philosophy
 
-You are an expert Rust developer and a core contributor to the UTO project. Your role is to help build the UTO framework by implementing new features, fixing bugs, and improving the overall architecture. You are expected to write high-quality, production-ready code that adheres to the project's philosophy and conventions. You are pragmatic, efficient, and obsessed with clean, resilient code. You are a team player who communicates clearly and concisely. You are proactive and always look for ways to improve the project.
+UTO is a Rust automation framework built around zero-config infrastructure and a unified web/mobile execution model.
 
-## 1. Core Philosophy
+- Prefer solutions that preserve the "discover or deploy" workflow described in `docs/0001-zero-config-infrastructure.md`.
+- Never leave orphaned child processes behind. Driver lifecycle work must preserve the clean-hook model via process groups on Unix and Job Objects on Windows.
+- Design for macOS, Linux, and Windows from the start. Do not hardcode single-platform assumptions into environment discovery, provisioning, or driver management.
 
-UTO (Unified Testing Object) is a next-generation automation framework built on the principle of **Zero-Config Infrastructure**. The primary goal is to eliminate the setup friction that plagues most testing frameworks. Always prioritize solutions that align with this philosophy.
+## Architecture
 
-**Key Principles:**
-*   **Discover or Deploy:** When a tool is needed (e.g., a WebDriver), first try to discover it on the system. If it's not found, automatically deploy a known-good, version-pinned version to a local cache.
-*   **Clean Hook:** Never leave orphaned processes. All child processes (drivers, emulators, etc.) must be terminated when the main process exits. This is achieved through OS-native process grouping (Process Groups on Unix, Job Objects on Windows).
-*   **Cross-Platform by Design:** All features must be implemented with cross-platform compatibility in mind (macOS, Windows, Linux).
+- `uto-core/src/env` handles host discovery and provisioning.
+- `uto-core/src/driver` owns WebDriver-compatible process startup, readiness checks, and shutdown.
+- `uto-core/src/session` owns the W3C WebDriver communication layer and the shared `UtoSession` abstraction.
+- `poc/src/bin` contains the executable proof-of-concept flows for Phase 1 and Phase 2.
 
-## 2. Project Structure
+Read `GEMINI.md`, `docs/0001-zero-config-infrastructure.md`, and `docs/0002-driver-communication-layer.md` before making architectural changes.
 
-*   `uto-core`: The main Rust crate containing all the core logic.
-    *   `src/env`: Environment discovery and provisioning.
-    *   `src/driver`: WebDriver process management.
-    *   `src/session`: Session creation and interaction.
-*   `docs`: Project documentation, including architectural decisions.
+## Build And Test
 
-## 3. Development Workflow
+- Build the workspace with `cargo build --workspace`.
+- Run the main validation set with `cargo fmt --all --check`, `cargo clippy --workspace --all-targets -- -D warnings`, and `cargo test --workspace`.
+- Use the `uto-poc` binaries for manual demos instead of inventing ad hoc entrypoints.
 
-*   **Dependencies:** All Rust dependencies are managed in `uto-core/Cargo.toml`.
-*   **Building:** `cargo build -p uto-core`
-*   **Running:** `cargo run -p uto-core`
-*   **Testing:** `cargo test`
-*   **Linting:** `cargo clippy`
+## Conventions
 
-## 4. Documentation Workflow
-
-*   Always track and update project documentation so every action and decision is logged.
-*   Make the relevant updates to global documents (`GEMINI.md`, `docs/`).
-*   All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`).
-*   Write clear, concise commit messages that explain the "what" and "why" of a change.
+- Keep public Rust APIs documented with Rustdoc comments.
+- Fix problems at the root instead of layering special cases around them.
+- Keep `GEMINI.md` and the relevant ADR in `docs/` in sync when architecture, workflow, or project direction changes.
+- Preserve the current crate split and keep the `env`, `driver`, and `session` responsibilities clearly separated.

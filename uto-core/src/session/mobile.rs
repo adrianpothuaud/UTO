@@ -1,6 +1,10 @@
+use std::sync::Arc;
+use std::time::Duration;
+
 use async_trait::async_trait;
+use serde::Deserialize;
 use serde_json::{json, Value};
-use thirtyfour::{By, Capabilities, WebDriver};
+use thirtyfour::{session::handle::SessionHandle, By, Capabilities, SessionId, WebDriver};
 
 use crate::error::{UtoError, UtoResult};
 
@@ -150,7 +154,7 @@ impl MobileCapabilities {
 /// # async fn main() -> uto_core::error::UtoResult<()> {
 /// let caps = MobileCapabilities::android("emulator-5554")
 ///     .with_app("/path/to/app.apk");
-/// let session = MobileSession::new("http://localhost:4723/wd/hub", caps).await?;
+/// let session = MobileSession::new("http://localhost:4723", caps).await?;
 /// let title = session.title().await?;
 /// println!("Activity: {title}");
 /// Box::new(session).close().await?;
@@ -161,6 +165,105 @@ pub struct MobileSession {
     driver: WebDriver,
 }
 
+fn appium_alternate_base_url(url: &str) -> Option<String> {
+    let trimmed = url.trim_end_matches('/');
+
+    if let Some(base) = trimmed.strip_suffix("/wd/hub") {
+        Some(base.to_string())
+    } else if !trimmed.is_empty() {
+        Some(format!("{trimmed}/wd/hub"))
+    } else {
+        None
+    }
+}
+
+fn is_appium_base_path_mismatch_error(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+    lower.contains("unknown command") && lower.contains("404")
+}
+
+#[derive(Debug, Deserialize)]
+struct AppiumSessionResponse {
+    #[serde(default, rename = "sessionId")]
+    session_id: String,
+    value: AppiumSessionValue,
+}
+
+#[derive(Debug, Deserialize)]
+struct AppiumSessionValue {
+    #[serde(default, rename = "sessionId")]
+    session_id: String,
+}
+
+async fn connect_appium_driver(appium_url: &str, caps: &Capabilities) -> UtoResult<WebDriver> {
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(120))
+        .build()
+        .map_err(|e| {
+            UtoError::SessionCreationFailed(format!("Failed to build HTTP client: {e}"))
+        })?;
+
+    let session_url = format!("{}/session", appium_url.trim_end_matches('/'));
+    let response = client
+        .post(&session_url)
+        .json(&json!({
+            "capabilities": {
+                "alwaysMatch": caps,
+                "firstMatch": [ {} ]
+            }
+        }))
+        .send()
+        .await
+        .map_err(|e| {
+            UtoError::SessionCreationFailed(format!(
+                "Failed to create Appium session at {session_url}: {e}"
+            ))
+        })?;
+
+    let status = response.status();
+    let body = response.text().await.map_err(|e| {
+        UtoError::SessionCreationFailed(format!(
+            "Failed to read Appium session response from {session_url}: {e}"
+        ))
+    })?;
+
+    if !status.is_success() {
+        return Err(UtoError::SessionCreationFailed(format!(
+            "Appium at {appium_url}: {body}"
+        )));
+    }
+
+    let session_response: AppiumSessionResponse = serde_json::from_str(&body).map_err(|e| {
+        UtoError::SessionCreationFailed(format!(
+            "Failed to parse Appium new-session response from {session_url}: {e}; body: {body}"
+        ))
+    })?;
+
+    let session_id = if session_response.session_id.is_empty() {
+        session_response.value.session_id
+    } else {
+        session_response.session_id
+    };
+
+    if session_id.is_empty() {
+        return Err(UtoError::SessionCreationFailed(format!(
+            "Appium at {appium_url} returned a successful new-session response without a session id"
+        )));
+    }
+
+    let http_client: Arc<dyn thirtyfour::session::http::HttpClient> = Arc::new(client);
+    let handle =
+        SessionHandle::new(http_client, appium_url, SessionId::from(session_id)).map_err(|e| {
+            UtoError::SessionCreationFailed(format!(
+                "Failed to attach Appium session to thirtyfour handle: {e}"
+            ))
+        })?;
+
+    Ok(WebDriver {
+        handle: Arc::new(handle),
+    })
+}
+
 impl MobileSession {
     /// Creates a new Appium mobile session by connecting to the server at
     /// `appium_url` with the given `capabilities`.
@@ -168,26 +271,74 @@ impl MobileSession {
     /// Appium must already be running. Use [`crate::driver::start_appium`] to
     /// start a managed Appium process.
     pub async fn new(appium_url: &str, capabilities: MobileCapabilities) -> UtoResult<Self> {
+        use super::appium_probe::probe_appium;
+
+        let appium_url = appium_url.trim_end_matches('/');
+
+        // Preflight: probe Appium to detect configuration issues early.
+        if let Ok(probe) = probe_appium(appium_url).await {
+            log::debug!(
+                "Appium probe: status_ok={}, session_ok={}, version={:?}, drivers={:?}",
+                probe.status_endpoint_ok,
+                probe.session_endpoint_ok,
+                probe.appium_version,
+                probe.available_drivers
+            );
+        }
+
         // Build the W3C alwaysMatch capability payload.
         let caps_json = capabilities.to_json();
 
         // `Capabilities` in thirtyfour is `serde_json::Map<String, Value>`.
         // Convert the JSON object directly; use an empty map if conversion fails.
-        let caps: Capabilities = caps_json
-            .as_object()
-            .cloned()
-            .unwrap_or_default();
+        let caps: Capabilities = caps_json.as_object().cloned().unwrap_or_default();
 
-        let driver: WebDriver = WebDriver::new(appium_url, caps).await.map_err(|e| {
-            UtoError::SessionCreationFailed(format!("Appium at {appium_url}: {e}"))
-        })?;
+        let primary_error = match connect_appium_driver(appium_url, &caps).await {
+            Ok(driver) => {
+                log::info!(
+                    "Mobile session created ({} device '{}' via Appium at {appium_url})",
+                    capabilities.platform.platform_name(),
+                    capabilities.device_name
+                );
+                return Ok(Self { driver });
+            }
+            Err(e) => e,
+        };
 
-        log::info!(
-            "Mobile session created ({} device '{}' via Appium at {appium_url})",
-            capabilities.platform.platform_name(),
-            capabilities.device_name
-        );
-        Ok(Self { driver })
+        let primary_message = primary_error.to_string();
+
+        if is_appium_base_path_mismatch_error(&primary_message) {
+            if let Some(alternate_url) = appium_alternate_base_url(appium_url) {
+                if alternate_url != appium_url {
+                    log::warn!(
+                        "Appium session creation failed at {} with a possible base-path mismatch; retrying at {}",
+                        appium_url,
+                        alternate_url
+                    );
+
+                    match connect_appium_driver(&alternate_url, &caps).await {
+                        Ok(driver) => {
+                            log::info!(
+                                "Mobile session created ({} device '{}' via Appium at {})",
+                                capabilities.platform.platform_name(),
+                                capabilities.device_name,
+                                alternate_url
+                            );
+                            return Ok(Self { driver });
+                        }
+                        Err(secondary_error) => {
+                            return Err(UtoError::SessionCreationFailed(format!(
+                                "Appium at {appium_url} (retry at {alternate_url}) failed: primary error: {primary_message}; retry error: {secondary_error}"
+                            )));
+                        }
+                    }
+                }
+            }
+        }
+
+        Err(UtoError::SessionCreationFailed(format!(
+            "Appium at {appium_url}: {primary_message}"
+        )))
     }
 
     // -------------------------------------------------------------------
@@ -221,9 +372,7 @@ impl MobileSession {
             .release()
             .perform()
             .await
-            .map_err(|e| {
-                UtoError::SessionCommandFailed(format!("swipe(): {e}"))
-            })?;
+            .map_err(|e| UtoError::SessionCommandFailed(format!("swipe(): {e}")))?;
 
         Ok(())
     }
@@ -237,18 +386,61 @@ impl MobileSession {
             .click()
             .perform()
             .await
-            .map_err(|e| {
-                UtoError::SessionCommandFailed(format!("tap({x}, {y}): {e}"))
-            })?;
+            .map_err(|e| UtoError::SessionCommandFailed(format!("tap({x}, {y}): {e}")))?;
 
         Ok(())
     }
 
     /// Returns the page source (XML accessibility tree dump from Appium).
     pub async fn page_source(&self) -> UtoResult<String> {
-        self.driver.source().await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("page_source(): {e}"))
-        })
+        self.driver
+            .source()
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("page_source(): {e}")))
+    }
+
+    /// Launches an Android activity using Appium's `startActivity` mobile command.
+    ///
+    /// # Arguments
+    ///
+    /// * `package` - The Android package name (e.g. `"com.android.settings"`).
+    /// * `activity` - The activity name, with or without the package prefix
+    ///   (e.g. `".Settings"` or `"com.android.settings.Settings"`).
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use uto_core::session::mobile::{MobileCapabilities, MobileSession};
+    /// # use uto_core::session::UtoSession;
+    /// # #[tokio::main]
+    /// # async fn main() -> uto_core::error::UtoResult<()> {
+    /// # let session = MobileSession::new("http://localhost:4723",
+    /// #     MobileCapabilities::android("emulator-5554")).await?;
+    /// session.launch_activity("com.android.settings", ".Settings").await?;
+    /// # Box::new(session).close().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn launch_activity(&self, package: &str, activity: &str) -> UtoResult<()> {
+        let cmd = json!({
+            "action": "android.intent.action.MAIN",
+            "flags": 0x10200000,
+            "component": format!("{}/{}", package, activity)
+        });
+
+        self.driver
+            .execute("mobile:startActivity", vec![cmd])
+            .await
+            .map_err(|e| {
+                UtoError::SessionCommandFailed(format!(
+                    "launch_activity({package}, {activity}): {e}"
+                ))
+            })?;
+
+        // Give the activity time to launch.
+        tokio::time::sleep(std::time::Duration::from_millis(1000)).await;
+
+        Ok(())
     }
 }
 
@@ -260,28 +452,26 @@ impl MobileSession {
 impl UtoSession for MobileSession {
     async fn goto(&self, url: &str) -> UtoResult<()> {
         // For native apps this sends the deep-link via an Appium command.
-        self.driver.goto(url).await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("goto({url}): {e}"))
-        })
+        self.driver
+            .goto(url)
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("goto({url}): {e}")))
     }
 
     async fn title(&self) -> UtoResult<String> {
         // Returns the current activity / view controller name.
-        self.driver.title().await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("title(): {e}"))
-        })
+        self.driver
+            .title()
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("title(): {e}")))
     }
 
     async fn find_element(&self, selector: &str) -> UtoResult<UtoElement> {
         // Appium supports XPath, accessibility ID, and other locator strategies.
         // We default to XPath which works across both Android and iOS.
-        let elem = self
-            .driver
-            .find(By::XPath(selector))
-            .await
-            .map_err(|e| {
-                UtoError::SessionCommandFailed(format!("find_element({selector}): {e}"))
-            })?;
+        let elem = self.driver.find(By::XPath(selector)).await.map_err(|e| {
+            UtoError::SessionCommandFailed(format!("find_element({selector}): {e}"))
+        })?;
 
         let label = elem.text().await.unwrap_or_default();
 
@@ -338,16 +528,47 @@ impl UtoSession for MobileSession {
     }
 
     async fn screenshot(&self) -> UtoResult<Vec<u8>> {
-        self.driver.screenshot_as_png().await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("screenshot(): {e}"))
-        })
+        self.driver
+            .screenshot_as_png()
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("screenshot(): {e}")))
     }
 
     async fn close(self: Box<Self>) -> UtoResult<()> {
-        self.driver.quit().await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("close(): {e}"))
-        })?;
+        self.driver
+            .quit()
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("close(): {e}")))?;
         log::info!("Mobile session closed");
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{appium_alternate_base_url, is_appium_base_path_mismatch_error};
+
+    #[test]
+    fn alternate_base_url_removes_wd_hub_suffix() {
+        let alt = appium_alternate_base_url("http://localhost:4723/wd/hub");
+        assert_eq!(alt.as_deref(), Some("http://localhost:4723"));
+    }
+
+    #[test]
+    fn alternate_base_url_adds_wd_hub_suffix() {
+        let alt = appium_alternate_base_url("http://localhost:4723");
+        assert_eq!(alt.as_deref(), Some("http://localhost:4723/wd/hub"));
+    }
+
+    #[test]
+    fn base_path_mismatch_detector_matches_unknown_command_404() {
+        let msg = "Unknown command:\nStatus: 404";
+        assert!(is_appium_base_path_mismatch_error(msg));
+    }
+
+    #[test]
+    fn base_path_mismatch_detector_ignores_non_404_failures() {
+        let msg = "Could not find a connected Android device";
+        assert!(!is_appium_base_path_mismatch_error(msg));
     }
 }

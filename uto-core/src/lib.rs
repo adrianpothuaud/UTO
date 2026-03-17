@@ -9,3 +9,6 @@ pub mod driver;
 
 /// Communication layer: session creation and interaction API for web and mobile.
 pub mod session;
+
+/// Vision-based UI element detection using computer vision (Phase 3).
+pub mod vision;

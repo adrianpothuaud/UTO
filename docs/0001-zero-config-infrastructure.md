@@ -41,7 +41,9 @@ The same strategy has been extended to mobile automation with Appium and Android
     *   **Appium:** It discovers an existing Appium installation by searching the system's `PATH`.
 2.  **Deployment:**
     *   **ChromeDriver:** It fetches metadata from the Chrome for Testing JSON endpoints, downloads the correct driver, and extracts it to a local cache.
-    *   **Appium:** If Appium is not found, the user is prompted with instructions to install it.
+    *   **Appium:** If Appium is not found, UTO attempts to install it through `npm install -g appium`, then verifies discovery.
+    *   **Appium Android Driver:** UTO verifies that `uiautomator2` is installed and runs `appium driver install uiautomator2` when missing.
+    *   **Android Runtime Readiness:** UTO starts `adb`, checks for an online device, and can auto-start an available Android emulator AVD when no device is connected.
 3.  **Process Management:**
     *   The `uto-driver` module has been refactored to handle multiple driver types.
     *   It can start and manage both `chromedriver` and `appium` processes in isolated process groups.

@@ -4,8 +4,12 @@ pub mod web;
 /// Mobile session: communicates with Appium via the W3C WebDriver protocol.
 pub mod mobile;
 
+/// Appium server diagnostics and preflight probing.
+pub mod appium_probe;
+
 use async_trait::async_trait;
 
+pub use appium_probe::probe_appium;
 pub use mobile::{MobileCapabilities, MobilePlatform, MobileSession};
 pub use web::WebSession;
 

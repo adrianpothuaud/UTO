@@ -17,7 +17,7 @@
 
 use std::path::PathBuf;
 
-use uto_core::session::mobile::{MobileCapabilities, MobilePlatform};
+use uto_core::session::mobile::{MobileCapabilities, MobilePlatform, MobileSession};
 use uto_core::session::web::WebSession;
 use uto_core::session::UtoSession;
 
@@ -26,8 +26,7 @@ use uto_core::session::UtoSession;
 // ---------------------------------------------------------------------------
 
 /// Chrome arguments for headless / sandboxless environments (e.g. CI, Docker).
-const HEADLESS_ARGS: &[&str] =
-    &["--headless=new", "--no-sandbox", "--disable-dev-shm-usage"];
+const HEADLESS_ARGS: &[&str] = &["--headless=new", "--no-sandbox", "--disable-dev-shm-usage"];
 
 /// Returns the path to a `chromedriver` binary, or `None` if not found.
 fn find_chromedriver() -> Option<PathBuf> {
@@ -44,6 +43,22 @@ fn find_chromedriver() -> Option<PathBuf> {
 async fn start_system_chromedriver() -> Option<uto_core::driver::DriverProcess> {
     let path = find_chromedriver()?;
     uto_core::driver::start_chromedriver(&path).await.ok()
+}
+
+/// Starts Appium from PATH or returns `None` so the test can skip.
+async fn start_system_appium() -> Option<uto_core::driver::DriverProcess> {
+    let path = uto_core::env::platform::find_appium()?;
+    uto_core::driver::start_appium(&path).await.ok()
+}
+
+fn is_expected_mobile_environment_gap(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+
+    (lower.contains("unknown command") && lower.contains("404"))
+        || lower.contains("no devices/emulators found")
+        || lower.contains("could not find a connected android device")
+        || lower.contains("could not find a driver for automationname")
+        || lower.contains("uiautomator2")
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +135,37 @@ async fn web_session_new_fails_when_no_driver_running() {
 }
 
 // ---------------------------------------------------------------------------
+// MobileSession — smoke integration test (skips when host is not provisioned)
+// ---------------------------------------------------------------------------
+
+#[tokio::test]
+async fn mobile_session_smoke_creates_or_skips_gracefully() {
+    let Some(appium_proc) = start_system_appium().await else {
+        println!("Skipping: appium not available");
+        return;
+    };
+
+    let caps = MobileCapabilities::android("emulator-5554");
+
+    let session_result = MobileSession::new(&appium_proc.url, caps).await;
+    match session_result {
+        Ok(session) => {
+            Box::new(session).close().await.unwrap();
+        }
+        Err(err) => {
+            let msg = err.to_string();
+            if is_expected_mobile_environment_gap(&msg) {
+                println!("Skipping: mobile environment not fully provisioned: {msg}");
+            } else {
+                panic!("unexpected mobile session error: {msg}");
+            }
+        }
+    }
+
+    appium_proc.stop().unwrap();
+}
+
+// ---------------------------------------------------------------------------
 // WebSession — real ChromeDriver integration tests
 //
 // Each test skips gracefully when ChromeDriver is not installed on the host.
@@ -138,7 +184,10 @@ async fn web_session_creates_and_closes_with_headless_chrome() {
         .await
         .expect("session creation should succeed");
 
-    Box::new(session).close().await.expect("close should succeed");
+    Box::new(session)
+        .close()
+        .await
+        .expect("close should succeed");
     driver_proc.stop().unwrap();
 }
 

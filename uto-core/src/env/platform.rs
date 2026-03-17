@@ -30,12 +30,8 @@ fn chrome_binary_candidates() -> Vec<PathBuf> {
     #[cfg(target_os = "macos")]
     {
         vec![
-            PathBuf::from(
-                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-            ),
-            PathBuf::from(
-                "/Applications/Chromium.app/Contents/MacOS/Chromium",
-            ),
+            PathBuf::from("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
+            PathBuf::from("/Applications/Chromium.app/Contents/MacOS/Chromium"),
         ]
     }
 
@@ -87,7 +83,13 @@ pub(crate) fn query_chrome_version(binary: &PathBuf) -> Option<String> {
 fn parse_version_from_output(output: &str) -> Option<String> {
     output
         .split_whitespace()
-        .find(|token| token.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false))
+        .find(|token| {
+            token
+                .chars()
+                .next()
+                .map(|c| c.is_ascii_digit())
+                .unwrap_or(false)
+        })
         .map(|v| v.trim().to_string())
 }
 
@@ -124,7 +126,10 @@ pub(crate) fn find_android_sdk_from_candidates(candidates: Vec<PathBuf>) -> Opti
     for root in candidates {
         let adb = root.join("platform-tools").join(adb_binary_name());
         if adb.exists() {
-            return Some(AndroidSdk { root, adb_path: adb });
+            return Some(AndroidSdk {
+                root,
+                adb_path: adb,
+            });
         }
     }
     None
@@ -150,11 +155,7 @@ fn android_sdk_candidates() -> Vec<PathBuf> {
     );
 
     #[cfg(target_os = "linux")]
-    candidates.push(
-        dirs::home_dir()
-            .unwrap_or_default()
-            .join("Android/Sdk"),
-    );
+    candidates.push(dirs::home_dir().unwrap_or_default().join("Android/Sdk"));
 
     #[cfg(target_os = "windows")]
     candidates.push(
@@ -237,8 +238,7 @@ mod tests {
         let script = dir.path().join("chrome");
         std::fs::write(&script, "#!/bin/sh\necho 'Google Chrome 124.0.6367.60'\n")
             .expect("write script");
-        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755))
-            .expect("chmod");
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).expect("chmod");
 
         let result = query_chrome_version(&script);
         assert_eq!(result, Some("124.0.6367.60".to_string()));
@@ -266,8 +266,7 @@ mod tests {
 
         // Make the stub executable on Unix so the `exists()` check passes.
         // (The function only checks existence, not whether it is executable.)
-        let result =
-            find_android_sdk_from_candidates(vec![dir.path().to_path_buf()]);
+        let result = find_android_sdk_from_candidates(vec![dir.path().to_path_buf()]);
 
         let sdk = result.expect("should find SDK");
         assert_eq!(sdk.root, dir.path());
@@ -280,8 +279,7 @@ mod tests {
         // Create the platform-tools dir but do NOT put adb inside.
         std::fs::create_dir_all(dir.path().join("platform-tools")).expect("mkdir");
 
-        let result =
-            find_android_sdk_from_candidates(vec![dir.path().to_path_buf()]);
+        let result = find_android_sdk_from_candidates(vec![dir.path().to_path_buf()]);
         assert!(result.is_none());
     }
 

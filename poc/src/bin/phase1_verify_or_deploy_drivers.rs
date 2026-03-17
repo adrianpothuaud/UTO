@@ -16,8 +16,9 @@
 //! 1. Locate the Android SDK via `ANDROID_HOME` / `ANDROID_SDK_ROOT` or
 //!    common default paths.
 //! 2. Verify that `adb` is reachable inside the SDK.
-//! 3. Check whether `appium` is available in `PATH`.
-//! 4. If Appium is missing, print actionable installation instructions.
+//! 3. Start `adb` and ensure at least one device is discoverable.
+//! 4. Check whether `appium` is available in `PATH`; install it via npm if missing.
+//! 5. Ensure the Appium UiAutomator2 driver is installed.
 //!
 //! ## Usage
 //!
@@ -28,7 +29,8 @@
 use std::process;
 
 use uto_core::env::{
-    platform::{find_android_sdk, find_appium, find_chrome_version},
+    mobile_setup::{prepare_mobile_environment, MobileSetupOptions},
+    platform::find_chrome_version,
     provisioning::find_or_provision_chromedriver,
 };
 
@@ -71,38 +73,38 @@ async fn main() {
     }
 
     // ------------------------------------------------------------------
-    // Mobile: Android SDK + adb
+    // Mobile: Android + Appium auto-setup
     // ------------------------------------------------------------------
-    log::info!("--- Mobile: Android SDK ---");
-    match find_android_sdk() {
-        Some(sdk) => {
-            log::info!("[OK] Android SDK found at {}", sdk.root.display());
-            log::info!("[OK] adb available at {}", sdk.adb_path.display());
-        }
-        None => {
-            log::warn!(
-                "[WARN] Android SDK not found. \
-                 Set the ANDROID_HOME environment variable or install the SDK. \
-                 Mobile automation will not work without it."
-            );
-        }
-    }
+    log::info!("--- Mobile: Android/Appium Setup ---");
+    let setup_options = MobileSetupOptions {
+        // We validate setup here but do not require a booted device in phase 1.
+        require_online_device: false,
+        ..MobileSetupOptions::default()
+    };
 
-    // ------------------------------------------------------------------
-    // Mobile: Appium
-    // ------------------------------------------------------------------
-    log::info!("--- Mobile: Appium ---");
-    match find_appium() {
-        Some(path) => {
-            log::info!("[OK] Appium found at {}", path.display());
-        }
-        None => {
-            log::warn!(
-                "[WARN] Appium not found in PATH. \
-                 Install it with: npm install -g appium\n\
-                 Then add the UiAutomator2 driver: appium driver install uiautomator2\n\
-                 (For iOS: appium driver install xcuitest)"
+    match prepare_mobile_environment(&setup_options) {
+        Ok(result) => {
+            log::info!(
+                "[OK] Android SDK found at {}",
+                result.android_sdk.root.display()
             );
+            log::info!(
+                "[OK] adb available at {}",
+                result.android_sdk.adb_path.display()
+            );
+            log::info!("[OK] Appium found at {}", result.appium_path.display());
+            if let Some(serial) = result.device_serial {
+                log::info!("[OK] Android device/emulator online: {serial}");
+            } else {
+                log::warn!("[WARN] No Android device/emulator online yet.");
+            }
+            for action in result.actions {
+                log::info!("[AUTO-FIX] {action}");
+            }
+        }
+        Err(e) => {
+            log::warn!("[WARN] Mobile setup could not be fully prepared: {e}");
+            all_ok = false;
         }
     }
 

@@ -82,25 +82,23 @@ impl WebSession {
 #[async_trait]
 impl UtoSession for WebSession {
     async fn goto(&self, url: &str) -> UtoResult<()> {
-        self.driver.goto(url).await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("goto({url}): {e}"))
-        })
+        self.driver
+            .goto(url)
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("goto({url}): {e}")))
     }
 
     async fn title(&self) -> UtoResult<String> {
-        self.driver.title().await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("title(): {e}"))
-        })
+        self.driver
+            .title()
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("title(): {e}")))
     }
 
     async fn find_element(&self, selector: &str) -> UtoResult<UtoElement> {
-        let elem = self
-            .driver
-            .find(By::Css(selector))
-            .await
-            .map_err(|e| {
-                UtoError::SessionCommandFailed(format!("find_element({selector}): {e}"))
-            })?;
+        let elem = self.driver.find(By::Css(selector)).await.map_err(|e| {
+            UtoError::SessionCommandFailed(format!("find_element({selector}): {e}"))
+        })?;
 
         let label = elem.text().await.unwrap_or_default();
 
@@ -157,15 +155,17 @@ impl UtoSession for WebSession {
     }
 
     async fn screenshot(&self) -> UtoResult<Vec<u8>> {
-        self.driver.screenshot_as_png().await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("screenshot(): {e}"))
-        })
+        self.driver
+            .screenshot_as_png()
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("screenshot(): {e}")))
     }
 
     async fn close(self: Box<Self>) -> UtoResult<()> {
-        self.driver.quit().await.map_err(|e| {
-            UtoError::SessionCommandFailed(format!("close(): {e}"))
-        })?;
+        self.driver
+            .quit()
+            .await
+            .map_err(|e| UtoError::SessionCommandFailed(format!("close(): {e}")))?;
         log::info!("Web session closed");
         Ok(())
     }

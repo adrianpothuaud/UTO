@@ -44,12 +44,12 @@ pub struct DriverProcess {
 impl DriverProcess {
     /// Attempts a graceful shutdown of the driver process.
     pub fn stop(mut self) -> UtoResult<()> {
-        self.child.kill().map_err(|e| {
-            UtoError::DriverStopFailed(format!("{e}"))
-        })?;
-        self.child.wait().map_err(|e| {
-            UtoError::DriverStopFailed(format!("{e}"))
-        })?;
+        self.child
+            .kill()
+            .map_err(|e| UtoError::DriverStopFailed(format!("{e}")))?;
+        self.child
+            .wait()
+            .map_err(|e| UtoError::DriverStopFailed(format!("{e}")))?;
         log::info!("{:?} stopped (port {})", self.kind, self.port);
         Ok(())
     }
@@ -114,14 +114,16 @@ pub async fn start_appium(binary_path: &PathBuf) -> UtoResult<DriverProcess> {
         binary_path.display()
     );
 
+    // `thirtyfour` 0.34 issues commands against root-relative endpoints such as
+    // `/session`, so Appium must listen on the default root base path.
     let child = std::process::Command::new(binary_path)
-        .args(["--port", &port.to_string(), "--base-path", "/wd/hub"])
+        .args(["--port", &port.to_string()])
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .group_spawn()
         .map_err(|e| UtoError::DriverStartFailed(format!("{e}")))?;
 
-    let url = format!("http://localhost:{port}/wd/hub");
+    let url = format!("http://localhost:{port}");
 
     // Appium may take a few extra seconds to initialise its plugins.
     wait_for_driver_ready(&url, Duration::from_secs(30)).await?;
@@ -186,11 +188,9 @@ mod tests {
 
         Mock::given(method("GET"))
             .and(path("/status"))
-            .respond_with(
-                ResponseTemplate::new(200).set_body_json(serde_json::json!({
-                    "value": { "ready": true, "message": "" }
-                })),
-            )
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "value": { "ready": true, "message": "" }
+            })))
             .mount(&mock_server)
             .await;
 
@@ -208,11 +208,7 @@ mod tests {
     #[tokio::test]
     async fn wait_for_driver_ready_times_out_when_no_server() {
         // Port 1 is reserved; nothing should be listening there.
-        let result = wait_for_driver_ready(
-            "http://127.0.0.1:1",
-            Duration::from_millis(300),
-        )
-        .await;
+        let result = wait_for_driver_ready("http://127.0.0.1:1", Duration::from_millis(300)).await;
 
         assert!(
             result.is_err(),

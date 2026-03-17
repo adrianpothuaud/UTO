@@ -283,7 +283,10 @@ mod tests {
         let zip_bytes = make_fake_chromedriver_zip();
         extract_chromedriver_from_zip(&zip_bytes, &dest).expect("extract");
 
-        assert!(dest.exists(), "chromedriver binary should exist after extraction");
+        assert!(
+            dest.exists(),
+            "chromedriver binary should exist after extraction"
+        );
         let content = std::fs::read(&dest).expect("read extracted file");
         assert_eq!(content, b"fake chromedriver binary content");
     }
@@ -296,7 +299,8 @@ mod tests {
         let cursor = std::io::Cursor::new(Vec::new());
         let mut zip = zip::ZipWriter::new(cursor);
         let options = zip::write::FileOptions::default();
-        zip.start_file("unrelated-file.txt", options).expect("zip start_file");
+        zip.start_file("unrelated-file.txt", options)
+            .expect("zip start_file");
         zip.write_all(b"nothing useful").expect("zip write");
         let zip_bytes = zip.finish().expect("zip finish").into_inner();
 

@@ -28,6 +28,13 @@ The current implementation covers the **Zero-Config Infrastructure** (Phase 1) a
 - `src/driver/` — process lifecycle management for ChromeDriver and Appium.
 - `src/session/` — W3C WebDriver communication for web (`WebSession`) and mobile (`MobileSession`), unified behind the `UtoSession` trait.
 
+For mobile readiness, `src/env/` now also performs best-effort auto-fixes:
+
+- starts `adb` and verifies online Android devices
+- attempts to boot an available Android emulator AVD when no device is connected
+- installs Appium via npm when missing
+- installs the Appium `uiautomator2` driver when missing
+
 ## Current Status
 
 The Phase 2 POC for the `uto-env` + `uto-session` pillars is complete. The `main` branch contains a working implementation that can:
@@ -94,6 +101,18 @@ To run any tests, use:
 cargo test
 ```
 
+## Continuous Integration
+
+GitHub Actions validates the repository with a small Rust CI baseline:
+
+- `cargo fmt --all --check`
+- `cargo clippy --workspace --all-targets -- -D warnings`
+- `cargo test --workspace` on `ubuntu-latest`, `macos-latest`, and `windows-latest`
+
+The browser-backed integration tests in `uto-core/tests/session_integration.rs`
+skip automatically when `chromedriver` is not available on the runner, so the
+cross-platform test job remains stable without custom runner provisioning.
+
 ## Development Conventions
 
 *   **Package Management:** Dependencies are managed via `Cargo.toml`.
@@ -105,7 +124,7 @@ cargo test
 ## Documentation Habits
 
 *   **`GEMINI.md`:** This file is the primary source of truth for understanding the project at a high level. Keep it updated as the architecture, build process, or core concepts evolve.
-*   **`.github/copilot-instructions.md`:** The equivalent instructions file for GitHub Copilot. Keep it in sync with `GEMINI.md` and `.gemini/instructions.md` as the project evolves.
+*   **GitHub Copilot customization:** Keep `.github/copilot-instructions.md`, `.github/instructions/`, `.github/prompts/`, and `.github/agents/` aligned with `GEMINI.md` and the ADRs as the project evolves.
 *   **Rustdoc:** All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`). This is crucial for generating useful library documentation.
 *   **Design Documents:** For significant changes or new features, consider updating or adding to the design documents in the `/docs` directory. This includes the `manifesto.md` and architectural decision records.
 *   **Commit Messages:** Write clear and concise commit messages that explain the "what" and "why" of a change.
