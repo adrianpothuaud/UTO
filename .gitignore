@@ -1,3 +1,5 @@
 .uto/cache/
 .uto/logs/
 target/
+# Generated site output (built by `cargo run -p uto-site`)
+uto-site/dist/
