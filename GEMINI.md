@@ -28,6 +28,7 @@ Product direction now also includes a framework-facing UX objective:
 - first-class CLI lifecycle (`init`, `run`, `report`)
 - reporting-first execution visibility from setup to assertion outcomes
 - structured report output for CI and diagnostics
+- Phase 5 interactive UI mode (`uto ui`) — a local browser-based interface for running, watching, and debugging test suites (see ADR 0014)
 
 The current implementation covers the **Zero-Config Infrastructure** (Phase 1) and the **Driver Communication Layer** (Phase 2):
 
@@ -287,6 +288,6 @@ cross-platform test job remains stable without custom runner provisioning.
 *   **Gemini/Copilot parity automation:** Run `./scripts/sync_ai_configs.sh` after updating `.github/` customization files, and verify parity with `./scripts/check_ai_config_sync.sh`.
 *   **Rustdoc:** All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`). This is crucial for generating useful library documentation.
 *   **Design Documents:** For significant changes or new features, consider updating or adding to the design documents in the `/docs` directory. This includes the `manifesto.md` and architectural decision records.
-*   **Current framework ADRs:** Include ADR 0010 (Phase 4 planning) and ADR 0011 (shared `uto-test` helper crate + clean SoC guidelines).
+*   **Current framework ADRs:** Include ADR 0010 (Phase 4 planning), ADR 0011 (shared `uto-test` helper crate + clean SoC guidelines), and ADR 0014 (Phase 5 UI Mode specification).
 *   **Commit Messages:** Write clear and concise commit messages that explain the "what" and "why" of a change.
 *   **Phase reference examples:** Maintain one committed runnable project per development phase under `examples/phases/` so each phase has a durable implementation reference in-repo.

@@ -313,22 +313,30 @@ Status update (2026-03-18):
 
 Beyond Phase 4, potential focus areas:
 
-1. **Phase 5: Vision Model Integration and Optimization**
+1. **Phase 5: UI Mode — Interactive Test Debugging and Visualization**
+   - Implement `uto ui` CLI command launching a local HTTP + WebSocket server
+   - Build an embedded browser-based SPA (no external CDN) for test tree, live event stream, pass/fail summary, and screenshot timeline
+   - Support report-replay mode (`--report <artifact>`) for inspecting saved `uto-suite/v1` JSON files
+   - Add watch mode that re-runs affected tests on source-file change
+   - Platform-agnostic: same UI works for web and mobile test runs
+   - See ADR 0014 for full specification
+
+2. **Phase 6: Vision Model Integration and Optimization**
    - Select and integrate real-world pre-trained UI detection model
    - Benchmark recognition accuracy on diverse UI fixtures
    - Implement model versioning and auto-update strategy
 
-2. **Phase 6: Advanced Intent and Context Awareness**
+3. **Phase 7: Advanced Intent and Context Awareness**
    - Extend intent API with semantic understanding (context trees, multi-step intents)
    - Add intent chaining and workflow validation
    - Implement "intent replay" for deterministic test re-runs
 
-3. **Phase 7: CI/CD Integration and Reporting Plugins**
+4. **Phase 8: CI/CD Integration and Reporting Plugins**
    - Add GitHub Actions, GitLab CI, Jenkins integration
    - Implement report aggregation across parallel test runs
    - Add trend dashboards and failure analytics
 
-4. **Phase 8: Ecosystem and Community**
+5. **Phase 9: Ecosystem and Community**
    - Publish to crates.io as production-ready framework
    - Add plugin API for custom intent handlers
    - Establish community fixture repository
@@ -402,4 +410,5 @@ To complete Phase 4.4 and close Phase 4:
 - ADR 0008: Phase 3 Recognition Loop MVP
 - ADR 0009: Framework Product Direction
 - ADR 0011: Shared `uto-test` Crate and Clean SoC Guidelines
+- ADR 0014: UTO UI Mode — Interactive Test Debugging and Visualization
 - docs/0007-simplicity-pillar.md
