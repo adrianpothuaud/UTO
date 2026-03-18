@@ -197,12 +197,19 @@ pub fn parse_ui_args(args: &[String]) -> Result<UiArgs, String> {
             }
             "--port" => {
                 let value = get_flag_value(args, i, "--port")?;
-                port = value.parse::<u16>().map_err(|_| {
+                let p = value.parse::<u16>().map_err(|_| {
                     format!(
                         "Invalid port '{}': must be a number between 1 and 65535",
                         value
                     )
                 })?;
+                if p == 0 {
+                    return Err(format!(
+                        "Invalid port '{}': must be a number between 1 and 65535",
+                        value
+                    ));
+                }
+                port = p;
                 i += 1;
             }
             "--open" => {
@@ -383,6 +390,13 @@ mod tests {
     #[test]
     fn parse_ui_args_rejects_invalid_port() {
         let args = vec!["--port".to_string(), "notanumber".to_string()];
+        let err = parse_ui_args(&args).expect_err("should fail");
+        assert!(err.contains("Invalid port"));
+    }
+
+    #[test]
+    fn parse_ui_args_rejects_port_zero() {
+        let args = vec!["--port".to_string(), "0".to_string()];
         let err = parse_ui_args(&args).expect_err("should fail");
         assert!(err.contains("Invalid port"));
     }

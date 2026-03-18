@@ -247,24 +247,25 @@ fn derive_project_name(project: &std::path::Path) -> String {
 async fn shutdown_signal() {
     tokio::signal::ctrl_c()
         .await
-        .expect("failed to install Ctrl+C handler");
+        .expect("Failed to install Ctrl+C signal handler. Check OS signal permissions or file a bug report at https://github.com/adrianpothuaud/UTO");
     println!("\nStopping UTO UI server…");
 }
 
 fn open_browser(url: &str) {
-    let result = if cfg!(target_os = "macos") {
-        std::process::Command::new("open").arg(url).spawn().ok()
+    let (cmd, args): (&str, &[&str]) = if cfg!(target_os = "macos") {
+        ("open", &[url])
     } else if cfg!(target_os = "windows") {
-        std::process::Command::new("cmd")
-            .args(["/C", "start", url])
-            .spawn()
-            .ok()
+        ("cmd", &["/C", "start", url])
     } else {
-        std::process::Command::new("xdg-open").arg(url).spawn().ok()
+        ("xdg-open", &[url])
     };
 
+    let result = std::process::Command::new(cmd).args(args).spawn().ok();
+
     if result.is_none() {
-        log::warn!("Could not open browser automatically. Navigate to {url}");
+        log::warn!(
+            "Could not open browser automatically (tried `{cmd}`). Navigate to {url} manually."
+        );
     }
 }
 
