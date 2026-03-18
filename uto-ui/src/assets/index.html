@@ -264,8 +264,10 @@ function setConn(ok) {
 function handleMsg(msg) {
   if (msg.type === 'report') loadReport(msg.payload);
   else if (msg.type === 'event') appendLiveEvent(msg.payload);
+  else if (msg.type === 'log') appendLogLine(msg.payload);
   else if (msg.type === 'run_started') onRunStarted();
   else if (msg.type === 'run_finished') onRunFinished(msg.payload);
+  else if (msg.type === 'run_ignored') onRunIgnored(msg.payload);
 }
 
 // ============================================================
@@ -411,6 +413,24 @@ function appendLiveEvent(evt) {
   evList.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
 
+function appendLogLine(payload) {
+  var line = (payload && payload.line) || '';
+  var noEvt = document.getElementById('no-events');
+  var evList = document.getElementById('events-list');
+  var evHdr = document.getElementById('event-hdr');
+  noEvt.style.display = 'none';
+  evHdr.style.display = 'grid';
+  var row = document.createElement('div');
+  row.className = 'event-row';
+  row.innerHTML =
+    '<div class="ev-stage" style="color:var(--tx3)">log</div>' +
+    '<div class="ev-st ok" style="color:var(--tx3)">ℹ</div>' +
+    '<div class="ev-detail" style="font-family:var(--mono);font-size:.75rem;color:var(--tx2)">' + esc(line) + '</div>' +
+    '<div class="ev-expand"></div>';
+  evList.appendChild(row);
+  row.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
 function addEventRow(container, evt, idx) {
   var row = document.createElement('div');
   row.className = 'event-row';
@@ -469,7 +489,20 @@ function onRunFinished(payload) {
   setStatus(st, null);
   document.getElementById('btn-stop').disabled = true;
   document.getElementById('btn-run').disabled = false;
-  if (payload) fetchReport();
+  // Only reload the report when the run completed naturally (not when stopped).
+  if (payload && st !== 'stopped') fetchReport();
+}
+
+function onRunIgnored(payload) {
+  // A run trigger was ignored because one is already active — show brief feedback.
+  var chip = document.getElementById('status-chip');
+  var prev = chip.textContent;
+  chip.textContent = 'already running';
+  chip.style.color = 'var(--warn)';
+  setTimeout(function() {
+    chip.textContent = prev;
+    chip.style.color = 'var(--acc)';
+  }, 1500);
 }
 
 // ============================================================
@@ -504,7 +537,8 @@ function setStatus(status, mode) {
   chip.style.color =
     status === 'passed' ? 'var(--ok)' :
     status === 'failed' || status === 'partial' ? 'var(--fail)' :
-    status === 'running' ? 'var(--acc)' : 'var(--tx3)';
+    status === 'running' ? 'var(--acc)' :
+    status === 'stopped' ? 'var(--warn)' : 'var(--tx3)';
   if (mode) document.getElementById('platform-badge').innerHTML = platBadgeHtml(mode);
 }
 

@@ -25,6 +25,22 @@ uto ui --project examples/phases/phase5-ui-mode \
        --open
 ```
 
+### Live run from the UI
+
+Start the UI without a pre-loaded report; click **▶ Run** in the browser toolbar to trigger a live run:
+
+```bash
+uto ui --project examples/phases/phase5-ui-mode --open
+```
+
+### Watch mode
+
+Pass `--watch` to automatically re-run whenever test files change:
+
+```bash
+uto ui --project examples/phases/phase5-ui-mode --watch --open
+```
+
 ## What this project demonstrates
 
 | Feature | Description |
@@ -34,7 +50,9 @@ uto ui --project examples/phases/phase5-ui-mode \
 | Pass / fail summary | Visual indicators updated from report data |
 | Platform badge | Shows `web` or `mobile` target per test |
 | Report replay | `⏮ Replay` button replays the loaded artifact without re-running |
-| WebSocket live stream | Architecture ready for live run integration (Phase 5.3) |
+| **Live run** | `▶ Run` button spawns `cargo run --bin uto_project_runner` and streams stdout/stderr as log events |
+| **Stop control** | `■ Stop` button terminates the running subprocess |
+| **Watch mode** | `--watch` re-runs automatically when `tests/` files change (300 ms debounce) |
 | Dark / light theme | Theme toggle persisted to `localStorage` |
 
 ## Architecture
@@ -51,7 +69,7 @@ This project follows the same pattern as `phase4-framework`:
 |-----------|--------|-------------|
 | **5.1** | ✅ | `uto-ui` crate scaffold + `uto ui` command + embedded SPA |
 | **5.2** | ✅ | Report replay + test tree + WebSocket event stream |
-| 5.3 | Planned | Live run integration — subprocess bridge + run/stop controls |
-| 5.4 | Planned | Watch mode (`--watch`) + filesystem watcher |
+| **5.3** | ✅ | Live run integration — subprocess bridge + run/stop controls |
+| **5.4** | ✅ | Watch mode (`--watch`) + filesystem watcher |
 
 See `docs/0014-ui-mode.md` for the full Phase 5 ADR.

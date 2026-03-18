@@ -187,7 +187,7 @@ See `docs/0010-phase-3-completion-and-phase-4-planning.md` for full Phase 4 plan
 
 ## Phase 5: UI Mode
 
-**Status:** In Progress (Iterations 5.1 and 5.2 complete)
+**Status:** Complete (Iterations 5.1, 5.2, 5.3, and 5.4 delivered)
 
 Phase 5 delivers the `uto ui` interactive browser-based test runner and debugger.
 
@@ -198,11 +198,21 @@ Phase 5 delivers the `uto ui` interactive browser-based test runner and debugger
 4. Report replay: `--report <path>` loads a `uto-suite/v1` or `uto-report/v1` artifact and streams it to the browser via WebSocket
 5. `GET /api/report` REST endpoint returns the loaded report JSON for initial page load
 6. `GET /api/status` returns project name and server status for the topbar
-7. WebSocket `/ws` endpoint with broadcast channel architecture for future live-run integration
+7. WebSocket `/ws` endpoint with broadcast channel architecture for live-run integration
 8. Added 10 unit and route tests in `uto-ui` verifying index HTML, status API, report API, and project name derivation
 9. Added 6 new `parse_ui_args` parsing tests in `uto-cli`
 10. Created `examples/phases/phase5-ui-mode/` reference project with schema compatibility tests
 11. Fixed pre-existing clippy `let_unit_value` lint in `uto-test/src/managed_session.rs`
+
+**Iteration 5.3 + 5.4 Completion:**
+1. Created `uto-ui/src/runner.rs` — subprocess bridge: spawns `cargo run --bin uto_project_runner`, relays stdout/stderr as `log` WebSocket events, broadcasts `run_started` / `run_finished` with updated report
+2. Created `uto-ui/src/watcher.rs` — filesystem watcher using `notify` crate with 300 ms debounce; watches `tests/` directory
+3. Wired `--watch` flag: on file change, auto-triggers a re-run via `handle_trigger_run`
+4. Wired Run / Stop controls: WebSocket `trigger_run` / `stop_run` messages handled by server
+5. `AppState` updated: shared `Arc<RwLock<report>>` updated after each live run so `/api/report` returns the latest result; `run_active` `AtomicBool` guards against concurrent runs
+6. SPA updated: `log` message type handled by `appendLogLine()` — stdout/stderr lines displayed in the event list during a live run
+7. `GET /api/status` now returns `"running"` when a run subprocess is active
+8. Added 7 new tests: runner unit tests, watcher tests, `api_status_shows_running_when_active`, `handle_trigger_run_is_idempotent_when_active`, `handle_stop_run_is_noop_when_no_run_active`
 
 **`uto ui` command:**
 ```
@@ -210,18 +220,12 @@ uto ui [OPTIONS]
     --project <path>    Path to the UTO project directory (default: .)
     --port <port>       Local port for the UI server (default: 4000)
     --open              Automatically open the browser after startup
-    --watch             Enable watch mode (placeholder; full support in Iteration 5.4)
+    --watch             Enable watch mode (re-run on file change)
     --report <path>     Load an existing report artifact instead of running
 ```
 
-**Planned (Iterations 5.3 and 5.4):**
-- Live run integration: subprocess bridge spawning `uto run`, streaming NDJSON events over WebSocket
-- Run/Stop controls wired to actual test execution
-- Watch mode via `notify` filesystem watcher with debounce
-- Screenshot timeline panel
-
 **Architectural Separation of Concerns (Phase 5):**
-- `uto-ui/` — HTTP + WebSocket server, embedded SPA, report relay (presentation layer only)
+- `uto-ui/` — HTTP + WebSocket server, embedded SPA, report relay, subprocess bridge, filesystem watcher (presentation layer only)
 - `uto-ui` does not modify `uto-core`, `uto-reporter`, or any existing layer
 - `uto-cli` gains `ui` sub-command; all existing commands remain unchanged
 - All Phase 4 layer boundaries remain intact
