@@ -2,6 +2,20 @@
 
 This folder validates the framework-oriented CLI workflow (`init`, `run`, `report`) against generated sample projects.
 
+## Phase Reference Habit
+
+In addition to generated smoke projects, UTO keeps one **committed reference project per development phase** under `examples/phases/`.
+
+These phase examples are durable references, similar to the `poc/src/bin` binaries:
+
+1. they are versioned with the architecture changes for that phase
+2. they remain runnable as implementation references
+3. they are review anchors for expected behavior and reporting shape
+
+Current phase references:
+
+- `examples/phases/phase3-intent`: committed Phase 3 intent-resolution project
+
 ## Quick Validation
 
 ```sh

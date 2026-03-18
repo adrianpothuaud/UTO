@@ -32,6 +32,9 @@ UTO will converge on a first-class CLI surface with at least three workflow comm
 
 During the transition period, existing `uto-poc` binaries remain valid implementation references and validation tools.
 
+UTO will also keep **one committed example project per development phase** under `examples/phases/`.
+These projects are framework-level runnable references and should evolve with phase delivery.
+
 ### 2. Reporting Scope Objective
 
 Each run must produce a clear execution trace that can answer:

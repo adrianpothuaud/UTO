@@ -4,6 +4,15 @@ pub mod web;
 /// Mobile session: communicates with Appium via the W3C WebDriver protocol.
 pub mod mobile;
 
+/// Internal types for mobile platform and Appium capabilities payloads.
+mod mobile_capabilities;
+
+/// Internal helpers for mobile accessibility-driven resolution.
+mod mobile_accessibility;
+
+/// Internal helpers for Appium session connection and base-path retries.
+mod mobile_connection;
+
 /// Appium server diagnostics and preflight probing.
 pub mod appium_probe;
 

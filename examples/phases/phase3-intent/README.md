@@ -1,0 +1,46 @@
+# phase3-intent
+
+Committed example project for UTO Phase 3 (intent resolution).
+
+This project is a stable reference, similar to the POC binaries in `poc/src/bin`, and demonstrates a minimal but complete implementation of the intent APIs:
+
+- `select(label)`
+- `fill_intent(label, value)`
+- `click_intent(label)`
+- JSON reporting with `uto-report/v1`
+
+## Why This Example Exists
+
+- Keep a runnable, versioned implementation trace for the phase.
+- Provide a concrete review anchor for architecture and CI expectations.
+- Avoid relying only on temporary scripts or PR snippets.
+
+## Run
+
+From the repository root:
+
+```sh
+# Web run + JSON report
+cargo run -p uto-cli -- run \
+  --project examples/phases/phase3-intent \
+  --target web \
+  --report-json examples/phases/phase3-intent/.uto/reports/last-run.json
+
+# Report summary
+cargo run -p uto-cli -- report --project examples/phases/phase3-intent
+
+# Optional mobile run
+cargo run -p uto-cli -- run \
+  --project examples/phases/phase3-intent \
+  --target mobile \
+  --report-json examples/phases/phase3-intent/.uto/reports/last-run.mobile.json
+```
+
+## Tests
+
+```sh
+cd examples/phases/phase3-intent
+cargo test
+```
+
+Web/mobile tests skip gracefully when required host tooling is not available.

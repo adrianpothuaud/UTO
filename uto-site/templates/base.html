@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="{{ description }}" />
   <title>{{ title }} — UTO</title>
-  <link rel="stylesheet" href="/style.css" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="{{ base_path }}style.css" />
+  <link rel="icon" type="image/svg+xml" href="{{ base_path }}favicon.svg" />
 </head>
 <body>
   <header class="site-header">
     <nav class="nav-container">
-      <a href="/" class="nav-logo">
+      <a href="{{ base_path }}" class="nav-logo">
         <span class="logo-u">U</span><span class="logo-t">T</span><span class="logo-o">O</span>
       </a>
       <ul class="nav-links">
-        <li><a href="/">Home</a></li>
-        <li><a href="/contribute/">Contribute</a></li>
+        <li><a href="{{ base_path }}">Home</a></li>
+        <li><a href="{{ base_path }}contribute/">Contribute</a></li>
         <li>
           <a href="https://github.com/adrianpothuaud/UTO" target="_blank" rel="noopener" class="nav-github">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

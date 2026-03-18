@@ -35,6 +35,22 @@ The current implementation covers the **Zero-Config Infrastructure** (Phase 1) a
 - `src/driver/` — process lifecycle management for ChromeDriver and Appium.
 - `src/session/` — W3C WebDriver communication for web (`WebSession`) and mobile (`MobileSession`), unified behind the `UtoSession` trait.
 
+Separation-of-concerns rule in the current architecture:
+
+- `env` remains responsible for discovery/provisioning decisions only.
+- `driver` remains responsible for process lifecycle/readiness/cleanup only.
+- `session` remains responsible for WebDriver protocol orchestration only.
+- mobile intent/accessibility matching strategy is implemented in dedicated session helpers (`src/session/mobile_accessibility.rs`).
+- Appium session bootstrap/base-path retry logic is isolated in `src/session/mobile_connection.rs`.
+- `vision` remains responsible for detection/ranking/resolution logic and latency guardrails.
+
+POC phase isolation rule:
+
+- `phase1_verify_or_deploy_drivers` is infrastructure-only (no session intent flow).
+- `phase2_interact_with_session` is communication-layer-only (no phase3 intent pipeline).
+- `phase3_intent_poc` is intent/resolution/reporting demonstration.
+- New experiments must not collapse phase responsibilities into a single POC binary.
+
 Framework-facing workflow components now include:
 
 - `uto-cli/` — CLI entrypoint for project lifecycle commands (`init`, `run`, `report`)
@@ -77,34 +93,31 @@ All five **Phase 3 MVP completion criteria** met:
 4. ✅ **Cross-platform parity:** mobile path uses same resolver+fallback, skips gracefully when Appium unavailable
 5. ✅ **CI stability:** 94 unit tests green, latency SLA tests deterministic, no host tool dependencies in core tests
 
-## Next Steps
+## Phase 4: Framework Maturity and Reporting-First Experience
 
-With Phase 3 MVP in place, immediate focus shifts to:
+**Status:** In Planning (see ADR 0010)
 
-1. **Phase 3 Hardening:** Real-world fixture collection and consensus weight tuning
-2. **Phase 4 — Human-Centric API:** Chainable, intent-centric session APIs
+Phase 4 refocuses UTO from core engine capability toward end-user framework experience. Main objectives:
 
-**Framework UX Objective:**
-- Execute `docs/0009-framework-cli-and-reporting-first.md`:
-    - converge toward `uto init`, `uto run`, and `uto report`
-    - make structured reporting a default capability, with clear step-level traceability
-    - keep web/mobile parity for setup, intent resolution, actions, and assertions
+1. **CLI Lifecycle Foundation** — stabilize `uto init`, `uto run`, `uto report` interface
+2. **Structured Reporting** — machine-readable execution traces with latency instrumentation
+3. **Mobile Parity Hardening** — production-ready intent resolution on Android via Appium
+4. **Framework Documentation** — "Getting Started" guide, troubleshooting, end-to-end examples
 
-**Phase 4 — Human-Centric API:**
-- Create a high-level, chainable API that abstracts away selectors and gestures, modelling user intent:
+**Key Design Principles:**
+- CLI orchestrates `uto-core` APIs (no core layer changes)
+- Report schema is versioned for forward/backward compatibility
+- Mobile path uses same resolver + fallback as web (no platform divergence)
+- Framework documentation becomes product-level responsibility
+- Phase 1/2/3 layer boundaries remain unchanged
 
-```rust
-// (Future) Example of the target API
-uto::run!(|session| {
-    session
-        .goto("https://example.com")
-        .select("Username")
-        .fill("my_user")
-        .select("Password")
-        .fill("my_pass")
-        .click("Login")
-});
-```
+**Near-term Actions:**
+1. Read `docs/0009-framework-cli-and-reporting-first.md` and `docs/0010-phase-3-completion-and-phase-4-planning.md`
+2. Finalize `uto-cli` command handlers (init, run, report) with full config schema
+3. Define `uto-report/v1` JSON structure and implement structured logging
+4. Plan iteration 4.1 scope (CLI scaffolding) and kick off implementation
+
+See `docs/0010-phase-3-completion-and-phase-4-planning.md` for full Phase 4 planning details, delivery schedule, and success metrics.
 
 ## Building and Running
 
@@ -191,3 +204,4 @@ cross-platform test job remains stable without custom runner provisioning.
 *   **Rustdoc:** All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`). This is crucial for generating useful library documentation.
 *   **Design Documents:** For significant changes or new features, consider updating or adding to the design documents in the `/docs` directory. This includes the `manifesto.md` and architectural decision records.
 *   **Commit Messages:** Write clear and concise commit messages that explain the "what" and "why" of a change.
+*   **Phase reference examples:** Maintain one committed runnable project per development phase under `examples/phases/` so each phase has a durable implementation reference in-repo.

@@ -1,0 +1,9 @@
+{
+  "schema_version": "1",
+  "project_name": "phase3-intent",
+  "tests_dir": "tests",
+  "default_target": "web",
+  "report_dir": ".uto/reports",
+  "uto_root": "../../..",
+  "report_schema": "uto-report/v1"
+}

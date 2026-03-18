@@ -50,6 +50,11 @@ struct Args {
     /// Output directory where the generated site is written.
     #[arg(long, short, default_value = "uto-site/dist")]
     output: PathBuf,
+
+    /// Base path for static assets and navigation (e.g., "/" for root, "/UTO/" for GitHub Pages).
+    /// Defaults to "/" (serves from domain root).
+    #[arg(long, default_value = "/")]
+    base_path: String,
 }
 
 // ---------------------------------------------------------------------------
@@ -195,16 +200,17 @@ fn parse_page(path: &Path, content_root: &Path) -> Result<Page, SiteError> {
     })
 }
 
-// ---------------------------------------------------------------------------
-// Rendering
-// ---------------------------------------------------------------------------
-
+///
 /// Render a [`Page`] to an HTML string using the Tera template engine.
-fn render_page(page: &Page, tera: &Tera) -> Result<String, SiteError> {
+///
+/// The `base_path` parameter is injected into the Tera context so templates
+/// can reference it when constructing URLs for static assets and navigation.
+fn render_page(page: &Page, tera: &Tera, base_path: &str) -> Result<String, SiteError> {
     let mut ctx = Context::new();
     ctx.insert("title", &page.meta.title);
     ctx.insert("description", &page.meta.description);
     ctx.insert("body", &page.body_html);
+    ctx.insert("base_path", base_path);
 
     let template_name = format!("{}.html", page.meta.template);
     let html = tera.render(&template_name, &ctx)?;
@@ -267,7 +273,7 @@ fn main() -> Result<(), SiteError> {
             && entry.path().extension().and_then(|e| e.to_str()) == Some("md")
         {
             let page = parse_page(entry.path(), &args.content)?;
-            let html = render_page(&page, &tera)?;
+            let html = render_page(&page, &tera, &args.base_path)?;
 
             let dest = args.output.join(&page.output_path);
             if let Some(parent) = dest.parent() {

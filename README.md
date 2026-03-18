@@ -31,7 +31,7 @@ Phase 1 and Phase 2 are operational:
 - `poc`: executable demos for Phase 1 and Phase 2
 - `uto-site`: static site generator for the project landing site
 - `docs`: ADRs and project direction documents
-- `examples`: CLI-driven generated project samples used to validate the framework workflow
+- `examples`: CLI-generated smoke projects plus committed per-phase reference projects
 
 ## Quick Start
 
@@ -134,6 +134,13 @@ cargo run -p uto-cli -- report --project ./my-tests
 ```bash
 ./examples/validate-cli.sh
 ```
+
+## Committed Phase Examples
+
+UTO keeps one committed example project per development phase under `examples/phases/`.
+These projects are intended as stable references, similar to the executable binaries in `poc/src/bin`.
+
+- Phase 3 reference project: `examples/phases/phase3-intent`
 
 ### Phase 2: Mobile Session Demo (Appium)
 

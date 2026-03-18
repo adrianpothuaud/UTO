@@ -47,7 +47,9 @@ jobs:
         run: cargo build -p uto-site --release
 
       - name: Generate static site
-        run: cargo run -p uto-site --release
+        # For GitHub Pages deployment, the base path is /repo-name/
+        # For local development or root domain deployment, use --base-path /
+        run: cargo run -p uto-site --release -- --base-path /UTO/
 
       - name: Upload Pages artefact
         uses: actions/upload-pages-artifact@v3

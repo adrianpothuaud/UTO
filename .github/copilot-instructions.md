@@ -20,8 +20,8 @@ Framework product direction:
 - `uto-core/src/driver` owns WebDriver-compatible process startup, readiness checks, and shutdown.
 - `uto-core/src/session` owns the W3C WebDriver communication layer and the shared `UtoSession` abstraction.
 - `uto-cli/src` owns framework-style command lifecycle workflows (`init`, `run`, `report`).
-- `poc/src/bin` contains the executable proof-of-concept flows for Phase 1 and Phase 2.
-- `examples/` contains CLI-generated project validation flows that should remain runnable as smoke checks.
+- `poc/src/bin` contains the executable proof-of-concept flows for Phase 1, Phase 2, and Phase 3.
+- `examples/` contains CLI-generated validation flows and committed per-phase reference projects (`examples/phases/*`) that should remain runnable.
 
 Read `GEMINI.md`, `docs/0001-zero-config-infrastructure.md`, and `docs/0002-driver-communication-layer.md` before making architectural changes.
 
@@ -39,3 +39,4 @@ Read `GEMINI.md`, `docs/0001-zero-config-infrastructure.md`, and `docs/0002-driv
 - Preserve the current crate split and keep the `env`, `driver`, and `session` responsibilities clearly separated.
 - Keep Readme.md and static site content in sync with project evolution
 - Prefer structured report output (JSON baseline) for new workflow surfaces so CI and diagnostics tooling can consume results reliably.
+- For each new development phase, add or update one committed reference project under `examples/phases/` in addition to POC binaries.
