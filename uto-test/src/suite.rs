@@ -140,23 +140,14 @@ impl Suite {
 // Per-test execution
 // ---------------------------------------------------------------------------
 
-async fn run_one_test(
-    suite: &mut SuiteReport,
-    name: &str,
-    mode: &str,
-    test_fn: BoxedTestFn,
-) {
+async fn run_one_test(suite: &mut SuiteReport, name: &str, mode: &str, test_fn: BoxedTestFn) {
     let mut handle = suite.begin_test(name);
     let report_events: SharedEvents = Arc::new(Mutex::new(Vec::new()));
     log::info!("Suite: starting test '{name}'");
 
     match start_new_session_with_hint_and_events(mode, 0, Some(Arc::clone(&report_events))).await {
         Ok(session) => {
-            handle.event(
-                "session.start",
-                "ok",
-                serde_json::json!({ "target": mode }),
-            );
+            handle.event("session.start", "ok", serde_json::json!({ "target": mode }));
 
             match test_fn(session).await {
                 Ok(_) => {

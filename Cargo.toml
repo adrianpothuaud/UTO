@@ -5,6 +5,7 @@ members = [
     "uto-logger",
     "uto-reporter",
     "uto-runner",
+    "uto-ui",
     "poc",
     "uto-cli",
     "uto-site",

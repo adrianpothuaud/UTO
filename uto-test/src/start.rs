@@ -13,7 +13,12 @@ use uto_reporter::ReportEvent;
 use crate::managed_session::ManagedSession;
 use crate::managed_session::SharedEvents;
 
-fn report_event(report_events: &Option<SharedEvents>, stage: &str, status: &str, detail: serde_json::Value) {
+fn report_event(
+    report_events: &Option<SharedEvents>,
+    stage: &str,
+    status: &str,
+    detail: serde_json::Value,
+) {
     if let Some(shared) = report_events {
         if let Ok(mut events) = shared.lock() {
             events.push(ReportEvent {

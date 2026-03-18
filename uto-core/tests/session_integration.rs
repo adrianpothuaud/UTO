@@ -489,7 +489,10 @@ async fn mobile_session_android_launch_activity_and_page_source() {
     };
 
     // Launch Settings app
-    if let Err(e) = session.launch_activity("com.android.settings", ".Settings").await {
+    if let Err(e) = session
+        .launch_activity("com.android.settings", ".Settings")
+        .await
+    {
         println!("Skipping: could not launch Settings: {e}");
         Box::new(session).close().await.ok();
         appium_proc.stop().unwrap();
@@ -497,7 +500,10 @@ async fn mobile_session_android_launch_activity_and_page_source() {
     }
 
     // Verify page source is readable (accessibility tree dump)
-    let page_source = session.page_source().await.expect("page_source should succeed");
+    let page_source = session
+        .page_source()
+        .await
+        .expect("page_source should succeed");
     assert!(!page_source.is_empty(), "page_source must not be empty");
     // Settings typically contains "status" or activity class references
     let lower = page_source.to_ascii_lowercase();
@@ -540,7 +546,10 @@ async fn mobile_session_android_select_intent_label() {
     };
 
     // Launch Settings
-    if let Err(e) = session.launch_activity("com.android.settings", ".Settings").await {
+    if let Err(e) = session
+        .launch_activity("com.android.settings", ".Settings")
+        .await
+    {
         println!("Skipping: could not launch Settings: {e}");
         Box::new(session).close().await.ok();
         appium_proc.stop().unwrap();
@@ -549,7 +558,13 @@ async fn mobile_session_android_select_intent_label() {
 
     // Try to select a common label from Settings accessibility tree.
     // Settings varies by Android version, so we try multiple common labels.
-    let common_labels = vec!["Search", "Search settings", "Rechercher", "Buscar", "Suchen"];
+    let common_labels = vec![
+        "Search",
+        "Search settings",
+        "Rechercher",
+        "Buscar",
+        "Suchen",
+    ];
 
     let mut found = false;
     for label in common_labels {
@@ -569,7 +584,10 @@ async fn mobile_session_android_select_intent_label() {
         return;
     }
 
-    assert!(found, "should have resolved at least one common Settings label");
+    assert!(
+        found,
+        "should have resolved at least one common Settings label"
+    );
 
     Box::new(session).close().await.unwrap();
     appium_proc.stop().unwrap();
@@ -600,7 +618,10 @@ async fn mobile_session_android_screenshot() {
     };
 
     // Launch Settings to get meaningful screenshot
-    if let Err(e) = session.launch_activity("com.android.settings", ".Settings").await {
+    if let Err(e) = session
+        .launch_activity("com.android.settings", ".Settings")
+        .await
+    {
         println!("Skipping: could not launch Settings: {e}");
         Box::new(session).close().await.ok();
         appium_proc.stop().unwrap();
@@ -645,7 +666,10 @@ async fn mobile_session_android_swipe_gesture() {
     };
 
     // Launch Settings
-    if let Err(e) = session.launch_activity("com.android.settings", ".Settings").await {
+    if let Err(e) = session
+        .launch_activity("com.android.settings", ".Settings")
+        .await
+    {
         println!("Skipping: could not launch Settings: {e}");
         Box::new(session).close().await.ok();
         appium_proc.stop().unwrap();
@@ -671,7 +695,9 @@ async fn mobile_session_android_swipe_gesture() {
         Err(err) => {
             let msg = err.to_string();
             if is_expected_mobile_environment_gap(&msg) {
-                println!("Skipping: title command unsupported after swipe on this environment: {msg}");
+                println!(
+                    "Skipping: title command unsupported after swipe on this environment: {msg}"
+                );
                 Box::new(session).close().await.ok();
                 appium_proc.stop().unwrap();
                 return;

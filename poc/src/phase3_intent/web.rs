@@ -31,7 +31,11 @@ async fn run_fill_and_click_case(suite: &mut SuiteReport) -> UtoResult<()> {
 
     let chrome_version = match find_chrome_version() {
         Ok(version) => {
-            handle.event("env.chrome_discovery", "ok", json!({ "chrome_version": version }));
+            handle.event(
+                "env.chrome_discovery",
+                "ok",
+                json!({ "chrome_version": version }),
+            );
             version
         }
         Err(err) => {
@@ -162,7 +166,11 @@ async fn run_ranking_case(suite: &mut SuiteReport) -> UtoResult<()> {
 
     let chrome_version = match find_chrome_version() {
         Ok(version) => {
-            handle.event("env.chrome_discovery", "ok", json!({ "chrome_version": version }));
+            handle.event(
+                "env.chrome_discovery",
+                "ok",
+                json!({ "chrome_version": version }),
+            );
             version
         }
         Err(err) => {
@@ -223,7 +231,11 @@ async fn run_ranking_case(suite: &mut SuiteReport) -> UtoResult<()> {
         .await
         .map_err(|err| UtoError::SessionCommandFailed(err.to_string()))?;
 
-        handle.event("session.web_create", "ok", json!({ "driver_url": driver_proc.url }));
+        handle.event(
+            "session.web_create",
+            "ok",
+            json!({ "driver_url": driver_proc.url }),
+        );
 
         session
             .goto(concat!(

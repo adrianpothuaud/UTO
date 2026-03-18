@@ -3,7 +3,10 @@ use uto_core::{
     driver,
     env::mobile_setup::{prepare_mobile_environment, MobileSetupOptions},
     error::{UtoError, UtoResult},
-    session::{mobile::{MobileCapabilities, MobileSession}, UtoSession},
+    session::{
+        mobile::{MobileCapabilities, MobileSession},
+        UtoSession,
+    },
 };
 use uto_reporter::SuiteReport;
 
@@ -78,9 +81,15 @@ async fn run_launch_case(suite: &mut SuiteReport) -> UtoResult<()> {
 
     let run_result: UtoResult<()> = async {
         let session = MobileSession::new(&appium.url, caps).await?;
-        handle.event("session.mobile_create", "ok", json!({ "driver_url": appium.url }));
+        handle.event(
+            "session.mobile_create",
+            "ok",
+            json!({ "driver_url": appium.url }),
+        );
 
-        session.launch_activity("com.android.settings", ".Settings").await?;
+        session
+            .launch_activity("com.android.settings", ".Settings")
+            .await?;
         handle.event(
             "session.launch_activity",
             "ok",
@@ -95,7 +104,11 @@ async fn run_launch_case(suite: &mut SuiteReport) -> UtoResult<()> {
     let stop_result = appium.stop();
     match &stop_result {
         Ok(_) => handle.event("driver.appium_stop", "ok", json!({})),
-        Err(err) => handle.event("driver.appium_stop", "failed", json!({ "error": err.to_string() })),
+        Err(err) => handle.event(
+            "driver.appium_stop",
+            "failed",
+            json!({ "error": err.to_string() }),
+        ),
     }
 
     match run_result {
@@ -165,16 +178,28 @@ async fn run_search_case(suite: &mut SuiteReport) -> UtoResult<()> {
 
     let run_result: UtoResult<()> = async {
         let session = MobileSession::new(&appium.url, caps).await?;
-        handle.event("session.mobile_create", "ok", json!({ "driver_url": appium.url }));
+        handle.event(
+            "session.mobile_create",
+            "ok",
+            json!({ "driver_url": appium.url }),
+        );
 
-        session.launch_activity("com.android.settings", ".Settings").await?;
+        session
+            .launch_activity("com.android.settings", ".Settings")
+            .await?;
         handle.event(
             "session.launch_activity",
             "ok",
             json!({ "activity": "Settings" }),
         );
 
-        for label in ["Search settings", "Search", "Rechercher", "Buscar", "Suchen"] {
+        for label in [
+            "Search settings",
+            "Search",
+            "Rechercher",
+            "Buscar",
+            "Suchen",
+        ] {
             match session.select(label).await {
                 Ok(_) => {
                     handle.event(
@@ -205,7 +230,11 @@ async fn run_search_case(suite: &mut SuiteReport) -> UtoResult<()> {
     let stop_result = appium.stop();
     match &stop_result {
         Ok(_) => handle.event("driver.appium_stop", "ok", json!({})),
-        Err(err) => handle.event("driver.appium_stop", "failed", json!({ "error": err.to_string() })),
+        Err(err) => handle.event(
+            "driver.appium_stop",
+            "failed",
+            json!({ "error": err.to_string() }),
+        ),
     }
 
     match run_result {

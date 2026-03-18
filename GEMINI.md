@@ -59,7 +59,8 @@ Framework-facing workflow components now include:
 - `uto-reporter/` — structured `uto-report/v1` schema, HTML/JSON emission
 - `uto-logger/` — modern structured logging + loader/spinner utilities for long-running tasks
 - `uto-runner/` — CLI option parsing for generated-project runners
-- `uto-cli/` — framework CLI entrypoint for project lifecycle commands (`init`, `run`, `report`)
+- `uto-ui/` — interactive UI mode server: embedded HTTP + WebSocket server + browser SPA (`uto ui` command)
+- `uto-cli/` — framework CLI entrypoint for project lifecycle commands (`init`, `run`, `report`, `ui`)
 - `examples/` — generated-project validation flow for CLI smoke testing
 
 For mobile readiness, `src/env/` now also performs best-effort auto-fixes:
@@ -171,7 +172,7 @@ Phase 4 refocuses UTO from core engine capability toward end-user framework expe
 - `uto-reporter/` — report schema + JSON/HTML generation (versioned, machine-readable)
 - `uto-logger/` — structured logging + progress visualization (process-aware, callable from anywhere)
 - `uto-runner/` — CLI option parsing for generated projects (minimal, re-exports from uto-reporter)
-- `uto-cli/` — framework orchestration (init, run, report commands)
+- `uto-cli/` — framework orchestration (init, run, report, ui commands)
 - Phase examples (`examples/phases/*`) — committed reference projects per phase, durable in-repo
 
 **Phase 4 Validation:**
@@ -183,6 +184,47 @@ Phase 4 refocuses UTO from core engine capability toward end-user framework expe
 - 150+ workspace tests green across all platforms (mac/linux/windows CI)
 
 See `docs/0010-phase-3-completion-and-phase-4-planning.md` for full Phase 4 planning details, delivery schedule, and success metrics.
+
+## Phase 5: UI Mode
+
+**Status:** In Progress (Iterations 5.1 and 5.2 complete)
+
+Phase 5 delivers the `uto ui` interactive browser-based test runner and debugger.
+
+**Iteration 5.1 + 5.2 Completion:**
+1. Created `uto-ui` crate with `axum`-based HTTP + WebSocket server and embedded SPA
+2. Added `uto ui` sub-command to `uto-cli` with argument parsing, project validation, and server startup
+3. Embedded SPA (single-page app) with dark/light theme, test tree panel, event stream, platform badge, and summary bar
+4. Report replay: `--report <path>` loads a `uto-suite/v1` or `uto-report/v1` artifact and streams it to the browser via WebSocket
+5. `GET /api/report` REST endpoint returns the loaded report JSON for initial page load
+6. `GET /api/status` returns project name and server status for the topbar
+7. WebSocket `/ws` endpoint with broadcast channel architecture for future live-run integration
+8. Added 10 unit and route tests in `uto-ui` verifying index HTML, status API, report API, and project name derivation
+9. Added 6 new `parse_ui_args` parsing tests in `uto-cli`
+10. Created `examples/phases/phase5-ui-mode/` reference project with schema compatibility tests
+11. Fixed pre-existing clippy `let_unit_value` lint in `uto-test/src/managed_session.rs`
+
+**`uto ui` command:**
+```
+uto ui [OPTIONS]
+    --project <path>    Path to the UTO project directory (default: .)
+    --port <port>       Local port for the UI server (default: 4000)
+    --open              Automatically open the browser after startup
+    --watch             Enable watch mode (placeholder; full support in Iteration 5.4)
+    --report <path>     Load an existing report artifact instead of running
+```
+
+**Planned (Iterations 5.3 and 5.4):**
+- Live run integration: subprocess bridge spawning `uto run`, streaming NDJSON events over WebSocket
+- Run/Stop controls wired to actual test execution
+- Watch mode via `notify` filesystem watcher with debounce
+- Screenshot timeline panel
+
+**Architectural Separation of Concerns (Phase 5):**
+- `uto-ui/` — HTTP + WebSocket server, embedded SPA, report relay (presentation layer only)
+- `uto-ui` does not modify `uto-core`, `uto-reporter`, or any existing layer
+- `uto-cli` gains `ui` sub-command; all existing commands remain unchanged
+- All Phase 4 layer boundaries remain intact
 
 ## Building and Running
 
@@ -229,6 +271,14 @@ cargo run -p uto-cli -- report --project ./my-uto-tests --html
 # Run Phase 4 framework reference project (demonstrates loaders, HTML reporting, web/mobile parity)
 cd examples/phases/phase4-framework && cargo run --bin uto_project_runner
 
+# Phase 5 UI mode — generate a report then launch the UI server
+cd examples/phases/phase5-ui-mode && \
+  cargo run --bin uto_project_runner -- --target web --json --report-file .uto/reports/last-run.json
+cargo run -p uto-cli -- ui \
+  --project examples/phases/phase5-ui-mode \
+  --report examples/phases/phase5-ui-mode/.uto/reports/last-run.json \
+  --port 4000
+
 # Validate CLI with generated and phase example projects
 ./examples/validate-cli.sh
 ```
@@ -257,7 +307,7 @@ cross-platform test job remains stable without custom runner provisioning.
 
 *   **Package Management:** Dependencies are managed via `Cargo.toml`.
 *   **Project Structure:** The project is a Cargo workspace, with the primary application logic located in the `uto-core` crate.
-*   **Crate split for framework UX:** `uto-core` (infrastructure/protocol), `uto-test` (authored test helpers), `uto-runner` (CLI option parsing), `uto-reporter` (report schema + HTML/JSON generation), `uto-logger` (structured logging + spinners), `uto-cli` (project orchestration).
+*   **Crate split for framework UX:** `uto-core` (infrastructure/protocol), `uto-test` (authored test helpers), `uto-runner` (CLI option parsing), `uto-reporter` (report schema + HTML/JSON generation), `uto-logger` (structured logging + spinners), `uto-ui` (interactive UI mode server + embedded SPA), `uto-cli` (project orchestration + UI command).
 *   **Design hygiene:** Prefer small files/functions and strict separation of concerns; keep orchestration, protocol, user helper, reporting, and logging responsibilities isolated by crate.
 *   **Code Style:** Follow standard Rust conventions and formatting (`rustfmt`).
 *   **Error Handling:** The project uses the `thiserror` crate for standardizing application errors.
