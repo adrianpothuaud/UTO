@@ -1,40 +1,56 @@
 +++
 title = "Getting Started"
-description = "Bootstrap a UTO project, run tests, and generate JSON/HTML reports in under 30 minutes."
+description = "Install UTO with a one-line command, scaffold a project, run tests, and generate JSON/HTML reports in under 30 minutes."
 template = "page"
 slug = "getting-started"
 +++
 
 # Getting Started
 
-This page mirrors the repository onboarding flow for UTO Phase 4.4.
+## Install UTO
+
+The fastest way to install the `uto` CLI (macOS / Linux):
+
+```sh
+curl -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.ps1 | iex
+```
+
+The installer checks whether Rust is present (and installs it via [rustup](https://rustup.rs) if not), builds the `uto` binary from source, and prints getting-started instructions when it completes.
+
+To pin to a specific release:
+
+```sh
+UTO_REF=v0.1.0 curl -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh
+```
 
 ## Prerequisites
 
-- Rust toolchain (`cargo`)
-- Chrome (web target)
+- Chrome (for the `web` target)
 - Optional mobile: Android SDK + `adb` + Appium
 
 ## Quick Start
 
 ```sh
-# Build CLI
-cargo build -p uto-cli
+# 1. Scaffold a new test project
+uto init ./my-tests --template web
 
-# Initialize project
-cargo run -p uto-cli -- init ./my-uto-tests --template web --uto-root "$PWD"
+# 2. Run your tests
+uto run --project ./my-tests --target web
 
-# Run web target + JSON report
-cargo run -p uto-cli -- run \
-  --project ./my-uto-tests \
-  --target web \
-  --report-json ./my-uto-tests/.uto/reports/last-run.json
+# 3. Open a structured HTML report
+uto report --project ./my-tests --html
 
-# Summarize and render HTML report
-cargo run -p uto-cli -- report --project ./my-uto-tests --html
+# 4. Launch the interactive UI
+uto ui --project ./my-tests
 ```
 
-Artifacts:
+Artifacts produced:
 
 - `.uto/reports/last-run.json`
 - `.uto/reports/last-run.html`
@@ -50,7 +66,25 @@ async fn web_smoke() -> uto_core::error::UtoResult<()> {
 }
 ```
 
+## Alternative: Install from Source
+
+If you already have the repository cloned, you can install directly with cargo:
+
+```sh
+cargo install --path uto-cli
+```
+
+Or build and run without installing:
+
+```sh
+cargo build -p uto-cli
+cargo run -p uto-cli -- init ./my-tests --template web --uto-root "$PWD"
+cargo run -p uto-cli -- run  --project ./my-tests --target web
+cargo run -p uto-cli -- report --project ./my-tests --html
+```
+
 ## Related Docs
 
+- `docs/0015-install-script-and-onboarding.md`
 - `docs/0013-getting-started-and-troubleshooting.md`
 - `docs/0012-uto-test-api-usage-guide.md`

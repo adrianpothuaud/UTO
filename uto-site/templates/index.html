@@ -32,17 +32,16 @@
         <span class="dot dot-red"></span>
         <span class="dot dot-yellow"></span>
         <span class="dot dot-green"></span>
-        <span class="code-window-title">test_checkout.rs</span>
+        <span class="code-window-title">terminal</span>
       </div>
-      <pre class="code-block"><code><span class="kw">let</span> session = uto.<span class="fn">session</span>(<span class="str">"Chrome"</span>);
+      <pre class="code-block"><code><span class="comment"># Install UTO (macOS / Linux)</span>
+<span class="kw">curl</span> -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh
 
-session
-    .<span class="fn">goto</span>(<span class="str">"https://shop.example.com"</span>)
-    .<span class="fn">select</span>(<span class="str">"Add to Cart"</span>)
-    .<span class="fn">select</span>(<span class="str">"Checkout"</span>)
-    .<span class="fn">fill</span>(<span class="str">"Email"</span>, <span class="str">"user@example.com"</span>)
-    .<span class="fn">should_be_visible</span>(<span class="str">"Order Confirmed"</span>)
-    .<span class="fn">await</span>;</code></pre>
+<span class="comment"># Scaffold, run, report — four commands</span>
+<span class="kw">uto</span> init ./my-tests --template web
+<span class="kw">uto</span> run  --project ./my-tests --target web
+<span class="kw">uto</span> report --project ./my-tests --html
+<span class="kw">uto</span> ui   --project ./my-tests</code></pre>
     </div>
   </div>
 </section>
@@ -51,8 +50,8 @@ session
 <section class="status-banner">
   <div class="status-container">
     <span class="status-dot"></span>
-    <strong>Phase 4.1-4.3 Complete:</strong>&nbsp; CLI lifecycle, JSON+HTML reporting, and mobile parity hardening are operational.
-    <a href="{{ base_path }}getting-started/">Start in under 30 minutes →</a>
+    <strong>Phase 4 Complete:</strong>&nbsp; CLI lifecycle, JSON+HTML reporting, and mobile parity are operational.
+    Install with one command:&nbsp;<code>curl -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh</code>&nbsp;&mdash;&nbsp;<a href="{{ base_path }}getting-started/">Get started →</a>
   </div>
 </section>
 
