@@ -103,10 +103,10 @@ Goal: First-class GitHub Actions, GitLab CI, Azure Pipelines integrations. Paral
 
 Key Tech: CI adapters, distributed runner, trend dashboards, failure analytics.
 
-### Phase 9: Community and Stable Release
-Goal: `crates.io` stable release, plugin API, community fixture repository, migration guides.
+### Phase 9: Enterprise and Stable Release
+Goal: Stable versioned release, enterprise licensing, and migration tooling from Cypress/Selenium/Playwright.
 
-Key Tech: Public plugin API, crates.io publication, Cypress/Playwright migration tooling.
+Key Tech: Enterprise plugin API, stable versioned release, Cypress/Playwright migration tooling.
 
 ## 💻 API Vision: What a UTO Test Looks Like
 
@@ -159,10 +159,10 @@ UTO is built to win the market and to be acquired at peak strategic value.
 - **Microsoft/Playwright** — UTO provides a Rust-native core and genuine mobile parity for Azure-backed CI.
 - **Sauce Labs / BrowserStack** — UTO's zero-config layer dramatically reduces onboarding friction for cloud testing.
 
-**Target acquisition window:** 2027 Q3–Q4, following Phase 9 community and ecosystem maturity.
+**Target acquisition window:** 2027 Q3–Q4, following Phase 9 maturity and stable release.
 
 See ADR 0017 for full competitive analysis, acquirer profiles, and valuation drivers.
 
 ---
 
-This document serves as the "Source of Truth" for the UTO project vision.
+This document is **private and confidential**. It is the internal source of truth for the UTO project vision.

@@ -258,7 +258,7 @@ UTO is built to displace Cypress and Playwright as the dominant test automation 
 
 **Target acquirers:** Salesforce/Cypress (mobile + vision layer), Microsoft/Playwright (Rust engine + mobile parity), Sauce Labs/BrowserStack (zero-config developer experience layer).
 
-**Target acquisition window:** 2027 Q3–Q4 following Phase 9 community and ecosystem maturity.
+**Target acquisition window:** 2027 Q3–Q4 following Phase 9 maturity and stable release.
 
 See ADR 0017 for full competitive analysis, acquirer profiles, valuation drivers, and market entry strategy.
 

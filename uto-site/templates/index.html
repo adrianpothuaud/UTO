@@ -21,8 +21,8 @@
       <a href="{{ base_path }}troubleshooting/" class="btn btn-secondary">
         Troubleshooting
       </a>
-      <a href="https://github.com/adrianpothuaud/UTO" class="btn btn-secondary" target="_blank" rel="noopener">
-        View on GitHub
+      <a href="{{ base_path }}early-access/" class="btn btn-secondary">
+        Request Early Access
       </a>
     </div>
   </div>
@@ -50,8 +50,7 @@
 <section class="status-banner">
   <div class="status-container">
     <span class="status-dot"></span>
-    <strong>Phase 4 Complete:</strong>&nbsp; CLI lifecycle, JSON+HTML reporting, and mobile parity are operational.
-    Install with one command:&nbsp;<code>curl -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh</code>&nbsp;&mdash;&nbsp;<a href="{{ base_path }}getting-started/">Get started →</a>
+    <strong>Phases 1–5 Complete:</strong>&nbsp;CLI lifecycle, JSON+HTML reporting, mobile parity, and interactive UI mode are operational.&nbsp;&mdash;&nbsp;<a href="{{ base_path }}getting-started/">Get started →</a>
   </div>
 </section>
 
@@ -199,30 +198,39 @@
         </div>
       </div>
 
-      <div class="roadmap-item roadmap-next">
+      <div class="roadmap-item roadmap-done">
         <div class="roadmap-marker"></div>
         <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 5 — Next</span>
+          <span class="roadmap-phase">Phase 5</span>
           <h3>UI Mode</h3>
           <p>Interactive browser-based test runner and debugger (<code>uto ui</code>). Real-time event stream, test tree, watch mode, screenshot timeline, and report replay — platform-agnostic across web and mobile.</p>
         </div>
       </div>
 
-      <div class="roadmap-item">
+      <div class="roadmap-item roadmap-next">
         <div class="roadmap-marker"></div>
         <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 6</span>
-          <h3>Vision Model Integration</h3>
-          <p>Real-world pre-trained UI detection model, recognition accuracy benchmarking, and model versioning strategy.</p>
+          <span class="roadmap-phase">Phase 6 — Next</span>
+          <h3>UTO Studio — Visual Test Authoring</h3>
+          <p>Vision-first, selector-free test recording for web and mobile. No Cypress Studio, no <code>playwright codegen</code> — UTO Studio generates real Rust test code from what you see on screen.</p>
         </div>
       </div>
 
       <div class="roadmap-item">
         <div class="roadmap-marker"></div>
         <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 7+</span>
-          <h3>Advanced Intent, CI/CD &amp; Ecosystem</h3>
-          <p>Semantic intent chaining, GitHub Actions / GitLab CI integration, report aggregation, trend dashboards, and community plugin API.</p>
+          <span class="roadmap-phase">Phase 7</span>
+          <h3>Self-Healing Tests &amp; Intent Chaining</h3>
+          <p>Tests that repair themselves on first failure. Multi-step workflows expressed as named intents — executed, verified, and traced as a unit.</p>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-marker"></div>
+        <div class="roadmap-content">
+          <span class="roadmap-phase">Phase 8+</span>
+          <h3>CI/CD Ecosystem &amp; Cloud</h3>
+          <p>First-class GitHub Actions, GitLab CI, and Azure Pipelines integrations. Parallel execution, trend dashboards, and cloud-scale report aggregation.</p>
         </div>
       </div>
 
@@ -233,11 +241,10 @@
 <!-- ===== CALL TO ACTION ===== -->
 <section class="cta">
   <div class="cta-content">
-    <h2>Ready to join the revolution?</h2>
-    <p>UTO is open-source and actively seeking contributors.  Whether you're
-    a Rust enthusiast, an ML engineer, or a test-automation veteran — there
-    is a place for you here.</p>
-    <a href="{{ base_path }}contribute/" class="btn btn-primary btn-large">Get Involved →</a>
+    <h2>Be first to the revolution.</h2>
+    <p>UTO is in active development and currently available by invitation only.
+    Join the waitlist to get early access, priority onboarding, and a direct line to the team.</p>
+    <a href="{{ base_path }}early-access/" class="btn btn-primary btn-large">Request Early Access →</a>
   </div>
 </section>
 

@@ -52,7 +52,7 @@ Read `GEMINI.md`, `docs/0001-zero-config-infrastructure.md`, and `docs/0002-driv
 - Keep `GEMINI.md` and the relevant ADR in `docs/` in sync when architecture, workflow, or project direction changes.
 - Preserve the current crate split and keep the `env`, `driver`, and `session` responsibilities clearly separated.
 - Keep responsibilities separated across crates: `uto-core` (infrastructure/protocol), `uto-test` (end-user test helpers), `uto-reporter` (report schema/json/html), `uto-logger` (logging/progress), and `uto-cli` (orchestration).
-- Keep Readme.md and static site content in sync with project evolution
+- Keep Readme.md and static site content in sync with project evolution (showcase framing — not open-source contributor invitations)
 - Keep CLI behavior changes in sync across `README.md`, `uto-site/content/`, `GEMINI.md`, and ADRs.
 - Prefer structured report output (JSON baseline) for new workflow surfaces so CI and diagnostics tooling can consume results reliably.
 - For each new development phase, add or update one committed reference project under `examples/phases/` in addition to POC binaries.
