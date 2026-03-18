@@ -9,6 +9,7 @@ Framework product direction:
 - Build toward a first-class CLI lifecycle (`init`, `run`, `report`) for end users.
 - Treat reporting and observability as core features, not optional add-ons.
 - Ensure test execution visibility is clear from environment setup to intent resolution, element/action steps, assertions, and relevant driver communication outcomes.
+- Phase 5 targets an interactive UI mode (`uto ui`) — a local browser-based interface for running, watching, and debugging test suites, platform-agnostic and compatible with all Phase 4+ projects (see ADR 0014).
 
 Current delivery status:
 

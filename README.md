@@ -265,16 +265,9 @@ Site source is under `uto-site/`, generated output goes to `uto-site/dist/`.
 
 ## Roadmap
 
-- Phase 3: ONNX-backed UI detection and accessibility fusion
-- Phase 4: framework maturity (`init`, `run`, `report`), reporting-first observability, and mobile parity hardening
-- Framework UX: CLI lifecycle (`init`, `run`, `report`) and reporting-first test execution visibility
-
-Current next steps:
-
-- Phase 4.4: complete contributor onboarding package (Getting Started + troubleshooting + expanded examples)
-
-See detailed onboarding and troubleshooting guidance in `docs/0013-getting-started-and-troubleshooting.md`.
-- Phase 4.3: mobile parity hardening and fixture expansion
-- Add one committed Phase 4 reference project under `examples/phases/`
+- Phase 3: ONNX-backed UI detection and accessibility fusion ✅
+- Phase 4: framework maturity (`init`, `run`, `report`), reporting-first observability, and mobile parity hardening ✅
+- Phase 5: UI Mode (`uto ui`) — interactive browser-based test runner and debugger with real-time event stream, watch mode, screenshot timeline, and report replay; platform-agnostic for web and mobile projects (see `docs/0014-ui-mode.md`)
+- Phase 6+: vision model integration, advanced intent chaining, CI/CD plugins, ecosystem and community
 
 See ADRs in `docs/` and project context in `GEMINI.md`.
