@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+  <title>UTO Report run-1773831425771-38356</title>
+  <style>
+    :root {
+      --bg: #f5f3ef;
+      --panel: #ffffff;
+      --ink: #1f2429;
+      --muted: #5a646e;
+      --line: #d7d2ca;
+      --ok: #1d7f4f;
+      --warn: #af702d;
+      --bad: #a93030;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 15% 0, #fdfbf7, var(--bg));
+      color: var(--ink);
+      font-family: \"Iowan Old Style\", \"Georgia\", serif;
+      line-height: 1.45;
+    }
+    .wrap { max-width: 1100px; margin: 32px auto; padding: 0 18px 32px; }
+    h1, h2 { margin: 0 0 12px; letter-spacing: 0.2px; }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.2rem; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 14px 0;
+      box-shadow: 0 2px 10px rgba(31, 36, 41, 0.04);
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px 16px;
+      margin-top: 10px;
+    }
+    .meta-item { border-top: 1px solid var(--line); padding-top: 8px; }
+    .label { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .value { font-size: 1.03rem; margin-top: 2px; word-break: break-word; }
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .status-ok { background: #deefe6; color: var(--ok); }
+    .status-running { background: #f4e8d5; color: var(--warn); }
+    .status-fail { background: #f4dddd; color: var(--bad); }
+    .panel-error { border-color: #e5b5b5; background: #fff9f9; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-top: 1px solid var(--line); padding: 10px 8px; vertical-align: top; text-align: left; }
+    th { border-top: none; font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    td.empty { color: var(--muted); text-align: center; padding: 18px 10px; }
+    pre {
+      margin: 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace;
+      font-size: 0.83rem;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+  <div class=\"wrap\">
+    <section class=\"panel\">
+      <h1>UTO Execution Report</h1>
+      <span class=\"status status-ok\">passed</span>
+      <div class=\"meta\">
+        <div class=\"meta-item\"><div class=\"label\">Schema</div><div class=\"value\">uto-report/v1</div></div>
+        <div class=\"meta-item\"><div class=\"label\">Framework</div><div class=\"value\">uto</div></div>
+        <div class=\"meta-item\"><div class=\"label\">Run ID</div><div class=\"value\">run-1773831425771-38356</div></div>
+        <div class=\"meta-item\"><div class=\"label\">Mode</div><div class=\"value\">web</div></div>
+        <div class=\"meta-item\"><div class=\"label\">Started (unix ms)</div><div class=\"value\">1773831425771</div></div>
+        <div class=\"meta-item\"><div class=\"label\">Finished (unix ms)</div><div class=\"value\">1773831427474</div></div>
+        <div class=\"meta-item\"><div class=\"label\">Duration (ms)</div><div class=\"value\">1703</div></div>
+        <div class=\"meta-item\"><div class=\"label\">Event Count</div><div class=\"value\">9</div></div>
+      </div>
+    </section>
+    
+    <section class=\"panel\">
+      <h2>Events</h2>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Stage</th><th>Status</th><th>Detail</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>env.chrome_discovery</td><td>ok</td><td><pre>{
+  &quot;chrome_version&quot;: &quot;146.0.7680.80&quot;
+}</pre></td></tr><tr><td>2</td><td>env.chromedriver_provision</td><td>ok</td><td><pre>{
+  &quot;path&quot;: &quot;/Users/adrian/.uto/cache/chromedriver/146/chromedriver&quot;
+}</pre></td></tr><tr><td>3</td><td>driver.chromedriver_start</td><td>ok</td><td><pre>{
+  &quot;url&quot;: &quot;http://localhost:21357&quot;,
+  &quot;port&quot;: 21357
+}</pre></td></tr><tr><td>4</td><td>session.web_create</td><td>ok</td><td><pre>{
+  &quot;driver_url&quot;: &quot;http://localhost:21357&quot;
+}</pre></td></tr><tr><td>5</td><td>session.goto</td><td>ok</td><td><pre>{
+  &quot;target&quot;: &quot;data:text/html&quot;
+}</pre></td></tr><tr><td>6</td><td>intent.fill</td><td>ok</td><td><pre>{
+  &quot;label&quot;: &quot;Email Address&quot;,
+  &quot;value&quot;: &quot;phase4@uto.dev&quot;
+}</pre></td></tr><tr><td>7</td><td>intent.click</td><td>ok</td><td><pre>{
+  &quot;label&quot;: &quot;Submit Order&quot;
+}</pre></td></tr><tr><td>8</td><td>assert.output</td><td>ok</td><td><pre>{
+  &quot;text&quot;: &quot;phase4@uto.dev&quot;
+}</pre></td></tr><tr><td>9</td><td>driver.chromedriver_stop</td><td>ok</td><td><pre>{}</pre></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

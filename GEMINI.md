@@ -53,9 +53,12 @@ POC phase isolation rule:
 
 Framework-facing workflow components now include:
 
-- `uto-cli/` — CLI entrypoint for project lifecycle commands (`init`, `run`, `report`)
+- `uto-core/` — core engine (env discovery/provisioning, driver lifecycle, W3C session protocol, vision/intent)
 - `uto-test/` — end-user test helper crate (simple session start/close API)
-- `uto-runner/` — reusable generated-project runner/report infrastructure
+- `uto-reporter/` — structured `uto-report/v1` schema, HTML/JSON emission
+- `uto-logger/` — modern structured logging + loader/spinner utilities for long-running tasks
+- `uto-runner/` — CLI option parsing for generated-project runners
+- `uto-cli/` — framework CLI entrypoint for project lifecycle commands (`init`, `run`, `report`)
 - `examples/` — generated-project validation flow for CLI smoke testing
 
 For mobile readiness, `src/env/` now also performs best-effort auto-fixes:
@@ -97,14 +100,14 @@ All five **Phase 3 MVP completion criteria** met:
 
 ## Phase 4: Framework Maturity and Reporting-First Experience
 
-**Status:** In Progress (Iteration 4.1 baseline complete; Iteration 4.2 next; see ADR 0010)
+**Status:** Complete (4.1 CLI Scaffolding ✅, 4.2 HTML Reporting ✅, 4.3 Mobile Hardening ✅, 4.4 Onboarding/Examples ✅)
 
 Phase 4 refocuses UTO from core engine capability toward end-user framework experience. Main objectives:
 
-1. **CLI Lifecycle Foundation** — stabilize `uto init`, `uto run`, `uto report` interface
-2. **Structured Reporting** — machine-readable execution traces with latency instrumentation
-3. **Mobile Parity Hardening** — production-ready intent resolution on Android via Appium
-4. **Framework Documentation** — "Getting Started" guide, troubleshooting, end-to-end examples
+1. **CLI Lifecycle Foundation** — stabilize `uto init`, `uto run`, `uto report` interface ✅
+2. **Structured Reporting** — machine-readable execution traces with latency instrumentation and native HTML rendering ✅
+3. **Mobile Parity Hardening** — production-ready intent resolution on Android via Appium ✅
+4. **Framework Documentation** — "Getting Started" guide, troubleshooting, end-to-end examples ✅
 
 **Key Design Principles:**
 - CLI orchestrates `uto-core` APIs (no core layer changes)
@@ -123,11 +126,56 @@ Phase 4 refocuses UTO from core engine capability toward end-user framework expe
 7. Split CLI responsibilities into focused modules (`commands`, `config`, `parsing`, `templates`, `io`)
 8. Added generated-project compatibility tests validating `uto init` output compiles with `cargo check --tests`
 
-**Near-term Actions:**
-1. Start Iteration 4.2 by defining reusable `uto-report/v1` schema/type surfaces for framework and docs
-2. Extend report documentation and examples with stable event semantics and versioning guidance
-3. Begin Iteration 4.3 mobile parity hardening and fixture coverage expansion
-4. Keep README, static site content, ADRs, and AI instructions synchronized as Phase 4 evolves
+**Iteration 4.2 Completion (Report Schema and HTML Rendering):**
+1. Defined typed `uto-report/v1` schema in `uto-reporter/src/schema.rs` with `UtoReportV1`, `ReportEvent`, `ReportTimeline` structs
+2. Implemented `uto-reporter` crate with standalone report accumulation (`Report` impl with payload serialization)
+3. Implemented deterministic offline HTML rendering in `uto-reporter/src/html.rs` with security hardening (XSS-safe entity escaping)
+4. Integrated `uto-reporter` into `uto-cli` for JSON/HTML report generation via `uto report` command
+5. Added `--html` and `--html-output` flags to `uto report` command for artifact generation
+6. Added integration tests validating HTML output structure and XSS protection
+7. All tests passing including schema round-trip and HTML rendering tests
+
+**Iteration 4.3 Completion (Mobile Hardening and Logging):**
+1. Implemented `uto-logger` crate with tracing-based structured logging backend + indicatif spinner/loader utilities
+2. Added `LoaderManager` for managing concurrent progress spinners across setup phases (discover, provision, startup)
+3. Integrated `uto-logger::init("component-name")` in all POC binaries and reference projects for unified log format
+4. Removed scattered `env_logger` initialization in favor of global, idempotent logger setup
+5. Extended `phase3_intent_poc.rs` with `--html` and `--html-file` CLI flags for HTML report emission
+6. Updated all reference projects (`phase3-intent`, `phase4-framework`) to use new logging infrastructure
+7. Mobile flow now uses same resolver + fallback pattern; graceful skip when Appium unavailable
+
+**Iteration 4.4 Completion (Onboarding, Examples, and Site Navigation):**
+1. Created `examples/phases/phase4-framework/` reference project demonstrating Phase 4 capabilities:
+   - Loader spinners for long-running setup phases (discover, provision, startup)
+   - Modern structured logging with process awareness
+   - JSON + HTML report generation workflows
+   - Web and mobile execution paths with graceful fallbacks
+   - Test examples using `uto-test` helpers (`startNewSession`, `wait_for_intent`)
+2. Updated CLI smoke-test validation script (`examples/validate-cli.sh`) to execute phase4-framework project and verify HTML artifact generation
+3. Updated static site navigation in `uto-site/templates/base.html` and `uto-site/templates/index.html`:
+   - Added "Getting Started" and "Troubleshooting" links to main navigation
+   - Reordered hero CTA buttons to prioritize getting-started onboarding
+   - Updated status banner to reflect Phase 4.1-4.3 completion status with direct link to getting-started
+4. Updated README.md and examples/README.md to list `phase4-framework` alongside `phase3-intent` as committed reference projects
+5. Fixed Copilot customization guardrails in `.github/copilot-instructions.md` to prioritize source-code edits over docs-only changes for implementation requests
+6. Documented Copilot editing bias issue and mitigation in `docs/0004-copilot-customization.md`
+
+**Architectural Separation of Concerns (Phase 4):**
+- `uto-core/` — infrastructure/protocol (env, driver, session, vision, intent)
+- `uto-test/` — end-user test helpers (session lifecycle)
+- `uto-reporter/` — report schema + JSON/HTML generation (versioned, machine-readable)
+- `uto-logger/` — structured logging + progress visualization (process-aware, callable from anywhere)
+- `uto-runner/` — CLI option parsing for generated projects (minimal, re-exports from uto-reporter)
+- `uto-cli/` — framework orchestration (init, run, report commands)
+- Phase examples (`examples/phases/*`) — committed reference projects per phase, durable in-repo
+
+**Phase 4 Validation:**
+- Workspace builds cleanly with all 4 new crates registered
+- CLI smoke tests pass: generated projects compile, execute, and emit JSON + HTML reports
+- All POC binaries operational with unified logger and HTML reporting
+- Reference projects (phase3-intent, phase4-framework) execute cleanly
+- Site navigation prominently links Getting Started and Troubleshooting from homepage
+- 150+ workspace tests green across all platforms (mac/linux/windows CI)
 
 See `docs/0010-phase-3-completion-and-phase-4-planning.md` for full Phase 4 planning details, delivery schedule, and success metrics.
 
@@ -148,14 +196,11 @@ cargo build
 To run the main proof-of-concept application:
 
 ```sh
-cargo run --package uto-core
-```
+cargo build --workspace
 
-This will execute the `main.rs` file, which discovers Chrome, provisions ChromeDriver, and opens a browser window to Google.com for 5 seconds.
+# Phase 1 POC (env discovery only)
+cargo run -p uto-poc --bin phase1_verify_or_deploy_drivers
 
-For workspace POCs:
-
-```sh
 # Phase 2 communication layer POC
 cargo run -p uto-poc --bin phase2_interact_with_session
 
@@ -165,18 +210,21 @@ cargo run -p uto-poc --bin phase3_intent_poc
 # Phase 3 intent API POC (mobile)
 UTO_DEMO=mobile cargo run -p uto-poc --bin phase3_intent_poc
 
-# Phase 3 intent API POC with JSON report
-UTO_REPORT_FORMAT=json cargo run -p uto-poc --bin phase3_intent_poc
-
-# JSON report to file
+# Phase 3 POC with JSON report to file
 UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./phase3-report.json cargo run -p uto-poc --bin phase3_intent_poc
 
-# Framework CLI usage
+# Phase 3 POC with JSON + HTML reports
+UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./phase3-report.json cargo run -p uto-poc --bin phase3_intent_poc -- --html --html-file ./phase3-report.html
+
+# Framework CLI usage (Phase 4 example)
 cargo run -p uto-cli -- init ./my-uto-tests --template web --uto-root "$PWD"
 cargo run -p uto-cli -- run --project ./my-uto-tests --target web --report-json ./my-uto-tests/.uto/reports/last-run.json
-cargo run -p uto-cli -- report --project ./my-uto-tests
+cargo run -p uto-cli -- report --project ./my-uto-tests --html
 
-# Validate CLI with generated examples
+# Run Phase 4 framework reference project (demonstrates loaders, HTML reporting, web/mobile parity)
+cd examples/phases/phase4-framework && cargo run --bin uto_project_runner
+
+# Validate CLI with generated and phase example projects
 ./examples/validate-cli.sh
 ```
 
@@ -204,11 +252,27 @@ cross-platform test job remains stable without custom runner provisioning.
 
 *   **Package Management:** Dependencies are managed via `Cargo.toml`.
 *   **Project Structure:** The project is a Cargo workspace, with the primary application logic located in the `uto-core` crate.
-*   **Crate split for framework UX:** `uto-core` (infrastructure/protocol), `uto-test` (authored test helpers), `uto-cli` (project orchestration).
-*   **Design hygiene:** Prefer small files/functions and strict separation of concerns; keep orchestration, protocol, and user helper responsibilities isolated by crate.
+*   **Crate split for framework UX:** `uto-core` (infrastructure/protocol), `uto-test` (authored test helpers), `uto-runner` (CLI option parsing), `uto-reporter` (report schema + HTML/JSON generation), `uto-logger` (structured logging + spinners), `uto-cli` (project orchestration).
+*   **Design hygiene:** Prefer small files/functions and strict separation of concerns; keep orchestration, protocol, user helper, reporting, and logging responsibilities isolated by crate.
 *   **Code Style:** Follow standard Rust conventions and formatting (`rustfmt`).
 *   **Error Handling:** The project uses the `thiserror` crate for standardizing application errors.
 *   **Linting:** Use `clippy` for identifying common mistakes and improving code quality: `cargo clippy`
+
+### Reporting Architecture (Phase 4+)
+
+- `uto-reporter` owns all report serialization: `UtoReportV1` schema, JSON round-trip (via serde), and offline HTML rendering
+- All generated projects and reference projects depend on `uto-reporter` to emit results
+- Report schema is versioned; see `uto-report/v1` constant in `uto-reporter/src/schema.rs`
+- HTML rendering is deterministic (no external dependencies, inline CSS, XSS-safe entity escaping)
+- Integration point: `Report::new(enabled, file_path, mode_string)` → `report.event(...)` → `report.finish(...)` → `report.emit()` → `write_report_html(report.payload(), &path)`
+
+### Logging Architecture (Phase 4+)
+
+- `uto-logger` owns all structured logging infrastructure via `tracing` crate
+- Global init enforced via `OnceCell`: `let _ = uto_logger::init("component-name")` idempotent per process
+- Spinners for long-running phases via `LoaderManager`: `let spinner = loaders.spinner("message"); spinner.success("done")`
+- Process awareness built-in: logs include component name and PID for multi-process debugging
+- All POC binaries, reference projects, and generated projects initialize logger at startup
 
 ## Documentation Habits
 

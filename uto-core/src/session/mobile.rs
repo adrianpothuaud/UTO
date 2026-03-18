@@ -221,6 +221,169 @@ impl MobileSession {
 
         Ok(())
     }
+
+    // -------------------------------------------------------------------
+    // Mobile-specific intent helpers (Phase 4.3)
+    // -------------------------------------------------------------------
+
+    /// Waits up to `timeout_ms` for an element to be present in the DOM.
+    ///
+    /// Returns immediately if element is found; polls every 50ms until timeout.
+    /// Useful for waiting for async-loaded content or scroll animations.
+    ///
+    /// # Arguments
+    ///
+    /// * `selector` - XPath or other element selector
+    /// * `timeout_ms` - Maximum wait time in milliseconds (default: 5000 for typical scroll animations)
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use uto_core::session::mobile::{MobileCapabilities, MobileSession};
+    /// # use uto_core::session::UtoSession;
+    /// # #[tokio::main]
+    /// # async fn main() -> uto_core::error::UtoResult<()> {
+    /// # let session = MobileSession::new("http://localhost:4723",
+    /// #     MobileCapabilities::android("emulator-5554")).await?;
+    /// session.wait_for_element("//button[@text='Confirm']", 5000).await?;
+    /// # Box::new(session).close().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn wait_for_element(&self, selector: &str, timeout_ms: u64) -> UtoResult<UtoElement> {
+        let start = std::time::Instant::now();
+        let timeout = std::time::Duration::from_millis(timeout_ms);
+        let poll_interval = std::time::Duration::from_millis(50);
+
+        loop {
+            match self.find_element(selector).await {
+                Ok(elem) => return Ok(elem),
+                Err(_) => {
+                    if start.elapsed() > timeout {
+                        return Err(UtoError::SessionCommandFailed(format!(
+                            "wait_for_element({selector}): timeout after {timeout_ms}ms"
+                        )));
+                    }
+                    tokio::time::sleep(poll_interval).await;
+                }
+            }
+        }
+    }
+
+    /// Scrolls through the page to find an element by intent label, then clicks it.
+    ///
+    /// This helper combines scroll + select + click to handle mobile list scenarios
+    /// where the target element is not initially visible on screen.
+    ///
+    /// # Algorithm
+    ///
+    /// 1. Try to select the element by label (without scroll)
+    /// 2. If not found, scroll up (higher on screen) and retry
+    /// 3. If still not found, scroll down (lower on visible area) and retry
+    /// 4. Repeat up to `max_scrolls` times before giving up
+    ///
+    /// # Arguments
+    ///
+    /// * `label` - Human-readable intent label (e.g., "Sign Out")
+    /// * `max_scrolls` - Maximum scroll attempts before timeout (default: 10)
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use uto_core::session::mobile::{MobileCapabilities, MobileSession};
+    /// # use uto_core::session::UtoSession;
+    /// # #[tokio::main]
+    /// # async fn main() -> uto_core::error::UtoResult<()> {
+    /// # let session = MobileSession::new("http://localhost:4723",
+    /// #     MobileCapabilities::android("emulator-5554")).await?;
+    /// session.launch_activity("com.android.settings", ".Settings").await?;
+    /// session.scroll_intent("About Phone", 10).await?; // Scrolls until found + clicks
+    /// # Box::new(session).close().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn scroll_intent(&self, label: &str, max_scrolls: usize) -> UtoResult<()> {
+        // First, try to select without scrolling
+        if let Ok(elem) = self.select(label).await {
+            return self.click(&elem).await;
+        }
+
+        // Scroll-retry loop: alternate between scrolling up and down
+        for attempt in 0..max_scrolls {
+            let scroll_y = if attempt % 2 == 0 {
+                // Scroll up (negative movement)
+                -300i64
+            } else {
+                // Scroll down (positive movement)
+                300i64
+            };
+
+            // Get current viewport bounds for smooth coordinates
+            // Assume typical Android screen: 1080px wide, ~1800px tall visible region
+            // Scroll from center vertically
+            let mid_x = 540i64;
+            let mid_y = 900i64;
+            let scroll_end_y = (mid_y + scroll_y).clamp(100, 1700);
+
+            self.swipe(mid_x, mid_y, mid_x, scroll_end_y, 300).await?;
+
+            // Brief pause for rendering
+            tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+
+            // Try to select again
+            if let Ok(elem) = self.select(label).await {
+                return self.click(&elem).await;
+            }
+        }
+
+        Err(UtoError::SessionCommandFailed(format!(
+            "scroll_intent({label}): not found after {max_scrolls} scroll attempts"
+        )))
+    }
+
+    /// Waits up to `timeout_ms` for an element to be resolvable by intent label, then clicks it.
+    ///
+    /// Similar to `scroll_intent()` but relies on polling without explicit scroll gestures.
+    /// Useful when Appium's content tree updates dynamically but elements remain in view.
+    ///
+    /// # Arguments
+    ///
+    /// * `label` - Human-readable intent label (e.g., "Delete")
+    /// * `timeout_ms` - Maximum wait time in milliseconds
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use uto_core::session::mobile::{MobileCapabilities, MobileSession};
+    /// # use uto_core::session::UtoSession;
+    /// # #[tokio::main]
+    /// # async fn main() -> uto_core::error::UtoResult<()> {
+    /// # let session = MobileSession::new("http://localhost:4723",
+    /// #     MobileCapabilities::android("emulator-5554")).await?;
+    /// session.wait_for_intent("Confirm", 5000).await?; // Polls until found + clicks
+    /// # Box::new(session).close().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn wait_for_intent(&self, label: &str, timeout_ms: u64) -> UtoResult<()> {
+        let start = std::time::Instant::now();
+        let timeout = std::time::Duration::from_millis(timeout_ms);
+        let poll_interval = std::time::Duration::from_millis(200);
+
+        loop {
+            match self.select(label).await {
+                Ok(elem) => return self.click(&elem).await,
+                Err(_) => {
+                    if start.elapsed() > timeout {
+                        return Err(UtoError::SessionCommandFailed(format!(
+                            "wait_for_intent({label}): not found after {timeout_ms}ms"
+                        )));
+                    }
+                    tokio::time::sleep(poll_interval).await;
+                }
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

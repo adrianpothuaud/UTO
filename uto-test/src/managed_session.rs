@@ -137,6 +137,73 @@ impl ManagedSession {
         }
     }
 
+    // -----------------------------------------------------------------------
+    // Mobile-specific intent helpers (Phase 4.3)
+    // -----------------------------------------------------------------------
+
+    /// Waits for an element to be present and returns it. Mobile-only helper.
+    ///
+    /// Polls the page source / accessibility tree every 50ms until the element
+    /// selector matches or timeout is exceeded.
+    pub async fn wait_for_element(&self, selector: &str, timeout_ms: u64) -> UtoResult<UtoElement> {
+        match self.inner.as_ref() {
+            Some(SessionInner::Mobile(session)) => {
+                session.wait_for_element(selector, timeout_ms).await
+            }
+            Some(SessionInner::Web(_)) => Err(UtoError::SessionCommandFailed(
+                "wait_for_element on mobile is recommended; web sessions should use native polling"
+                    .to_string(),
+            )),
+            None => Err(UtoError::SessionCommandFailed(
+                "session already closed".to_string(),
+            )),
+        }
+    }
+
+    /// Scrolls through the page to find an element by intent label, then clicks it.
+    ///
+    /// Use this helper for mobile lists/scrollable content where the target
+    /// element is not initially visible on screen.
+    ///
+    /// Default: up to 10 scroll attempts before giving up.
+    pub async fn scroll_intent(&self, label: &str) -> UtoResult<()> {
+        self.scroll_intent_with_max(label, 10).await
+    }
+
+    /// Scrolls with custom maximum scroll attempts.
+    pub async fn scroll_intent_with_max(&self, label: &str, max_scrolls: usize) -> UtoResult<()> {
+        match self.inner.as_ref() {
+            Some(SessionInner::Mobile(session)) => {
+                session.scroll_intent(label, max_scrolls).await
+            }
+            Some(SessionInner::Web(_)) => Err(UtoError::SessionCommandFailed(
+                "scroll_intent is mobile-only; use web native scrolling patterns"
+                    .to_string(),
+            )),
+            None => Err(UtoError::SessionCommandFailed(
+                "session already closed".to_string(),
+            )),
+        }
+    }
+
+    /// Waits for an element to be resolvable by intent label, then clicks it.
+    ///
+    /// Use this helper when the element is likely in-view but the accessibility
+    /// tree is loading asynchronously. Polls every 200ms until found or timeout.
+    pub async fn wait_for_intent(&self, label: &str, timeout_ms: u64) -> UtoResult<()> {
+        match self.inner.as_ref() {
+            Some(SessionInner::Mobile(session)) => {
+                session.wait_for_intent(label, timeout_ms).await
+            }
+            Some(SessionInner::Web(_)) => Err(UtoError::SessionCommandFailed(
+                "wait_for_intent is mobile-only".to_string(),
+            )),
+            None => Err(UtoError::SessionCommandFailed(
+                "session already closed".to_string(),
+            )),
+        }
+    }
+
     /// Closes the WebDriver session and stops the managed driver process.
     pub async fn close(mut self) -> UtoResult<()> {
         if let Some(inner) = self.inner.take() {

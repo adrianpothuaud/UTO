@@ -20,6 +20,7 @@ pub struct UtoReportV1 {
 }
 
 impl UtoReportV1 {
+    /// Creates a new running report payload.
     pub fn new(run_id: String, mode: String, start_ms: u64) -> Self {
         Self {
             schema_version: UTO_REPORT_SCHEMA_V1.to_string(),

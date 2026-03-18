@@ -6,6 +6,7 @@ description = "Structured test project runner infrastructure for UTO"
 
 [dependencies]
 uto-core = { path = "../uto-core" }
+uto-reporter = { path = "../uto-reporter" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["rt"] }

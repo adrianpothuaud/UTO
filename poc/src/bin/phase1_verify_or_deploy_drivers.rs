@@ -36,8 +36,7 @@ use uto_core::env::{
 
 #[tokio::main]
 async fn main() {
-    // INFO by default, configurable via RUST_LOG.
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    let _ = uto_logger::init("phase1-poc");
 
     log::info!("=== UTO Phase 1 — Verify / Deploy Drivers ===");
 

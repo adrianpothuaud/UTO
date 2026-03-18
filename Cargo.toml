@@ -2,6 +2,8 @@
 members = [
     "uto-core",
     "uto-test",
+    "uto-logger",
+    "uto-reporter",
     "uto-runner",
     "poc",
     "uto-cli",

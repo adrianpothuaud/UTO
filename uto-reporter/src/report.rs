@@ -3,7 +3,6 @@
 use serde_json::Value;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::options::RunMode;
 use crate::schema::{ReportEvent, UtoReportV1};
 
 /// Accumulates test execution events and generates structured reports.
@@ -15,22 +14,16 @@ pub struct Report {
     start_ms: u64,
 }
 
-pub type RunResult = Result<(), String>;
-
 impl Report {
-    /// Creates a new report with the given options.
-    pub fn new(enabled: bool, report_file: Option<String>, mode: RunMode) -> Self {
+    /// Creates a new report with the given mode string (`web` or `mobile`).
+    pub fn new(enabled: bool, report_file: Option<String>, mode: &str) -> Self {
         let start_ms = now_unix_ms();
         let run_id = format!("run-{}-{}", start_ms, std::process::id());
-        let mode = match mode {
-            RunMode::Web => "web".to_string(),
-            RunMode::Mobile => "mobile".to_string(),
-        };
 
         Self {
             enabled,
             report_file,
-            payload: UtoReportV1::new(run_id, mode, start_ms),
+            payload: UtoReportV1::new(run_id, mode.to_string(), start_ms),
             start_ms,
         }
     }
@@ -62,6 +55,11 @@ impl Report {
         if let Some(err) = error {
             self.payload.error = Some(err);
         }
+    }
+
+    /// Returns immutable access to the report payload.
+    pub fn payload(&self) -> &UtoReportV1 {
+        &self.payload
     }
 
     /// Prints and writes the report to stdout and optional file.
@@ -101,7 +99,7 @@ mod tests {
 
     #[test]
     fn report_new_initializes_structure() {
-        let report = Report::new(true, None, RunMode::Web);
+        let report = Report::new(true, None, "web");
         assert_eq!(report.payload.schema_version, "uto-report/v1");
         assert_eq!(report.payload.mode, "web");
         assert_eq!(report.payload.status, "running");
@@ -109,7 +107,7 @@ mod tests {
 
     #[test]
     fn report_event_records_when_enabled() {
-        let mut report = Report::new(true, None, RunMode::Web);
+        let mut report = Report::new(true, None, "web");
         report.event("test.stage", "ok", serde_json::json!({"key": "value"}));
         assert_eq!(report.payload.events.len(), 1);
         assert_eq!(report.payload.events[0].stage, "test.stage");
@@ -117,7 +115,7 @@ mod tests {
 
     #[test]
     fn report_finish_updates_status_and_timeline() {
-        let mut report = Report::new(true, None, RunMode::Mobile);
+        let mut report = Report::new(true, None, "mobile");
         report.finish("passed", None);
 
         assert_eq!(report.payload.status, "passed");
@@ -127,7 +125,7 @@ mod tests {
 
     #[test]
     fn report_finish_records_error() {
-        let mut report = Report::new(true, None, RunMode::Web);
+        let mut report = Report::new(true, None, "web");
         report.finish("failed", Some("Test failed".to_string()));
 
         assert_eq!(report.payload.status, "failed");

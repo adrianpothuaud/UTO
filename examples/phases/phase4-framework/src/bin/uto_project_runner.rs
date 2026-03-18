@@ -18,7 +18,8 @@ use uto_runner::{CliOptions, RunMode};
 
 #[tokio::main]
 async fn main() {
-    let _ = uto_logger::init("phase3-intent-runner");
+    let _ = uto_logger::init("phase4-framework-runner");
+    let loaders = uto_logger::LoaderManager::new();
 
     let options = CliOptions::from_env();
     let mut report = Report::new(
@@ -28,8 +29,8 @@ async fn main() {
     );
 
     let result = match options.mode {
-        RunMode::Web => run_web(&mut report).await,
-        RunMode::Mobile => run_mobile(&mut report).await,
+        RunMode::Web => run_web(&mut report, &loaders).await,
+        RunMode::Mobile => run_mobile(&mut report, &loaders).await,
     };
 
     match &result {
@@ -39,8 +40,8 @@ async fn main() {
 
     report.emit();
 
-    if let Some(report_path) = options.report_file.as_deref() {
-        let html_path = std::path::Path::new(report_path).with_extension("html");
+    if let Some(path) = options.report_file.as_deref() {
+        let html_path = std::path::Path::new(path).with_extension("html");
         if let Err(err) = uto_reporter::write_report_html(report.payload(), &html_path) {
             log::warn!("Failed to write HTML report {}: {}", html_path.display(), err);
         } else {
@@ -54,22 +55,31 @@ async fn main() {
     }
 }
 
-async fn run_web(report: &mut Report) -> uto_core::error::UtoResult<()> {
+async fn run_web(report: &mut Report, loaders: &uto_logger::LoaderManager) -> uto_core::error::UtoResult<()> {
+    let discover = loaders.spinner("Discovering Chrome version");
     let chrome_version = find_chrome_version()?;
+    discover.success("Chrome discovery complete");
+
     report.event(
         "env.chrome_discovery",
         "ok",
         json!({ "chrome_version": chrome_version }),
     );
 
+    let provision = loaders.spinner("Provisioning ChromeDriver");
     let chromedriver = find_or_provision_chromedriver(&chrome_version).await?;
+    provision.success("ChromeDriver ready");
+
     report.event(
         "env.chromedriver_provision",
         "ok",
         json!({ "path": chromedriver.display().to_string() }),
     );
 
+    let startup = loaders.spinner("Starting ChromeDriver");
     let driver = driver::start_chromedriver(&chromedriver).await?;
+    startup.success("ChromeDriver started");
+
     report.event(
         "driver.chromedriver_start",
         "ok",
@@ -86,7 +96,7 @@ async fn run_web(report: &mut Report) -> uto_core::error::UtoResult<()> {
         Ok(session) => {
             report.event("session.web_create", "ok", json!({ "driver_url": driver.url }));
 
-            let action_result = web_intent_flow(&session, report).await;
+            let action_result = web_flow(&session, report).await;
             if let Err(err) = action_result {
                 run_result = Err(err);
             }
@@ -109,7 +119,7 @@ async fn run_web(report: &mut Report) -> uto_core::error::UtoResult<()> {
     run_result
 }
 
-async fn web_intent_flow(session: &WebSession, report: &mut Report) -> uto_core::error::UtoResult<()> {
+async fn web_flow(session: &WebSession, report: &mut Report) -> uto_core::error::UtoResult<()> {
     session
         .goto(concat!(
             "data:text/html,",
@@ -125,21 +135,11 @@ async fn web_intent_flow(session: &WebSession, report: &mut Report) -> uto_core:
 
     report.event("session.goto", "ok", json!({ "target": "data:text/html" }));
 
-    let ranking = session
-        .debug_select_ranking("Submit Order", 3)
-        .await
-        .unwrap_or_else(|_| "<unavailable>".to_string());
-    report.event(
-        "intent.ranking",
-        "ok",
-        json!({ "label": "Submit Order", "summary": ranking }),
-    );
-
-    session.fill_intent("Email Address", "phase3@uto.dev").await?;
+    session.fill_intent("Email Address", "phase4@uto.dev").await?;
     report.event(
         "intent.fill",
         "ok",
-        json!({ "label": "Email Address", "value": "phase3@uto.dev" }),
+        json!({ "label": "Email Address", "value": "phase4@uto.dev" }),
     );
 
     session.click_intent("Submit Order").await?;
@@ -152,9 +152,9 @@ async fn web_intent_flow(session: &WebSession, report: &mut Report) -> uto_core:
     let output = session.find_element("#out").await?;
     let text = session.get_text(&output).await?;
 
-    if text != "phase3@uto.dev" {
+    if text != "phase4@uto.dev" {
         return Err(UtoError::SessionCommandFailed(format!(
-            "Phase 3 web objective mismatch: expected 'phase3@uto.dev', got '{text}'"
+            "Phase 4 web objective mismatch: expected 'phase4@uto.dev', got '{text}'"
         )));
     }
 
@@ -162,11 +162,16 @@ async fn web_intent_flow(session: &WebSession, report: &mut Report) -> uto_core:
     Ok(())
 }
 
-async fn run_mobile(report: &mut Report) -> uto_core::error::UtoResult<()> {
+async fn run_mobile(
+    report: &mut Report,
+    loaders: &uto_logger::LoaderManager,
+) -> uto_core::error::UtoResult<()> {
+    let prepare = loaders.spinner("Preparing mobile environment");
     let setup = prepare_mobile_environment(&MobileSetupOptions {
         require_online_device: true,
         ..MobileSetupOptions::default()
     })?;
+    prepare.success("Mobile environment prepared");
 
     report.event(
         "env.mobile_setup",
@@ -178,7 +183,10 @@ async fn run_mobile(report: &mut Report) -> uto_core::error::UtoResult<()> {
         }),
     );
 
+    let appium_loader = loaders.spinner("Starting Appium");
     let appium = driver::start_appium(&setup.appium_path).await?;
+    appium_loader.success("Appium started");
+
     report.event(
         "driver.appium_start",
         "ok",
@@ -200,7 +208,7 @@ async fn run_mobile(report: &mut Report) -> uto_core::error::UtoResult<()> {
                 json!({ "driver_url": appium.url }),
             );
 
-            let action_result = mobile_intent_flow(&session, report).await;
+            let action_result = mobile_flow(&session, report).await;
             if let Err(err) = action_result {
                 run_result = Err(err);
             }
@@ -223,10 +231,7 @@ async fn run_mobile(report: &mut Report) -> uto_core::error::UtoResult<()> {
     run_result
 }
 
-async fn mobile_intent_flow(
-    session: &MobileSession,
-    report: &mut Report,
-) -> uto_core::error::UtoResult<()> {
+async fn mobile_flow(session: &MobileSession, report: &mut Report) -> uto_core::error::UtoResult<()> {
     session
         .launch_activity("com.android.settings", ".Settings")
         .await?;
@@ -257,6 +262,6 @@ async fn mobile_intent_flow(
     }
 
     Err(UtoError::SessionCommandFailed(
-        "Phase 3 mobile objective failed: no search label resolved".to_string(),
+        "Phase 4 mobile objective failed: no search label resolved".to_string(),
     ))
 }

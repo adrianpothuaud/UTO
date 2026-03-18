@@ -6,6 +6,16 @@ pub enum RunMode {
     Mobile,
 }
 
+impl RunMode {
+    /// Returns normalized report mode representation.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            RunMode::Web => "web",
+            RunMode::Mobile => "mobile",
+        }
+    }
+}
+
 /// Parsed command-line options for a test runner.
 #[derive(Debug)]
 pub struct CliOptions {

@@ -30,6 +30,22 @@ Adopt a layered Copilot customization setup in `.github/`:
 - Copilot guidance is more discoverable and better scoped to the task at hand.
 - Prompt files now reflect the current workspace shape instead of obsolete `main.rs` workflows.
 - Architecture-heavy changes can use a project-specific agent without replacing the default coding workflow for every task.
+- Documentation synchronization requirements can bias edits toward `GEMINI.md` if not balanced with explicit implementation-first guardrails.
+
+## Follow-up Adjustment (2026-03-18)
+
+Observed issue: implementation requests sometimes resulted in `GEMINI.md`-only edits.
+
+Root cause:
+
+- architecture mode prioritizes reading/syncing docs first
+- project instructions strongly emphasize keeping Gemini/ADRs aligned
+- without explicit sequencing guardrails, low-context requests can drift into docs-only updates
+
+Mitigation applied:
+
+- added execution guardrails in `.github/copilot-instructions.md` requiring source-code edits first for implementation requests
+- limited `GEMINI.md`-only updates to true documentation-sync follow-up cases
 
 ## Synchronization Automation (Copilot <-> Gemini)
 

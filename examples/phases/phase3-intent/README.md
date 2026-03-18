@@ -29,6 +29,9 @@ cargo run -p uto-cli -- run \
 # Report summary
 cargo run -p uto-cli -- report --project examples/phases/phase3-intent
 
+# Report summary + native HTML artifact
+cargo run -p uto-cli -- report --project examples/phases/phase3-intent --html
+
 # Optional mobile run
 cargo run -p uto-cli -- run \
   --project examples/phases/phase3-intent \
@@ -62,3 +65,8 @@ let mobile = uto_test::start_new_session_with_hint("android", 16).await?;
 ```
 
 The helper still logs environment discovery, driver startup, and session creation steps so setup remains observable even though the test code stays concise.
+
+## Related Onboarding Docs
+
+- `docs/0013-getting-started-and-troubleshooting.md` (Phase 4.4 onboarding baseline)
+- `docs/0012-uto-test-api-usage-guide.md` (helper API surface)

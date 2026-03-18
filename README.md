@@ -16,7 +16,7 @@ The project is also moving toward a framework-style UX with a first-class CLI li
 
 ## Current Status
 
-Phase 1, Phase 2, and Phase 3 are operational, and the Phase 4.1 baseline is complete:
+Phase 1, Phase 2, and Phase 3 are operational. Phase 4 framework maturity is in progress with 4.1, 4.2, and 4.3 complete and 4.4 onboarding/documentation underway:
 
 - Environment discovery and provisioning (`uto-core/src/env`)
 - Driver lifecycle management (`uto-core/src/driver`)
@@ -33,6 +33,12 @@ Phase 4.1 completion in `uto-cli` includes:
 - `uto-report/v1` validation in `uto report`
 - split command/config/parsing/template modules for smaller test surfaces and SoC
 - unit and integration-style CLI test coverage, including generated-project compile checks
+
+Phase 4.2 and 4.3 additions include:
+
+- `uto-report/v1` typed schema and native HTML report generation (`uto report --html`)
+- mobile parity helper APIs for intent reliability (`wait_for_element`, `wait_for_intent`, `scroll_intent`)
+- Android fixture-focused integration tests with graceful skip behavior when Appium/device tooling is unavailable
 
 ## Workspace Layout
 
@@ -160,6 +166,9 @@ cargo run -p uto-cli -- run --project ./my-tests --target web --report-json ./my
 
 ```bash
 cargo run -p uto-cli -- report --project ./my-tests
+
+# Generate native HTML report from uto-report/v1 JSON
+cargo run -p uto-cli -- report --project ./my-tests --html
 ```
 
 ### Validate CLI End-to-End
@@ -174,6 +183,7 @@ UTO keeps one committed example project per development phase under `examples/ph
 These projects are intended as stable references, similar to the executable binaries in `poc/src/bin`.
 
 - Phase 3 reference project: `examples/phases/phase3-intent`
+- Phase 4 reference project: `examples/phases/phase4-framework`
 
 ### Phase 2: Mobile Session Demo (Appium)
 
@@ -257,7 +267,9 @@ Site source is under `uto-site/`, generated output goes to `uto-site/dist/`.
 
 Current next steps:
 
-- Phase 4.2: formalize reusable `uto-report/v1` schema/type surfaces and report docs
+- Phase 4.4: complete contributor onboarding package (Getting Started + troubleshooting + expanded examples)
+
+See detailed onboarding and troubleshooting guidance in `docs/0013-getting-started-and-troubleshooting.md`.
 - Phase 4.3: mobile parity hardening and fixture expansion
 - Add one committed Phase 4 reference project under `examples/phases/`
 

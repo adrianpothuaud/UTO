@@ -147,3 +147,61 @@ fn report_summarizes_valid_report() {
     assert!(stdout.contains("UTO Report Summary"), "stdout: {stdout}");
     assert!(stdout.contains("Schema: uto-report/v1"), "stdout: {stdout}");
 }
+
+#[test]
+fn report_generates_html_when_flag_set() {
+    let temp = TempDir::new().expect("temp dir");
+    let project = create_project(&temp, "report-html");
+
+    let report_path = project.join(".uto/reports/last-run.json");
+    fs::write(
+        &report_path,
+        r#"{
+  "schema_version": "uto-report/v1",
+  "framework": "uto",
+  "run_id": "run-456",
+  "mode": "web",
+  "status": "passed",
+  "timeline": {
+    "started_at_unix_ms": 100,
+    "finished_at_unix_ms": 250,
+    "duration_ms": 150
+  },
+  "events": [
+    {
+      "stage": "session.goto",
+      "status": "ok",
+      "detail": {"url": "https://example.com"}
+    }
+  ]
+}"#,
+    )
+    .expect("write report");
+
+    let html_path = project.join(".uto/reports/last-run.html");
+    let output = run_uto(&[
+        "report",
+        "--project",
+        project.to_str().expect("project path utf-8"),
+        "--html",
+    ]);
+
+    assert!(
+        output.status.success(),
+        "report failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("HTML:"), "stdout: {stdout}");
+
+    assert!(
+        html_path.exists(),
+        "HTML file not created at {}",
+        html_path.display()
+    );
+    let html_content = fs::read_to_string(&html_path).expect("read HTML");
+    assert!(html_content.contains("UTO Execution Report"));
+    assert!(html_content.contains("run-456"));
+    assert!(html_content.contains("session.goto"));
+    assert!(html_content.contains("uto-report/v1"));
+}

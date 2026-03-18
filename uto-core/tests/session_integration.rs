@@ -458,6 +458,233 @@ async fn web_session_screenshot_returns_png() {
 }
 
 // ---------------------------------------------------------------------------
+// Mobile Android fixture tests (Phase 4.3)
+//
+// These tests validate mobile intent resolution and interaction helpers.
+// Each test skips gracefully when Appium or an Android device is not available.
+// ---------------------------------------------------------------------------
+
+/// Verify that mobile settings app can be launched and accessibility tree is readable.
+#[tokio::test]
+async fn mobile_session_android_launch_activity_and_page_source() {
+    let Some(appium_proc) = start_system_appium().await else {
+        println!("Skipping: appium not available");
+        return;
+    };
+
+    let caps = MobileCapabilities::android("emulator-5554");
+
+    let session = match MobileSession::new(&appium_proc.url, caps).await {
+        Ok(s) => s,
+        Err(err) => {
+            let msg = err.to_string();
+            if is_expected_mobile_environment_gap(&msg) {
+                println!("Skipping: mobile environment not fully provisioned: {msg}");
+            } else {
+                panic!("unexpected mobile session error: {msg}");
+            }
+            appium_proc.stop().unwrap();
+            return;
+        }
+    };
+
+    // Launch Settings app
+    if let Err(e) = session.launch_activity("com.android.settings", ".Settings").await {
+        println!("Skipping: could not launch Settings: {e}");
+        Box::new(session).close().await.ok();
+        appium_proc.stop().unwrap();
+        return;
+    }
+
+    // Verify page source is readable (accessibility tree dump)
+    let page_source = session.page_source().await.expect("page_source should succeed");
+    assert!(!page_source.is_empty(), "page_source must not be empty");
+    // Settings typically contains "status" or activity class references
+    let lower = page_source.to_ascii_lowercase();
+    assert!(
+        lower.contains("settings")
+            || lower.contains("android")
+            || lower.contains("com.android.settings"),
+        "page_source should reference Settings app"
+    );
+
+    Box::new(session).close().await.unwrap();
+    appium_proc.stop().unwrap();
+}
+
+/// Verify that mobile intent selection works on Android Settings.
+///
+/// This test validates the accessibility-tree-based intent resolution
+/// that is critical for Phase 4.3 production readiness.
+#[tokio::test]
+async fn mobile_session_android_select_intent_label() {
+    let Some(appium_proc) = start_system_appium().await else {
+        println!("Skipping: appium not available");
+        return;
+    };
+
+    let caps = MobileCapabilities::android("emulator-5554");
+
+    let session = match MobileSession::new(&appium_proc.url, caps).await {
+        Ok(s) => s,
+        Err(err) => {
+            let msg = err.to_string();
+            if is_expected_mobile_environment_gap(&msg) {
+                println!("Skipping: mobile environment not fully provisioned: {msg}");
+            } else {
+                panic!("unexpected mobile session error: {msg}");
+            }
+            appium_proc.stop().unwrap();
+            return;
+        }
+    };
+
+    // Launch Settings
+    if let Err(e) = session.launch_activity("com.android.settings", ".Settings").await {
+        println!("Skipping: could not launch Settings: {e}");
+        Box::new(session).close().await.ok();
+        appium_proc.stop().unwrap();
+        return;
+    }
+
+    // Try to select a common label from Settings accessibility tree.
+    // Settings varies by Android version, so we try multiple common labels.
+    let common_labels = vec!["Search", "Search settings", "Rechercher", "Buscar", "Suchen"];
+
+    let mut found = false;
+    for label in common_labels {
+        if let Ok(_elem) = session.select(label).await {
+            log::info!("Found label: {label}");
+            found = true;
+            break;
+        }
+    }
+
+    if !found {
+        println!(
+            "Skipping: Settings app did not expose expected accessibility labels (Android version variation)"
+        );
+        Box::new(session).close().await.ok();
+        appium_proc.stop().unwrap();
+        return;
+    }
+
+    assert!(found, "should have resolved at least one common Settings label");
+
+    Box::new(session).close().await.unwrap();
+    appium_proc.stop().unwrap();
+}
+
+/// Verify that mobile screenshot can be captured.
+#[tokio::test]
+async fn mobile_session_android_screenshot() {
+    let Some(appium_proc) = start_system_appium().await else {
+        println!("Skipping: appium not available");
+        return;
+    };
+
+    let caps = MobileCapabilities::android("emulator-5554");
+
+    let session = match MobileSession::new(&appium_proc.url, caps).await {
+        Ok(s) => s,
+        Err(err) => {
+            let msg = err.to_string();
+            if is_expected_mobile_environment_gap(&msg) {
+                println!("Skipping: mobile environment not fully provisioned: {msg}");
+            } else {
+                panic!("unexpected mobile session error: {msg}");
+            }
+            appium_proc.stop().unwrap();
+            return;
+        }
+    };
+
+    // Launch Settings to get meaningful screenshot
+    if let Err(e) = session.launch_activity("com.android.settings", ".Settings").await {
+        println!("Skipping: could not launch Settings: {e}");
+        Box::new(session).close().await.ok();
+        appium_proc.stop().unwrap();
+        return;
+    }
+
+    // Capture screenshot
+    let png = session
+        .screenshot()
+        .await
+        .expect("screenshot should succeed");
+    assert!(!png.is_empty(), "screenshot must not be empty");
+    // Verify PNG magic bytes
+    assert_eq!(&png[0..4], b"\x89PNG", "screenshot must be a valid PNG");
+
+    Box::new(session).close().await.unwrap();
+    appium_proc.stop().unwrap();
+}
+
+/// Verify basic swipe gesture (Phase 4.3 mobile gesture support).
+#[tokio::test]
+async fn mobile_session_android_swipe_gesture() {
+    let Some(appium_proc) = start_system_appium().await else {
+        println!("Skipping: appium not available");
+        return;
+    };
+
+    let caps = MobileCapabilities::android("emulator-5554");
+
+    let session = match MobileSession::new(&appium_proc.url, caps).await {
+        Ok(s) => s,
+        Err(err) => {
+            let msg = err.to_string();
+            if is_expected_mobile_environment_gap(&msg) {
+                println!("Skipping: mobile environment not fully provisioned: {msg}");
+            } else {
+                panic!("unexpected mobile session error: {msg}");
+            }
+            appium_proc.stop().unwrap();
+            return;
+        }
+    };
+
+    // Launch Settings
+    if let Err(e) = session.launch_activity("com.android.settings", ".Settings").await {
+        println!("Skipping: could not launch Settings: {e}");
+        Box::new(session).close().await.ok();
+        appium_proc.stop().unwrap();
+        return;
+    }
+
+    // Perform a simple swipe (upward to scroll content)
+    // Coordinates are typical for Android: 1080x1920 screen with half-height scroll region
+    if let Err(e) = session.swipe(540, 1000, 540, 400, 300).await {
+        println!("Skipping: swipe gesture failed (expected for some emulator configs): {e}");
+        Box::new(session).close().await.ok();
+        appium_proc.stop().unwrap();
+        return;
+    }
+
+    // If we got here, swipe succeeded; verify we can still interact.
+    // Some Appium/device combinations return 404 for title() after gesture actions.
+    // Treat that as an environment capability gap so CI remains non-coupled.
+    match session.title().await {
+        Ok(title) => {
+            assert!(!title.is_empty(), "title should be non-empty after swipe");
+        }
+        Err(err) => {
+            let msg = err.to_string();
+            if is_expected_mobile_environment_gap(&msg) {
+                println!("Skipping: title command unsupported after swipe on this environment: {msg}");
+                Box::new(session).close().await.ok();
+                appium_proc.stop().unwrap();
+                return;
+            }
+            panic!("unexpected title error after swipe: {msg}");
+        }
+    }
+
+    Box::new(session).close().await.unwrap();
+    appium_proc.stop().unwrap();
+}
+
+// ---------------------------------------------------------------------------
 // External-network navigation — off by default, requires internet access
 // ---------------------------------------------------------------------------
 

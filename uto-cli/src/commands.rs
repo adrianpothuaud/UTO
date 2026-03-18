@@ -183,7 +183,7 @@ pub mod report {
             if let Some(parent) = html_path.parent() {
                 fs::create_dir_all(parent).map_err(|e| e.to_string())?;
             }
-            uto_runner::write_report_html(&report, &html_path)?;
+            uto_reporter::write_report_html(&report, &html_path)?;
             println!("HTML: {}", html_path.display());
         }
 

@@ -87,7 +87,7 @@ pub fn validate_project_runner(project: &Path) -> Result<(), String> {
 /// Validates report JSON structure.
 pub fn parse_report_json(
     report_value: &serde_json::Value,
-) -> Result<uto_runner::UtoReportV1, String> {
+) -> Result<uto_reporter::UtoReportV1, String> {
     let schema_version = report_value
         .get("schema_version")
         .and_then(|v| v.as_str())
@@ -100,7 +100,7 @@ pub fn parse_report_json(
         ));
     }
 
-    let parsed: uto_runner::UtoReportV1 = serde_json::from_value(report_value.clone())
+    let parsed: uto_reporter::UtoReportV1 = serde_json::from_value(report_value.clone())
         .map_err(|e| format!("Invalid report shape: {e}"))?;
 
     if parsed.status.trim().is_empty() {

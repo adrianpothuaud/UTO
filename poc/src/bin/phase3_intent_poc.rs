@@ -17,6 +17,9 @@
 //!
 //! # JSON report to file
 //! UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./phase3-report.json cargo run -p uto-poc --bin phase3_intent_poc
+//!
+//! # JSON + HTML report artifacts
+//! UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./phase3-report.json UTO_REPORT_HTML=1 cargo run -p uto-poc --bin phase3_intent_poc -- --html
 //! ```
 
 use uto_core::{
@@ -62,6 +65,8 @@ struct CliOptions {
     demo_mode: DemoMode,
     report_format: ReportFormat,
     report_file: Option<String>,
+    report_html: bool,
+    report_html_file: Option<String>,
 }
 
 struct ReportCollector {
@@ -84,6 +89,7 @@ impl ReportCollector {
                 "framework": "uto",
                 "phase": 3,
                 "run_id": run_id,
+                "mode": options.demo_mode.as_str(),
                 "demo": options.demo_mode.as_str(),
                 "status": "running",
                 "timeline": {
@@ -186,6 +192,11 @@ fn parse_cli_options() -> CliOptions {
     };
 
     let mut report_file = std::env::var("UTO_REPORT_FILE").ok();
+    let mut report_html = match std::env::var("UTO_REPORT_HTML") {
+        Ok(v) => v == "1" || v.eq_ignore_ascii_case("true"),
+        Err(_) => false,
+    };
+    let mut report_html_file = std::env::var("UTO_REPORT_HTML_FILE").ok();
 
     let args: Vec<String> = std::env::args().collect();
     let mut i = 1usize;
@@ -194,9 +205,16 @@ fn parse_cli_options() -> CliOptions {
             "--mobile" => demo_mode = DemoMode::Mobile,
             "--web" => demo_mode = DemoMode::Web,
             "--json" => report_format = ReportFormat::Json,
+            "--html" => report_html = true,
             "--report-file" => {
                 if let Some(next) = args.get(i + 1) {
                     report_file = Some(next.clone());
+                    i += 1;
+                }
+            }
+            "--html-file" => {
+                if let Some(next) = args.get(i + 1) {
+                    report_html_file = Some(next.clone());
                     i += 1;
                 }
             }
@@ -209,6 +227,8 @@ fn parse_cli_options() -> CliOptions {
         demo_mode,
         report_format,
         report_file,
+        report_html,
+        report_html_file,
     }
 }
 
@@ -221,7 +241,7 @@ fn now_unix_ms() -> u128 {
 
 #[tokio::main]
 async fn main() {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    let _ = uto_logger::init("phase3-poc");
 
     let options = parse_cli_options();
     let mut report = ReportCollector::new(&options);
@@ -253,6 +273,29 @@ async fn main() {
     }
 
     report.emit();
+
+    if options.report_html {
+        match serde_json::from_value::<uto_reporter::UtoReportV1>(report.payload.clone()) {
+            Ok(parsed) => {
+                let html_path = if let Some(path) = options.report_html_file.as_deref() {
+                    std::path::PathBuf::from(path)
+                } else if let Some(path) = options.report_file.as_deref() {
+                    std::path::Path::new(path).with_extension("html")
+                } else {
+                    std::path::PathBuf::from("./phase3-report.html")
+                };
+
+                if let Err(err) = uto_reporter::write_report_html(&parsed, &html_path) {
+                    log::error!("Failed to write HTML report {}: {}", html_path.display(), err);
+                } else {
+                    log::info!("HTML report written to {}", html_path.display());
+                }
+            }
+            Err(err) => {
+                log::error!("Failed to parse report payload for HTML export: {err}");
+            }
+        }
+    }
 
     if let Err(e) = result {
         log::error!("Phase 3 demo failed: {e}");

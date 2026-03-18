@@ -41,8 +41,7 @@ use uto_core::{
 
 #[tokio::main]
 async fn main() {
-    // INFO by default, configurable via RUST_LOG.
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    let _ = uto_logger::init("phase2-poc");
 
     let demo = std::env::var("UTO_DEMO").unwrap_or_else(|_| "web".to_string());
 

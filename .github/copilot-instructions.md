@@ -13,7 +13,8 @@ Framework product direction:
 Current delivery status:
 
 - Phase 3 is complete.
-- Phase 4.1 is in progress in `uto-cli` with strict command/config/report validation and growing CLI test coverage.
+- Phase 4.1 (CLI baseline), 4.2 (HTML reporting), and 4.3 (mobile hardening) are complete.
+- Phase 4.4 (onboarding, troubleshooting, and examples) is in progress.
 - Generated and reference test projects now consume `uto-test` and favor a simple helper-driven session API (`startNewSession`) so setup/session code remains transparent but concise.
 
 - Prefer solutions that preserve the "discover or deploy" workflow described in `docs/0001-zero-config-infrastructure.md`.
@@ -49,8 +50,14 @@ Read `GEMINI.md`, `docs/0001-zero-config-infrastructure.md`, and `docs/0002-driv
 - Favor clean, testable design: small functions, focused files, and explicit separation of concerns.
 - Keep `GEMINI.md` and the relevant ADR in `docs/` in sync when architecture, workflow, or project direction changes.
 - Preserve the current crate split and keep the `env`, `driver`, and `session` responsibilities clearly separated.
-- Keep responsibilities separated across crates: `uto-core` (infrastructure/protocol), `uto-test` (end-user test helpers), and `uto-cli` (orchestration).
+- Keep responsibilities separated across crates: `uto-core` (infrastructure/protocol), `uto-test` (end-user test helpers), `uto-reporter` (report schema/json/html), `uto-logger` (logging/progress), and `uto-cli` (orchestration).
 - Keep Readme.md and static site content in sync with project evolution
 - Keep CLI behavior changes in sync across `README.md`, `uto-site/content/`, `GEMINI.md`, and ADRs.
 - Prefer structured report output (JSON baseline) for new workflow surfaces so CI and diagnostics tooling can consume results reliably.
 - For each new development phase, add or update one committed reference project under `examples/phases/` in addition to POC binaries.
+
+## Agent Execution Guardrails
+
+- Do not restrict edits to `GEMINI.md` when the user requests code changes.
+- When a request includes implementation work, prioritize the relevant source files first; update `GEMINI.md`/ADRs only as synchronization follow-up.
+- If no behavioral/architecture change occurred, avoid touching `GEMINI.md` in isolation.

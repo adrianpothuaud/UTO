@@ -1,0 +1,77 @@
+{
+  "schema_version": "uto-report/v1",
+  "framework": "uto",
+  "run_id": "run-1773831425771-38356",
+  "mode": "web",
+  "status": "passed",
+  "timeline": {
+    "started_at_unix_ms": 1773831425771,
+    "finished_at_unix_ms": 1773831427474,
+    "duration_ms": 1703
+  },
+  "events": [
+    {
+      "stage": "env.chrome_discovery",
+      "status": "ok",
+      "detail": {
+        "chrome_version": "146.0.7680.80"
+      }
+    },
+    {
+      "stage": "env.chromedriver_provision",
+      "status": "ok",
+      "detail": {
+        "path": "/Users/adrian/.uto/cache/chromedriver/146/chromedriver"
+      }
+    },
+    {
+      "stage": "driver.chromedriver_start",
+      "status": "ok",
+      "detail": {
+        "url": "http://localhost:21357",
+        "port": 21357
+      }
+    },
+    {
+      "stage": "session.web_create",
+      "status": "ok",
+      "detail": {
+        "driver_url": "http://localhost:21357"
+      }
+    },
+    {
+      "stage": "session.goto",
+      "status": "ok",
+      "detail": {
+        "target": "data:text/html"
+      }
+    },
+    {
+      "stage": "intent.fill",
+      "status": "ok",
+      "detail": {
+        "label": "Email Address",
+        "value": "phase4@uto.dev"
+      }
+    },
+    {
+      "stage": "intent.click",
+      "status": "ok",
+      "detail": {
+        "label": "Submit Order"
+      }
+    },
+    {
+      "stage": "assert.output",
+      "status": "ok",
+      "detail": {
+        "text": "phase4@uto.dev"
+      }
+    },
+    {
+      "stage": "driver.chromedriver_stop",
+      "status": "ok",
+      "detail": {}
+    }
+  ]
+}
