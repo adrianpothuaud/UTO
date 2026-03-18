@@ -23,12 +23,6 @@ irm https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.ps1 | iex
 
 The installer checks whether Rust is present (and installs it via [rustup](https://rustup.rs) if not), builds the `uto` binary from source, and prints getting-started instructions when it completes.
 
-To pin to a specific release:
-
-```sh
-UTO_REF=v0.1.0 curl -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh
-```
-
 ## Prerequisites
 
 - Chrome (for the `web` target)
@@ -66,25 +60,6 @@ async fn web_smoke() -> uto_core::error::UtoResult<()> {
 }
 ```
 
-## Alternative: Install from Source
+## Need Help?
 
-If you already have the repository cloned, you can install directly with cargo:
-
-```sh
-cargo install --path uto-cli
-```
-
-Or build and run without installing:
-
-```sh
-cargo build -p uto-cli
-cargo run -p uto-cli -- init ./my-tests --template web --uto-root "$PWD"
-cargo run -p uto-cli -- run  --project ./my-tests --target web
-cargo run -p uto-cli -- report --project ./my-tests --html
-```
-
-## Related Docs
-
-- `docs/0015-install-script-and-onboarding.md`
-- `docs/0013-getting-started-and-troubleshooting.md`
-- `docs/0012-uto-test-api-usage-guide.md`
+See the [Troubleshooting](../troubleshooting/) page for common setup and run issues, or [request early access](../early-access/) to get direct support from the team.
