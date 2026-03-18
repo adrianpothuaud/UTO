@@ -230,6 +230,38 @@ uto ui [OPTIONS]
 - `uto-cli` gains `ui` sub-command; all existing commands remain unchanged
 - All Phase 4 layer boundaries remain intact
 
+## Phase 6: UTO Studio — Visual Test Authoring
+
+**Status:** Planned — see ADR 0016
+
+Phase 6 delivers **UTO Studio**: a visual, interactive test recording and authoring environment that surpasses Cypress Studio and Playwright Codegen. Key capabilities:
+
+1. **Live session recorder** — captures click, type, navigate, and swipe interactions as semantic intent steps (no selectors generated).
+2. **Vision-first element inspector** — overlays bounding boxes, labels, and confidence scores during hover, powered by the Phase 3 recognition loop.
+3. **Cross-platform recording** — same recorder works for web (Chrome) and mobile (Android via Appium, iOS via Appium).
+4. **Rust code generation** — emits formatted, runnable `uto-test` Rust test functions with no selector-based constructs.
+5. **Assertion builder** — pause recording to add `assert_visible`, `assert_text`, and `assert_gone` steps visually.
+6. **Replay validation** — replay the generated test in the same UI before saving to verify correctness.
+
+UTO Studio is an enhanced mode of `uto ui` (launched via `uto ui --studio`), not a separate tool. It layers on the Phase 5 server and SPA infrastructure.
+
+See ADR 0016 for full specification, architecture, and Phase 6 delivery plan.
+
+## Competitive Vision and Exit Strategy
+
+UTO is built to displace Cypress and Playwright as the dominant test automation platforms, then be acquired at peak strategic value.
+
+**Three asymmetric advantages:**
+1. **Vision-first resilience** — tests survive design system refactors because they recognize elements visually, not by CSS selectors.
+2. **Universal platform parity** — web and mobile in one framework, one CLI, one report format.
+3. **Zero maintenance overhead** — zero-config provisioning, self-healing (Phase 7), and visual authoring (Phase 6) minimize ongoing test maintenance cost.
+
+**Target acquirers:** Salesforce/Cypress (mobile + vision layer), Microsoft/Playwright (Rust engine + mobile parity), Sauce Labs/BrowserStack (zero-config developer experience layer).
+
+**Target acquisition window:** 2027 Q3–Q4 following Phase 9 community and ecosystem maturity.
+
+See ADR 0017 for full competitive analysis, acquirer profiles, valuation drivers, and market entry strategy.
+
 ## Building and Running
 
 This is a standard Rust project. The main application logic is in the `uto-core` crate.
@@ -342,6 +374,6 @@ cross-platform test job remains stable without custom runner provisioning.
 *   **Gemini/Copilot parity automation:** Run `./scripts/sync_ai_configs.sh` after updating `.github/` customization files, and verify parity with `./scripts/check_ai_config_sync.sh`.
 *   **Rustdoc:** All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`). This is crucial for generating useful library documentation.
 *   **Design Documents:** For significant changes or new features, consider updating or adding to the design documents in the `/docs` directory. This includes the `manifesto.md` and architectural decision records.
-*   **Current framework ADRs:** Include ADR 0010 (Phase 4 planning), ADR 0011 (shared `uto-test` helper crate + clean SoC guidelines), and ADR 0014 (Phase 5 UI Mode specification).
+*   **Current framework ADRs:** Include ADR 0010 (Phase 4 planning), ADR 0011 (shared `uto-test` helper crate + clean SoC guidelines), ADR 0014 (Phase 5 UI Mode specification), ADR 0015 (downloadable install script and onboarding), ADR 0016 (UTO Studio — visual test authoring), and ADR 0017 (competitive vision and exit strategy).
 *   **Commit Messages:** Write clear and concise commit messages that explain the "what" and "why" of a change.
 *   **Phase reference examples:** Maintain one committed runnable project per development phase under `examples/phases/` so each phase has a durable implementation reference in-repo.

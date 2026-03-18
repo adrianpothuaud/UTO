@@ -311,9 +311,9 @@ Status update (2026-03-18):
 
 ### Phase 5+ Roadmap (Future Planning)
 
-Beyond Phase 4, potential focus areas:
+Beyond Phase 4, the delivery roadmap:
 
-1. **Phase 5: UI Mode — Interactive Test Debugging and Visualization**
+1. **Phase 5: UI Mode — Interactive Test Debugging and Visualization** ✅
    - Implement `uto ui` CLI command launching a local HTTP + WebSocket server
    - Build an embedded browser-based SPA (no external CDN) for test tree, live event stream, pass/fail summary, and screenshot timeline
    - Support report-replay mode (`--report <artifact>`) for inspecting saved `uto-suite/v1` JSON files
@@ -321,25 +321,33 @@ Beyond Phase 4, potential focus areas:
    - Platform-agnostic: same UI works for web and mobile test runs
    - See ADR 0014 for full specification
 
-2. **Phase 6: Vision Model Integration and Optimization**
-   - Select and integrate real-world pre-trained UI detection model
-   - Benchmark recognition accuracy on diverse UI fixtures
-   - Implement model versioning and auto-update strategy
+2. **Phase 6: UTO Studio — Visual Test Authoring and Recording** 🎯
+   - Deliver the visual test recorder that surpasses Cypress Studio and Playwright Codegen
+   - Vision-first element inspector with bounding box + confidence overlay during recording
+   - Cross-platform recording: web (Chrome) and mobile (Android/iOS via Appium) in one session
+   - Rust code generation producing selector-free `uto-test` intent-based test functions
+   - Assertion builder for adding `assert_visible`, `assert_text`, `assert_gone` steps visually
+   - Replay validation to verify generated tests before saving
+   - See ADR 0016 for full specification
 
-3. **Phase 7: Advanced Intent and Context Awareness**
-   - Extend intent API with semantic understanding (context trees, multi-step intents)
-   - Add intent chaining and workflow validation
-   - Implement "intent replay" for deterministic test re-runs
+3. **Phase 7: Self-Healing Tests and Intent Chaining**
+   - Self-healing: exploratory recovery when vision candidates are ambiguous or low-confidence
+   - Intent chaining: multi-step workflows expressed as named, reusable intents
+   - Reinforcement feedback loop: successful recovery paths inform future recognition weights
+   - See ADR 0017 for competitive context
 
-4. **Phase 8: CI/CD Integration and Reporting Plugins**
-   - Add GitHub Actions, GitLab CI, Jenkins integration
-   - Implement report aggregation across parallel test runs
-   - Add trend dashboards and failure analytics
+4. **Phase 8: CI/CD Ecosystem Dominance**
+   - First-class GitHub Actions, GitLab CI, Azure Pipelines, Jenkins integration
+   - `uto-cloud` reporting service for result aggregation across parallel runs
+   - Trend dashboards and failure analytics
+   - Competing directly with Cypress Cloud and Playwright's Azure-backed reporting tier
 
-5. **Phase 9: Ecosystem and Community**
-   - Publish to crates.io as production-ready framework
-   - Add plugin API for custom intent handlers
-   - Establish community fixture repository
+5. **Phase 9: Community and Stable Release**
+   - Publish to crates.io as production-ready, stable framework
+   - Plugin API for custom intent handlers and report renderers
+   - Community intent repository (`uto-intent-shopify`, `uto-intent-stripe`, etc.)
+   - Migration guides from Cypress and Playwright
+   - **Acquisition-ready positioning** (see ADR 0017 for target acquirers and exit strategy)
 
 ---
 
@@ -411,4 +419,7 @@ To complete Phase 4.4 and close Phase 4:
 - ADR 0009: Framework Product Direction
 - ADR 0011: Shared `uto-test` Crate and Clean SoC Guidelines
 - ADR 0014: UTO UI Mode — Interactive Test Debugging and Visualization
+- ADR 0015: Downloadable Install Script and One-Line Onboarding
+- ADR 0016: UTO Studio — Visual Test Authoring and Recording
+- ADR 0017: Competitive Vision and Exit Strategy
 - docs/0007-simplicity-pillar.md

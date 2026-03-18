@@ -1,18 +1,35 @@
 # UTO
 
-Vision-first, cross-platform automation engine in Rust.
+**The vision-first, cross-platform test automation engine built to replace Cypress and Playwright.**
 
-UTO (Unified Testing Object) aims to make web and mobile automation feel less brittle by combining a zero-config infrastructure layer with a shared session abstraction, then moving toward vision-driven interaction.
+UTO (Unified Testing Object) combines a zero-config infrastructure layer, a vision-driven recognition loop, and a unified web + mobile session model into one framework — with a first-class CLI lifecycle (`init`, `run`, `report`, `ui`) and reporting-first diagnostics.
 
-The project is also moving toward a framework-style UX with a first-class CLI lifecycle (`init`, `run`, `report`) and reporting-first diagnostics.
+Where Cypress is web-only and Playwright is selector-brittle, UTO delivers selector-free, self-describing tests that run unchanged across Chrome, Android, and iOS.
 
 ## Why UTO
 
-- Zero-config mindset: discover first, provision when missing.
-- Cross-platform by design: macOS, Linux, Windows.
-- Unified execution model: web (ChromeDriver) and mobile (Appium) behind one session trait.
-- Clean process lifecycle: managed driver processes with explicit shutdown behavior.
-- Simplicity by default: common pain points (iframes, scroll/fling, context transitions) are handled as reusable defaults.
+- **Selector-free tests** — tests target user intent, not CSS selectors or XPath. Survive design system refactors.
+- **Web + mobile in one framework** — same CLI, same API, same report format for Chrome and Appium targets.
+- **Zero-config mindset** — discover first, provision when missing. No manual ChromeDriver versioning or PATH configuration.
+- **Cross-platform by design** — macOS, Linux, Windows. Clean process lifecycle with explicit shutdown semantics.
+- **Reporting-first observability** — structured JSON + HTML reports from every run, from setup through assertion outcomes.
+- **Interactive UI mode** — `uto ui` provides a local browser-based interface for running, watching, and debugging tests.
+- **Visual test authoring** — UTO Studio (Phase 6) records vision-first, selector-free test code for web and mobile — no Cypress Studio, no `playwright codegen` needed.
+
+## Competitive Position
+
+| Capability | Cypress | Playwright | **UTO** |
+|---|---|---|---|
+| Web automation | ✅ | ✅ | ✅ |
+| Mobile automation | ❌ | ❌ | ✅ |
+| Vision-first recognition | ❌ | ❌ | ✅ |
+| Selector-free tests | ❌ | ❌ | ✅ |
+| Zero-config setup | ❌ | ❌ | ✅ |
+| Visual test recorder | Stalled | CLI-only | 🎯 Phase 6 |
+| Cross-platform reporting | ❌ | ❌ | ✅ |
+| Compiled performance | ❌ | ❌ | ✅ |
+
+See [`docs/0017-competitive-vision-and-exit-strategy.md`](docs/0017-competitive-vision-and-exit-strategy.md) for the full competitive analysis and long-term business vision.
 
 ## Current Status
 
