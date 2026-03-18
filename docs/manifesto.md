@@ -161,7 +161,7 @@ UTO is built to win the market and to be acquired at peak strategic value.
 
 **Target acquisition window:** 2027 Q3–Q4, following Phase 9 community and ecosystem maturity.
 
-See ADR 0016 for full competitive analysis, acquirer profiles, and valuation drivers.
+See ADR 0017 for full competitive analysis, acquirer profiles, and valuation drivers.
 
 ---
 

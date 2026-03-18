@@ -1,4 +1,4 @@
-# ADR 0016: Competitive Vision and Long-Term Exit Strategy
+# ADR 0017: Competitive Vision and Long-Term Exit Strategy
 
 Date: 2026-03-18
 
@@ -108,7 +108,7 @@ The `uto ui` interactive mode closes the largest UX gap. Test authors who have u
 
 #### Phase 6: Superior Authoring Experience
 
-UTO Studio (ADR 0015) delivers a visual test recording experience that surpasses both Cypress Studio (stalled) and Playwright Codegen (CLI-only, selector-based). The moment UTO Studio ships mobile recording with vision-first codegen, UTO has a **category-defining differentiator** with no direct competitor.
+UTO Studio (ADR 0016) delivers a visual test recording experience that surpasses both Cypress Studio (stalled) and Playwright Codegen (CLI-only, selector-based). The moment UTO Studio ships mobile recording with vision-first codegen, UTO has a **category-defining differentiator** with no direct competitor.
 
 #### Phase 7: Self-Healing and Intent Chaining (Proposal)
 
@@ -249,7 +249,7 @@ This is a strategic direction ADR, not an implementation specification. Validati
 ## References
 
 - ADR 0014: UTO UI Mode — Interactive Test Debugging and Visualization
-- ADR 0015: UTO Studio — Visual Test Authoring and Recording
+- ADR 0016: UTO Studio — Visual Test Authoring and Recording
 - ADR 0009: Framework Product Direction — CLI and Reporting-First Experience
 - `docs/manifesto.md` — core philosophy and competitive positioning
 - Cypress acquisition by Salesforce: https://techcrunch.com/2023/11/15/salesforce-acquires-cypress/

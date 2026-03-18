@@ -328,13 +328,13 @@ Beyond Phase 4, the delivery roadmap:
    - Rust code generation producing selector-free `uto-test` intent-based test functions
    - Assertion builder for adding `assert_visible`, `assert_text`, `assert_gone` steps visually
    - Replay validation to verify generated tests before saving
-   - See ADR 0015 for full specification
+   - See ADR 0016 for full specification
 
 3. **Phase 7: Self-Healing Tests and Intent Chaining**
    - Self-healing: exploratory recovery when vision candidates are ambiguous or low-confidence
    - Intent chaining: multi-step workflows expressed as named, reusable intents
    - Reinforcement feedback loop: successful recovery paths inform future recognition weights
-   - See ADR 0016 for competitive context
+   - See ADR 0017 for competitive context
 
 4. **Phase 8: CI/CD Ecosystem Dominance**
    - First-class GitHub Actions, GitLab CI, Azure Pipelines, Jenkins integration
@@ -347,7 +347,7 @@ Beyond Phase 4, the delivery roadmap:
    - Plugin API for custom intent handlers and report renderers
    - Community intent repository (`uto-intent-shopify`, `uto-intent-stripe`, etc.)
    - Migration guides from Cypress and Playwright
-   - **Acquisition-ready positioning** (see ADR 0016 for target acquirers and exit strategy)
+   - **Acquisition-ready positioning** (see ADR 0017 for target acquirers and exit strategy)
 
 ---
 
@@ -419,6 +419,7 @@ To complete Phase 4.4 and close Phase 4:
 - ADR 0009: Framework Product Direction
 - ADR 0011: Shared `uto-test` Crate and Clean SoC Guidelines
 - ADR 0014: UTO UI Mode — Interactive Test Debugging and Visualization
-- ADR 0015: UTO Studio — Visual Test Authoring and Recording
-- ADR 0016: Competitive Vision and Exit Strategy
+- ADR 0015: Downloadable Install Script and One-Line Onboarding
+- ADR 0016: UTO Studio — Visual Test Authoring and Recording
+- ADR 0017: Competitive Vision and Exit Strategy
 - docs/0007-simplicity-pillar.md

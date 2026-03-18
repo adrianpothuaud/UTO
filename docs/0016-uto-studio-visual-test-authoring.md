@@ -1,4 +1,4 @@
-# ADR 0015: UTO Studio — Visual Test Authoring and Recording
+# ADR 0016: UTO Studio — Visual Test Authoring and Recording
 
 Date: 2026-03-18
 
@@ -287,7 +287,7 @@ uto ui --studio [OPTIONS]
 
 - ADR 0009: Framework Product Direction — CLI and Reporting-First Experience
 - ADR 0014: UTO UI Mode — Interactive Test Debugging and Visualization
-- ADR 0016: Competitive Vision and Exit Strategy
+- ADR 0017: Competitive Vision and Exit Strategy
 - `uto-ui/src/server.rs` — existing HTTP + WebSocket server
 - `uto-core/src/session/mod.rs` — `UtoSession` trait
 - Cypress Studio: https://docs.cypress.io/guides/references/cypress-studio
