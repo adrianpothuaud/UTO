@@ -25,6 +25,20 @@ pub struct ReportArgs {
     pub html_output: Option<PathBuf>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct UiArgs {
+    /// Project directory to serve (`uto.json` validated if present). Default: `.`
+    pub project: PathBuf,
+    /// Local port for the HTTP + WebSocket server. Default: `4000`.
+    pub port: u16,
+    /// Automatically open the browser after startup.
+    pub open: bool,
+    /// Enable watch mode (file-change auto re-run). Placeholder: full support in Iteration 5.4.
+    pub watch: bool,
+    /// Path to an existing `uto-suite/v1` or `uto-report/v1` JSON artifact to replay.
+    pub report: Option<PathBuf>,
+}
+
 pub fn parse_init_args(args: &[String], current_dir: &Path) -> Result<InitArgs, String> {
     if args.is_empty() {
         return Err("init requires <project-dir>".to_string());
@@ -165,6 +179,62 @@ pub fn parse_report_args(args: &[String]) -> Result<ReportArgs, String> {
     })
 }
 
+/// Parse arguments for `uto ui`.
+pub fn parse_ui_args(args: &[String]) -> Result<UiArgs, String> {
+    let mut project = PathBuf::from(".");
+    let mut port: u16 = 4000;
+    let mut open = false;
+    let mut watch = false;
+    let mut report: Option<PathBuf> = None;
+
+    let mut i = 0usize;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--project" => {
+                let value = get_flag_value(args, i, "--project")?;
+                project = PathBuf::from(value);
+                i += 1;
+            }
+            "--port" => {
+                let value = get_flag_value(args, i, "--port")?;
+                port = value.parse::<u16>().map_err(|_| {
+                    format!(
+                        "Invalid port '{}': must be a number between 1 and 65535",
+                        value
+                    )
+                })?;
+                i += 1;
+            }
+            "--open" => {
+                open = true;
+            }
+            "--watch" => {
+                watch = true;
+            }
+            "--report" => {
+                let value = get_flag_value(args, i, "--report")?;
+                report = Some(PathBuf::from(value));
+                i += 1;
+            }
+            flag if flag.starts_with('-') => {
+                return Err(format!("Unknown ui option: {flag}"));
+            }
+            value => {
+                return Err(format!("Unexpected argument for ui: {value}"));
+            }
+        }
+        i += 1;
+    }
+
+    Ok(UiArgs {
+        project,
+        port,
+        open,
+        watch,
+        report,
+    })
+}
+
 pub fn get_flag_value<'a>(args: &'a [String], index: usize, flag: &str) -> Result<&'a str, String> {
     let value = args
         .get(index + 1)
@@ -271,5 +341,56 @@ mod tests {
         assert_eq!(parsed.project, PathBuf::from("demo"));
         assert!(parsed.html);
         assert_eq!(parsed.html_output, Some(PathBuf::from("out/report.html")));
+    }
+
+    #[test]
+    fn parse_ui_args_defaults() {
+        let parsed = parse_ui_args(&[]).expect("parse ui args with no args");
+        assert_eq!(parsed.project, PathBuf::from("."));
+        assert_eq!(parsed.port, 4000);
+        assert!(!parsed.open);
+        assert!(!parsed.watch);
+        assert!(parsed.report.is_none());
+    }
+
+    #[test]
+    fn parse_ui_args_all_flags() {
+        let args = vec![
+            "--project".to_string(),
+            "my-proj".to_string(),
+            "--port".to_string(),
+            "4001".to_string(),
+            "--open".to_string(),
+            "--watch".to_string(),
+            "--report".to_string(),
+            "out/last-run.json".to_string(),
+        ];
+        let parsed = parse_ui_args(&args).expect("parse ui args");
+        assert_eq!(parsed.project, PathBuf::from("my-proj"));
+        assert_eq!(parsed.port, 4001);
+        assert!(parsed.open);
+        assert!(parsed.watch);
+        assert_eq!(parsed.report, Some(PathBuf::from("out/last-run.json")));
+    }
+
+    #[test]
+    fn parse_ui_args_rejects_unknown_flag() {
+        let args = vec!["--nope".to_string()];
+        let err = parse_ui_args(&args).expect_err("should fail");
+        assert!(err.contains("Unknown ui option"));
+    }
+
+    #[test]
+    fn parse_ui_args_rejects_invalid_port() {
+        let args = vec!["--port".to_string(), "notanumber".to_string()];
+        let err = parse_ui_args(&args).expect_err("should fail");
+        assert!(err.contains("Invalid port"));
+    }
+
+    #[test]
+    fn parse_ui_args_rejects_unexpected_positional() {
+        let args = vec!["somearg".to_string()];
+        let err = parse_ui_args(&args).expect_err("should fail");
+        assert!(err.contains("Unexpected argument for ui"));
     }
 }

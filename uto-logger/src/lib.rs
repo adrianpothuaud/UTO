@@ -21,8 +21,8 @@ pub fn init(component: &str) -> Result<(), String> {
     LOGGER_INIT
         .get_or_try_init(|| {
             let _ = tracing_log::LogTracer::init();
-            let filter = EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("info"));
+            let filter =
+                EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
 
             tracing_subscriber::registry()
                 .with(filter)

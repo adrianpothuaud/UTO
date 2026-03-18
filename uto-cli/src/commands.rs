@@ -3,9 +3,7 @@
 use std::fs;
 use std::process::Command;
 
-use crate::config::{
-    DEFAULT_REPORT_SCHEMA_VERSION, PROJECT_SCHEMA_VERSION, UtoProjectConfig,
-};
+use crate::config::{UtoProjectConfig, DEFAULT_REPORT_SCHEMA_VERSION, PROJECT_SCHEMA_VERSION};
 use crate::io::write_json;
 use crate::templates;
 
@@ -185,7 +183,10 @@ pub mod report {
                 println!("Run ID: {}", r.run_id);
                 println!("Mode: {}", r.mode);
                 println!("Status: {}", r.status);
-                println!("Duration (ms): {}", r.timeline.duration_ms.unwrap_or_default());
+                println!(
+                    "Duration (ms): {}",
+                    r.timeline.duration_ms.unwrap_or_default()
+                );
                 println!("Events: {}", r.events.len());
                 println!("Report: {}", report_path.display());
                 if let Some(hp) = html_path {
@@ -200,7 +201,10 @@ pub mod report {
                 println!("Suite ID: {}", s.suite_id);
                 println!("Mode: {}", s.mode);
                 println!("Status: {}", s.status);
-                println!("Duration (ms): {}", s.timeline.duration_ms.unwrap_or_default());
+                println!(
+                    "Duration (ms): {}",
+                    s.timeline.duration_ms.unwrap_or_default()
+                );
                 println!(
                     "Tests: {} total | {} passed | {} failed | {} skipped",
                     s.summary.total, s.summary.passed, s.summary.failed, s.summary.skipped
@@ -214,5 +218,31 @@ pub mod report {
         }
 
         Ok(())
+    }
+}
+
+pub mod ui {
+    /// Run the `uto ui` interactive server.
+    ///
+    /// Starts an embedded HTTP + WebSocket server that serves the UTO UI SPA and
+    /// optionally replays a saved `uto-suite/v1` or `uto-report/v1` artifact.
+    pub fn run(args: &[String]) -> Result<(), String> {
+        let parsed = crate::parsing::parse_ui_args(args)?;
+
+        // If the project directory contains uto.json, validate it for early feedback.
+        // If not present (e.g. user only passed --report), skip silently and proceed.
+        if parsed.project.join("uto.json").exists() {
+            crate::config::load_project_config(&parsed.project)?;
+        }
+
+        let opts = uto_ui::UiOptions {
+            project: parsed.project,
+            port: parsed.port,
+            open: parsed.open,
+            watch: parsed.watch,
+            report: parsed.report,
+        };
+
+        uto_ui::start_server_sync(opts)
     }
 }

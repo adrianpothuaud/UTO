@@ -1,0 +1,17 @@
+[package]
+name = "phase5-ui-mode"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+uto-core = { path = "../../../uto-core" }
+uto-test = { path = "../../../uto-test" }
+uto-runner = { path = "../../../uto-runner" }
+uto-reporter = { path = "../../../uto-reporter" }
+uto-logger = { path = "../../../uto-logger" }
+tokio = { version = "1", features = ["full"] }
+log = "0.4"
+serde_json = "1"
+which = "7"

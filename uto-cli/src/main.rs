@@ -22,18 +22,24 @@ fn run_cli() -> Result<(), String> {
         "init" => commands::init::run(&args[2..]),
         "run" => commands::run::run(&args[2..]),
         "report" => commands::report::run(&args[2..]),
+        "ui" => commands::ui::run(&args[2..]),
         "help" | "--help" | "-h" => {
             print_help();
             Ok(())
         }
         other => Err(format!(
-            "Unknown command '{other}'. Supported commands: init, run, report"
+            "Unknown command '{other}'. Supported commands: init, run, report, ui"
         )),
     }
 }
 
 fn print_help() {
     println!(
-        "UTO CLI\n\nCommands:\n  uto init <project-dir> [--template web|mobile] [--uto-root <path>]\n  uto run --project <project-dir> [--target web|mobile] [--report-json <path>] [--driver-trace]\n  uto report --project <project-dir> [--input <report-path>] [--html] [--html-output <report.html>]"
+        "UTO CLI\n\n\
+         Commands:\n  \
+           uto init <project-dir> [--template web|mobile] [--uto-root <path>]\n  \
+           uto run --project <project-dir> [--target web|mobile] [--report-json <path>] [--driver-trace]\n  \
+           uto report --project <project-dir> [--input <report-path>] [--html] [--html-output <report.html>]\n  \
+           uto ui [--project <project-dir>] [--port <port>] [--open] [--watch] [--report <report-path>]"
     );
 }

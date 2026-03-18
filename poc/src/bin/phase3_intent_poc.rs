@@ -137,7 +137,11 @@ async fn main() {
         };
 
         if let Err(err) = uto_reporter::write_suite_html(suite.payload(), &html_path) {
-            log::error!("Failed to write HTML report {}: {}", html_path.display(), err);
+            log::error!(
+                "Failed to write HTML report {}: {}",
+                html_path.display(),
+                err
+            );
         } else {
             log::info!("HTML report written to {}", html_path.display());
         }

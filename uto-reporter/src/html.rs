@@ -266,7 +266,11 @@ pub fn render_report_html(report: &UtoReportV1) -> String {
 
     let cards = [
         ("Mode", escape_html(&report.mode), ""),
-        ("Status", escape_html(&report.status), badge_val_class(&report.status)),
+        (
+            "Status",
+            escape_html(&report.status),
+            badge_val_class(&report.status),
+        ),
         (
             "Duration",
             report
@@ -289,8 +293,7 @@ pub fn render_report_html(report: &UtoReportV1) -> String {
             "Started",
             format!(
                 "<span data-ts=\"{}\">{}</span>",
-                report.timeline.started_at_unix_ms,
-                report.timeline.started_at_unix_ms
+                report.timeline.started_at_unix_ms, report.timeline.started_at_unix_ms
             ),
         ),
         (
@@ -305,7 +308,13 @@ pub fn render_report_html(report: &UtoReportV1) -> String {
 
     let mut buf = String::with_capacity(32_768);
     buf.push_str(&head_html(&title));
-    buf.push_str(&topbar_html("UTO", "Execution Report", &report.run_id, &report.status, bc));
+    buf.push_str(&topbar_html(
+        "UTO",
+        "Execution Report",
+        &report.run_id,
+        &report.status,
+        bc,
+    ));
     buf.push_str("<div class=\"main\">");
     buf.push_str(&hero_html(
         "Single Execution",
@@ -339,8 +348,20 @@ pub fn render_suite_html(suite: &UtoSuiteReportV1) -> String {
 
     let cards = [
         ("Total", s.total.to_string(), ""),
-        ("Passed", s.passed.to_string(), if s.passed == s.total && s.total > 0 { "ok" } else { "" }),
-        ("Failed", s.failed.to_string(), if s.failed > 0 { "fail" } else { "" }),
+        (
+            "Passed",
+            s.passed.to_string(),
+            if s.passed == s.total && s.total > 0 {
+                "ok"
+            } else {
+                ""
+            },
+        ),
+        (
+            "Failed",
+            s.failed.to_string(),
+            if s.failed > 0 { "fail" } else { "" },
+        ),
         ("Skipped", s.skipped.to_string(), ""),
         ("Duration", duration_val, ""),
     ];
@@ -355,8 +376,7 @@ pub fn render_suite_html(suite: &UtoSuiteReportV1) -> String {
             "Started",
             format!(
                 "<span data-ts=\"{}\">{}</span>",
-                suite.timeline.started_at_unix_ms,
-                suite.timeline.started_at_unix_ms
+                suite.timeline.started_at_unix_ms, suite.timeline.started_at_unix_ms
             ),
         ),
         (
@@ -371,7 +391,13 @@ pub fn render_suite_html(suite: &UtoSuiteReportV1) -> String {
 
     let mut buf = String::with_capacity(65_536);
     buf.push_str(&head_html(&title));
-    buf.push_str(&topbar_html("UTO", "Suite Report", &suite.suite_id, &suite.status, bc));
+    buf.push_str(&topbar_html(
+        "UTO",
+        "Suite Report",
+        &suite.suite_id,
+        &suite.status,
+        bc,
+    ));
     buf.push_str("<div class=\"main\">");
     buf.push_str(&hero_html(
         "Suite Execution",
@@ -392,15 +418,23 @@ pub fn render_suite_html(suite: &UtoSuiteReportV1) -> String {
 /// Writes an HTML report for a single-run artifact to the requested file path.
 pub fn write_report_html(report: &UtoReportV1, file_path: &Path) -> Result<(), String> {
     let html = render_report_html(report);
-    std::fs::write(file_path, html)
-        .map_err(|e| format!("Failed to write HTML report at {}: {e}", file_path.display()))
+    std::fs::write(file_path, html).map_err(|e| {
+        format!(
+            "Failed to write HTML report at {}: {e}",
+            file_path.display()
+        )
+    })
 }
 
 /// Writes an HTML suite report to the requested file path.
 pub fn write_suite_html(suite: &UtoSuiteReportV1, file_path: &Path) -> Result<(), String> {
     let html = render_suite_html(suite);
-    std::fs::write(file_path, html)
-        .map_err(|e| format!("Failed to write HTML suite report at {}: {e}", file_path.display()))
+    std::fs::write(file_path, html).map_err(|e| {
+        format!(
+            "Failed to write HTML suite report at {}: {e}",
+            file_path.display()
+        )
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -453,7 +487,11 @@ fn hero_html(
     badge_cls: &str,
 ) -> String {
     let duration_html = duration_ms
-        .map(|d| format!("<span class=\"badge b-run\">duration: <span data-ms=\"{d}\">{d}ms</span></span>"))
+        .map(|d| {
+            format!(
+                "<span class=\"badge b-run\">duration: <span data-ms=\"{d}\">{d}ms</span></span>"
+            )
+        })
         .unwrap_or_else(|| "<span class=\"badge b-run\">duration: -</span>".to_string());
     format!(
         concat!(
@@ -495,7 +533,7 @@ fn meta_grid_html(items: &[(&str, String)]) -> String {
         buf.push_str(&format!(
             "<div class=\"mc\"><div class=\"mc-k\">{k}</div><div class=\"mc-v\">{v}</div></div>",
             k = escape_html(k),
-            v = v,  // already escaped or dynamic HTML
+            v = v, // already escaped or dynamic HTML
         ));
     }
     buf.push_str("</div>");
@@ -616,7 +654,12 @@ fn test_item_html(tc: &TestCaseResult, idx: usize) -> String {
     let dur = tc
         .timeline
         .duration_ms
-        .map(|d| format!("<span data-ms=\"{d}\" class=\"test-dur\">{d}ms</span>", d = d))
+        .map(|d| {
+            format!(
+                "<span data-ms=\"{d}\" class=\"test-dur\">{d}ms</span>",
+                d = d
+            )
+        })
         .unwrap_or_else(|| "<span class=\"test-dur\">-</span>".to_string());
     let ev_count = tc.events.len();
 
@@ -793,7 +836,12 @@ mod tests {
         use crate::schema::UtoSuiteReportV1;
         let mut suite = UtoSuiteReportV1::new("suite-1".to_string(), "web".to_string(), 1000);
         suite.status = "passed".to_string();
-        suite.summary = SuiteSummary { total: 2, passed: 2, failed: 0, skipped: 0 };
+        suite.summary = SuiteSummary {
+            total: 2,
+            passed: 2,
+            failed: 0,
+            skipped: 0,
+        };
         suite.tests.push(TestCaseResult {
             name: "login flow".to_string(),
             status: "passed".to_string(),

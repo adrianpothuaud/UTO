@@ -8,6 +8,6 @@ pub mod options;
 
 pub use options::{CliOptions, RunMode};
 pub use uto_reporter::{
-	render_report_html, write_report_html, Report, ReportEvent, ReportTimeline, UtoReportV1,
-	UTO_REPORT_SCHEMA_V1,
+    render_report_html, write_report_html, Report, ReportEvent, ReportTimeline, UtoReportV1,
+    UTO_REPORT_SCHEMA_V1,
 };

@@ -102,9 +102,7 @@ pub enum ParsedReport {
 /// Validates report JSON and returns the appropriate typed report.
 ///
 /// Supports both `uto-report/v1` (single run) and `uto-suite/v1` (suite run).
-pub fn parse_report_json(
-    report_value: &serde_json::Value,
-) -> Result<ParsedReport, String> {
+pub fn parse_report_json(report_value: &serde_json::Value) -> Result<ParsedReport, String> {
     let schema_version = report_value
         .get("schema_version")
         .and_then(|v| v.as_str())
@@ -112,9 +110,8 @@ pub fn parse_report_json(
 
     match schema_version {
         uto_reporter::UTO_REPORT_SCHEMA_V1 => {
-            let parsed: uto_reporter::UtoReportV1 =
-                serde_json::from_value(report_value.clone())
-                    .map_err(|e| format!("Invalid uto-report/v1 shape: {e}"))?;
+            let parsed: uto_reporter::UtoReportV1 = serde_json::from_value(report_value.clone())
+                .map_err(|e| format!("Invalid uto-report/v1 shape: {e}"))?;
             if parsed.status.trim().is_empty() {
                 return Err("Invalid report: missing status".to_string());
             }

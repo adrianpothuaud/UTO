@@ -364,12 +364,9 @@ impl ManagedSession {
     /// Scrolls with custom maximum scroll attempts.
     pub async fn scroll_intent_with_max(&self, label: &str, max_scrolls: usize) -> UtoResult<()> {
         let result = match self.inner.as_ref() {
-            Some(SessionInner::Mobile(session)) => {
-                session.scroll_intent(label, max_scrolls).await
-            }
+            Some(SessionInner::Mobile(session)) => session.scroll_intent(label, max_scrolls).await,
             Some(SessionInner::Web(_)) => Err(UtoError::SessionCommandFailed(
-                "scroll_intent is mobile-only; use web native scrolling patterns"
-                    .to_string(),
+                "scroll_intent is mobile-only; use web native scrolling patterns".to_string(),
             )),
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
@@ -403,9 +400,7 @@ impl ManagedSession {
     /// tree is loading asynchronously. Polls every 200ms until found or timeout.
     pub async fn wait_for_intent(&self, label: &str, timeout_ms: u64) -> UtoResult<()> {
         let result = match self.inner.as_ref() {
-            Some(SessionInner::Mobile(session)) => {
-                session.wait_for_intent(label, timeout_ms).await
-            }
+            Some(SessionInner::Mobile(session)) => session.wait_for_intent(label, timeout_ms).await,
             Some(SessionInner::Web(_)) => Err(UtoError::SessionCommandFailed(
                 "wait_for_intent is mobile-only".to_string(),
             )),
@@ -439,25 +434,22 @@ impl ManagedSession {
     pub async fn close(mut self) -> UtoResult<()> {
         let target = self.target;
         if let Some(inner) = self.inner.take() {
-            let result = match inner {
+            match inner {
                 SessionInner::Web(session) => Box::new(session).close().await?,
                 SessionInner::Mobile(session) => Box::new(session).close().await?,
-            };
+            }
             self.record_event(
                 "session.close",
                 "ok",
                 serde_json::json!({ "target": target }),
             );
-            result
         }
 
         if let Some(driver) = self.driver.take() {
             match driver.stop() {
-                Ok(()) => self.record_event(
-                    "driver.stop",
-                    "ok",
-                    serde_json::json!({ "target": target }),
-                ),
+                Ok(()) => {
+                    self.record_event("driver.stop", "ok", serde_json::json!({ "target": target }))
+                }
                 Err(err) => {
                     self.record_event(
                         "driver.stop",

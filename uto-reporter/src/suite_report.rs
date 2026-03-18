@@ -199,7 +199,11 @@ mod tests {
         let suite = SuiteReport::new(true, None, "web");
         let mut h = suite.begin_test("t1");
         h.event("session.start", "ok", serde_json::json!({}));
-        h.event("assert.title", "ok", serde_json::json!({"title": "Example"}));
+        h.event(
+            "assert.title",
+            "ok",
+            serde_json::json!({"title": "Example"}),
+        );
         assert_eq!(h.events.len(), 2);
     }
 }
