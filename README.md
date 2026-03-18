@@ -16,19 +16,31 @@ The project is also moving toward a framework-style UX with a first-class CLI li
 
 ## Current Status
 
-Phase 1 and Phase 2 are operational:
+Phase 1, Phase 2, and Phase 3 are operational, and the Phase 4.1 baseline is complete:
 
 - Environment discovery and provisioning (`uto-core/src/env`)
 - Driver lifecycle management (`uto-core/src/driver`)
 - Web and mobile WebDriver communication (`uto-core/src/session`)
+- Phase 3 intent and resolver flow (`uto-core/src/vision`, `uto-core/src/session`)
+- Hardened framework CLI scaffolding (`uto-cli/src/*` modularized command/config/template layers)
 - Working POC binaries (`poc/src/bin`)
 - In-repo static site generator (`uto-site`)
+
+Phase 4.1 completion in `uto-cli` includes:
+
+- stricter argument parsing and validation for `init`, `run`, `report`
+- `uto.json` schema and project-structure checks before run
+- `uto-report/v1` validation in `uto report`
+- split command/config/parsing/template modules for smaller test surfaces and SoC
+- unit and integration-style CLI test coverage, including generated-project compile checks
 
 ## Workspace Layout
 
 - `uto-core`: core automation engine (env, driver, session, vision foundation)
+- `uto-test`: end-user test authoring helpers (simple managed session API)
+- `uto-runner`: reusable project runner/report scaffolding for generated and reference projects
 - `uto-cli`: framework command-line interface (`uto init`, `uto run`, `uto report`)
-- `poc`: executable demos for Phase 1 and Phase 2
+- `poc`: executable demos for Phase 1, Phase 2, and Phase 3
 - `uto-site`: static site generator for the project landing site
 - `docs`: ADRs and project direction documents
 - `examples`: CLI-generated smoke projects plus committed per-phase reference projects
@@ -111,11 +123,32 @@ cargo run -p uto-cli -- init ./my-tests --template web --uto-root "$PWD"
 ```
 
 Generates:
-- `Cargo.toml` with uto-core dependency
+- `Cargo.toml` with `uto-test`, `uto-runner`, and `uto-core` dependencies
 - `src/bin/uto_project_runner.rs` (local test runner)
 - `tests/web_example.rs` and `tests/mobile_example.rs` (sample tests)
 - `uto.json` (project config)
 - `.uto/reports/` (report directory)
+
+Example test style in generated projects:
+
+```rust
+let web = uto_test::startNewSession("chrome").await?;
+let mobile = uto_test::startNewSessionWithArg("android", 16).await?;
+```
+
+Rust-style variants are also available:
+
+```rust
+let web = uto_test::start_new_session("chrome").await?;
+let mobile = uto_test::start_new_session_with_hint("android", 16).await?;
+```
+
+## Implementation Principles
+
+- Keep end-user test APIs simple and explicit: one call to start sessions, one call to close.
+- Prefer small functions and focused modules over large multi-responsibility files.
+- Enforce separation of concerns: infrastructure/session protocol in `uto-core`, authoring helpers in `uto-test`, command orchestration in `uto-cli`.
+- Keep setup lifecycle observable with logs even when helper APIs reduce boilerplate.
 
 ### Run: Execute Tests
 
@@ -219,7 +252,13 @@ Site source is under `uto-site/`, generated output goes to `uto-site/dist/`.
 ## Roadmap
 
 - Phase 3: ONNX-backed UI detection and accessibility fusion
-- Phase 4: intent-centric API (`select`, `fill`, etc.)
+- Phase 4: framework maturity (`init`, `run`, `report`), reporting-first observability, and mobile parity hardening
 - Framework UX: CLI lifecycle (`init`, `run`, `report`) and reporting-first test execution visibility
+
+Current next steps:
+
+- Phase 4.2: formalize reusable `uto-report/v1` schema/type surfaces and report docs
+- Phase 4.3: mobile parity hardening and fixture expansion
+- Add one committed Phase 4 reference project under `examples/phases/`
 
 See ADRs in `docs/` and project context in `GEMINI.md`.

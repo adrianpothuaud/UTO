@@ -1,0 +1,12 @@
+[package]
+name = "uto-test"
+version = "0.1.0"
+edition = "2021"
+description = "End-user test authoring helpers for UTO"
+
+[dependencies]
+uto-core = { path = "../uto-core" }
+log = "0.4"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }

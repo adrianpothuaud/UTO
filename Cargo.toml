@@ -1,6 +1,8 @@
 [workspace]
 members = [
     "uto-core",
+    "uto-test",
+    "uto-runner",
     "poc",
     "uto-cli",
     "uto-site",

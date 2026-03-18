@@ -1,30 +1,12 @@
-use uto_core::session::web::WebSession;
-use uto_core::session::UtoSession;
-
 #[tokio::test]
 async fn web_phase3_intent_flow_or_skip() {
-    let chromedriver = match which::which("chromedriver") {
-        Ok(path) => path,
-        Err(_) => {
-            println!("Skipping web Phase 3 example: chromedriver not available");
-            return;
-        }
-    };
-
-    let driver = match uto_core::driver::start_chromedriver(&chromedriver).await {
-        Ok(proc) => proc,
+    let session = match uto_test::startNewSession("chrome").await {
+        Ok(session) => session,
         Err(err) => {
-            println!("Skipping web Phase 3 example: could not start chromedriver: {err}");
+            println!("Skipping web Phase 3 example: could not create web session: {err}");
             return;
         }
     };
-
-    let session = WebSession::new_with_args(
-        &driver.url,
-        &["--headless=new", "--no-sandbox", "--disable-dev-shm-usage"],
-    )
-    .await
-    .expect("web session");
 
     session
         .goto(concat!(
@@ -53,6 +35,5 @@ async fn web_phase3_intent_flow_or_skip() {
     let text = session.get_text(&out).await.expect("get output text");
     assert_eq!(text, "phase3@uto.dev");
 
-    Box::new(session).close().await.expect("close");
-    driver.stop().expect("stop driver");
+    session.close().await.expect("close");
 }

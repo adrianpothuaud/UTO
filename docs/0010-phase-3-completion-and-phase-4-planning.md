@@ -4,7 +4,7 @@ Date: 2026-03-18
 
 ## Status
 
-**Accepted — Phase 3 Complete, Phase 4 Planned**
+**Accepted — Phase 3 Complete, Phase 4 In Progress**
 
 ## Phase 3 Completion Assessment
 
@@ -67,6 +67,24 @@ Phase 4 refocuses UTO from **core engine capability** (Phases 1–3) to **end-us
 
 The goal is to transform UTO from a powerful but developer-centric library into a production-grade framework that test teams can adopt for real projects.
 
+### Phase 4.1 Completion Update (2026-03-18)
+
+Phase 4.1 CLI scaffolding baseline is complete.
+
+Delivered in `uto-cli` so far:
+
+- strict argument parsing and unknown-option handling for `init`, `run`, and `report`
+- `uto.json` schema and field validation at load-time
+- early project-structure checks (for example missing generated runner)
+- `uto report` artifact checks including `uto-report/v1` schema validation
+- expanded CLI unit coverage plus integration-style binary workflow tests
+- shared `uto-test` helper API that abstracts setup/session lifecycle into simple calls while preserving setup/session logs
+- shared `uto-runner` crate for generated/reference project runner/report orchestration reuse
+- CLI modularization into focused command/config/parsing/template/io files for SoC and smaller test surfaces
+- generated-project compatibility tests validating `uto init` output compiles with `cargo check --tests`
+
+This keeps Phase 4.1 aligned with the architecture boundary rule: CLI hardening remains orchestration-layer work and does not shift `env`, `driver`, `session`, or `vision` responsibilities.
+
 ### Phase 4 Core Objectives
 
 Based on ADR 0009 ("Framework Product Direction — CLI and Reporting-First Experience"), Phase 4 will deliver:
@@ -105,12 +123,25 @@ Based on ADR 0009 ("Framework Product Direction — CLI and Reporting-First Expe
   - Failure snapshots (screenshot, page source) with storage references
 - Implement structured logging in `session` layer to feed events into report
 - Add JSON serialization helpers for all reportable event types
+- Define native readable HTML report output (derived from `uto-report/v1`) for local developer workflows
+   - single-file `report.html` artifact generated alongside JSON in project report directory
+   - no JavaScript dependency required for baseline rendering; static HTML/CSS output must remain readable offline
+   - sections required in v1 HTML output:
+      - run header (run_id, mode, status, start/end/duration)
+      - timeline table (ordered stage/status/detail rows)
+      - failed events and error block (if present)
+      - intent resolution summary where available (candidate/ranking information)
+   - severity/status visual language must be consistent and color-accessible (not color-only encoding)
+   - HTML renderer must be deterministic from JSON input and schema-version aware
+   - generated HTML must clearly display schema version and source JSON file path/reference
 
 **Success Criteria:**
 - Phase 3 POC can emit structured JSON report with all test steps visible
 - Report includes resolved intent candidates with confidence scores
 - Phase 3 reference project emits valid report artifact
 - Report schema is stable (version constraint included)
+- CLI can produce or consume a native HTML report view aligned to `uto-report/v1` without losing JSON as source of truth
+- HTML report remains readable when opened directly from filesystem on macOS/Linux/Windows
 
 #### 3. Mobile Parity Hardening (Phase 4.3: Mobile Intent Maturity)
 
@@ -165,15 +196,22 @@ cargo test --workspace
 
 #### Iteration 4.2 (Weeks 3–4): Report Schema and Logging
 
+Kickoff update (2026-03-18):
+
+- Started typed `uto-report/v1` schema surfaces in `uto-runner` and wired `uto-cli` report parsing/summary through those types.
+- Native HTML report specification is now documented in this ADR and queued for renderer implementation.
+
 1. Define `uto-report/v1` JSON schema (as TypeScript types for reference)
 2. Add structured event types to `session` layer
 3. Implement report serialization in POC binaries
-4. Validate report artifact structure and completeness
+4. Implement deterministic JSON -> HTML renderer for native readable report output
+5. Validate report artifact structure and completeness
 
 **Acceptance:**
 - Phase 3 POC emits valid `uto-report/v1` JSON
 - Phase 3 example project generates report artifact
 - Report includes intent resolution, latency, driver communication optional traces
+- HTML report includes run header, timeline, failures, and schema/source metadata with offline readability
 
 #### Iteration 4.3 (Weeks 5–6): Mobile Hardening
 
@@ -203,7 +241,7 @@ cargo test --workspace
 
 | Metric | Target | Current Status |
 |--------|--------|-----------------|
-| CLI commands functional | All three (init, run, report) | Scaffolded, partial |
+| CLI commands functional | All three (init, run, report) | Phase 4.1 baseline complete |
 | Test coverage | 85%+ on core + CLI | 79 tests, growing |
 | Example projects | ≥3 committed, runnable | 1 (phase3-intent) |
 | Documentation | "Getting Started" + troubleshooting | GEMINI exists, needs expansion |
@@ -295,13 +333,13 @@ Each Phase 4 iteration will be accepted when:
 
 ## Immediate Next Steps
 
-To transition from Phase 3 to Phase 4:
+To move from completed Phase 4.1 baseline into the next iterations:
 
-1. **Lock Phase 3 implementation** — tag a stable release (if applicable)
-2. **Review CLI scaffolding** — finalize `uto-cli/src/main.rs` structure
-3. **Define report schema** — decide on JSON structure and versioning
-4. **Plan iteration 4.1** — scope first CLI command completeness
-5. **Update GEMINI.md** — mark Phase 4 as "In Progress"
+1. **Start Iteration 4.2 schema work** — define reusable `uto-report/v1` type surfaces and event model docs
+2. **Document report contract** — add stable semantics/examples for machine-readability and CI tooling
+3. **Begin Iteration 4.3 mobile hardening** — expand fixture coverage and mobile intent parity behaviors
+4. **Add a committed Phase 4 reference project** — under `examples/phases/` for durable framework workflow validation
+5. **Keep docs and static site in sync** — maintain ADR/README/site parity as implementation evolves
 
 ---
 
@@ -311,4 +349,5 @@ To transition from Phase 3 to Phase 4:
 - ADR 0002: Driver Communication Layer
 - ADR 0008: Phase 3 Recognition Loop MVP
 - ADR 0009: Framework Product Direction
+- ADR 0011: Shared `uto-test` Crate and Clean SoC Guidelines
 - docs/0007-simplicity-pillar.md

@@ -44,3 +44,21 @@ cargo test
 ```
 
 Web/mobile tests skip gracefully when required host tooling is not available.
+
+## Test Authoring Style
+
+This reference now demonstrates the simplified UTO test style where setup and session lifecycle details are provided by the shared `uto-test` crate:
+
+```rust
+let web = uto_test::startNewSession("chrome").await?;
+let mobile = uto_test::startNewSessionWithArg("android", 16).await?;
+```
+
+Rust-style equivalents are also supported:
+
+```rust
+let web = uto_test::start_new_session("chrome").await?;
+let mobile = uto_test::start_new_session_with_hint("android", 16).await?;
+```
+
+The helper still logs environment discovery, driver startup, and session creation steps so setup remains observable even though the test code stays concise.

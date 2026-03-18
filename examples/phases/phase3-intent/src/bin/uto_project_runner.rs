@@ -1,6 +1,4 @@
-use serde_json::{json, Value};
-use std::time::{SystemTime, UNIX_EPOCH};
-
+use serde_json::json;
 use uto_core::{
     driver,
     error::UtoError,
@@ -15,160 +13,18 @@ use uto_core::{
         UtoSession,
     },
 };
-
-#[derive(Clone, Copy)]
-enum DemoMode {
-    Web,
-    Mobile,
-}
-
-struct CliOptions {
-    demo_mode: DemoMode,
-    report_json: bool,
-    report_file: Option<String>,
-}
-
-struct Report {
-    enabled: bool,
-    report_file: Option<String>,
-    payload: Value,
-    start_ms: u128,
-}
-
-impl Report {
-    fn new(options: &CliOptions) -> Self {
-        let start_ms = now_unix_ms();
-        let run_id = format!("run-{}-{}", start_ms, std::process::id());
-
-        Self {
-            enabled: options.report_json,
-            report_file: options.report_file.clone(),
-            payload: json!({
-                "schema_version": "uto-report/v1",
-                "framework": "uto",
-                "phase": 3,
-                "run_id": run_id,
-                "demo": match options.demo_mode {
-                    DemoMode::Web => "web",
-                    DemoMode::Mobile => "mobile",
-                },
-                "status": "running",
-                "timeline": {
-                    "started_at_unix_ms": start_ms,
-                    "finished_at_unix_ms": null,
-                    "duration_ms": null
-                },
-                "events": []
-            }),
-            start_ms,
-        }
-    }
-
-    fn event(&mut self, stage: &str, status: &str, detail: Value) {
-        if !self.enabled {
-            return;
-        }
-
-        if let Some(events) = self.payload.get_mut("events").and_then(Value::as_array_mut) {
-            events.push(json!({
-                "stage": stage,
-                "status": status,
-                "detail": detail
-            }));
-        }
-    }
-
-    fn finish(&mut self, status: &str, error: Option<String>) {
-        if !self.enabled {
-            return;
-        }
-
-        let end_ms = now_unix_ms();
-        self.payload["status"] = json!(status);
-        self.payload["timeline"]["finished_at_unix_ms"] = json!(end_ms);
-        self.payload["timeline"]["duration_ms"] = json!((end_ms - self.start_ms) as u64);
-
-        if let Some(err) = error {
-            self.payload["error"] = json!(err);
-        }
-    }
-
-    fn emit(&self) {
-        if !self.enabled {
-            return;
-        }
-
-        let serialized = match serde_json::to_string_pretty(&self.payload) {
-            Ok(value) => value,
-            Err(err) => {
-                eprintln!("Failed to serialize report: {err}");
-                return;
-            }
-        };
-
-        println!("{serialized}");
-
-        if let Some(path) = &self.report_file {
-            if let Err(err) = std::fs::write(path, serialized) {
-                eprintln!("Failed to write report file {}: {}", path, err);
-            }
-        }
-    }
-}
-
-fn now_unix_ms() -> u128 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_millis())
-        .unwrap_or(0)
-}
-
-fn parse_cli_options() -> CliOptions {
-    let mut demo_mode = DemoMode::Web;
-    let mut report_json = false;
-    let mut report_file = std::env::var("UTO_REPORT_FILE").ok();
-
-    let args: Vec<String> = std::env::args().collect();
-    let mut i = 1usize;
-    while i < args.len() {
-        match args[i].as_str() {
-            "--target" => {
-                if let Some(next) = args.get(i + 1) {
-                    if next.eq_ignore_ascii_case("mobile") {
-                        demo_mode = DemoMode::Mobile;
-                    }
-                    i += 1;
-                }
-            }
-            "--json" => report_json = true,
-            "--report-file" => {
-                if let Some(next) = args.get(i + 1) {
-                    report_file = Some(next.clone());
-                    i += 1;
-                }
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-
-    CliOptions {
-        demo_mode,
-        report_json,
-        report_file,
-    }
-}
+use uto_runner::{CliOptions, Report, RunMode};
 
 #[tokio::main]
 async fn main() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
-    let options = parse_cli_options();
-    let mut report = Report::new(&options);
+    let options = CliOptions::from_env();
+    let mut report = Report::new(options.report_json, options.report_file.clone(), options.mode);
 
-    let result = match options.demo_mode {
-        DemoMode::Web => run_web(&mut report).await,
-        DemoMode::Mobile => run_mobile(&mut report).await,
+    let result = match options.mode {
+        RunMode::Web => run_web(&mut report).await,
+        RunMode::Mobile => run_mobile(&mut report).await,
     };
 
     match &result {

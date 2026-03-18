@@ -1,7 +1,7 @@
 ---
 description: "Use when editing Rust code in uto-core or poc. Covers zero-config design, cross-platform process management, WebDriver session layering, and required validation commands."
 name: "UTO Rust Guidance"
-applyTo: "uto-core/src/**/*.rs, uto-core/tests/**/*.rs, poc/src/**/*.rs"
+applyTo: "uto-core/src/**/*.rs, uto-core/tests/**/*.rs, uto-test/src/**/*.rs, uto-test/tests/**/*.rs, poc/src/**/*.rs"
 ---
 # UTO Rust Guidance
 
@@ -11,6 +11,7 @@ applyTo: "uto-core/src/**/*.rs, uto-core/tests/**/*.rs, poc/src/**/*.rs"
 - Prefer extending the shared session abstractions over adding one-off flows in the POC binaries.
 - For new public APIs, add Rustdoc and keep error messages actionable.
 - For framework-facing workflow features, include structured reporting hooks so users can understand setup, intent resolution, actions, assertions, and driver-level outcomes.
+- Keep code clean and testable: prefer small functions/modules and explicit separation of concerns instead of large multi-purpose files.
 
 Validate Rust changes with:
 

@@ -54,6 +54,8 @@ POC phase isolation rule:
 Framework-facing workflow components now include:
 
 - `uto-cli/` — CLI entrypoint for project lifecycle commands (`init`, `run`, `report`)
+- `uto-test/` — end-user test helper crate (simple session start/close API)
+- `uto-runner/` — reusable generated-project runner/report infrastructure
 - `examples/` — generated-project validation flow for CLI smoke testing
 
 For mobile readiness, `src/env/` now also performs best-effort auto-fixes:
@@ -95,7 +97,7 @@ All five **Phase 3 MVP completion criteria** met:
 
 ## Phase 4: Framework Maturity and Reporting-First Experience
 
-**Status:** In Planning (see ADR 0010)
+**Status:** In Progress (Iteration 4.1 baseline complete; Iteration 4.2 next; see ADR 0010)
 
 Phase 4 refocuses UTO from core engine capability toward end-user framework experience. Main objectives:
 
@@ -111,11 +113,21 @@ Phase 4 refocuses UTO from core engine capability toward end-user framework expe
 - Framework documentation becomes product-level responsibility
 - Phase 1/2/3 layer boundaries remain unchanged
 
+**Iteration 4.1 Completion (CLI Scaffolding):**
+1. Implemented strict CLI argument validation and unknown-option handling in `uto-cli`
+2. Added `uto.json` schema validation and project-structure preflight checks before execution
+3. Added `uto-report/v1` artifact validation in `uto report`
+4. Added CLI unit tests plus integration-style binary workflow tests in `uto-cli/tests/cli_workflow.rs`
+5. Added shared `uto-test` helper API so end-user tests can start sessions with one call (`startNewSession("chrome")`, `startNewSessionWithArg("android", 16)`) while retaining setup/session logs
+6. Added `uto-runner` crate so generated/reference project runners avoid duplicated orchestration/report code
+7. Split CLI responsibilities into focused modules (`commands`, `config`, `parsing`, `templates`, `io`)
+8. Added generated-project compatibility tests validating `uto init` output compiles with `cargo check --tests`
+
 **Near-term Actions:**
-1. Read `docs/0009-framework-cli-and-reporting-first.md` and `docs/0010-phase-3-completion-and-phase-4-planning.md`
-2. Finalize `uto-cli` command handlers (init, run, report) with full config schema
-3. Define `uto-report/v1` JSON structure and implement structured logging
-4. Plan iteration 4.1 scope (CLI scaffolding) and kick off implementation
+1. Start Iteration 4.2 by defining reusable `uto-report/v1` schema/type surfaces for framework and docs
+2. Extend report documentation and examples with stable event semantics and versioning guidance
+3. Begin Iteration 4.3 mobile parity hardening and fixture coverage expansion
+4. Keep README, static site content, ADRs, and AI instructions synchronized as Phase 4 evolves
 
 See `docs/0010-phase-3-completion-and-phase-4-planning.md` for full Phase 4 planning details, delivery schedule, and success metrics.
 
@@ -192,6 +204,8 @@ cross-platform test job remains stable without custom runner provisioning.
 
 *   **Package Management:** Dependencies are managed via `Cargo.toml`.
 *   **Project Structure:** The project is a Cargo workspace, with the primary application logic located in the `uto-core` crate.
+*   **Crate split for framework UX:** `uto-core` (infrastructure/protocol), `uto-test` (authored test helpers), `uto-cli` (project orchestration).
+*   **Design hygiene:** Prefer small files/functions and strict separation of concerns; keep orchestration, protocol, and user helper responsibilities isolated by crate.
 *   **Code Style:** Follow standard Rust conventions and formatting (`rustfmt`).
 *   **Error Handling:** The project uses the `thiserror` crate for standardizing application errors.
 *   **Linting:** Use `clippy` for identifying common mistakes and improving code quality: `cargo clippy`
@@ -203,5 +217,6 @@ cross-platform test job remains stable without custom runner provisioning.
 *   **Gemini/Copilot parity automation:** Run `./scripts/sync_ai_configs.sh` after updating `.github/` customization files, and verify parity with `./scripts/check_ai_config_sync.sh`.
 *   **Rustdoc:** All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`). This is crucial for generating useful library documentation.
 *   **Design Documents:** For significant changes or new features, consider updating or adding to the design documents in the `/docs` directory. This includes the `manifesto.md` and architectural decision records.
+*   **Current framework ADRs:** Include ADR 0010 (Phase 4 planning) and ADR 0011 (shared `uto-test` helper crate + clean SoC guidelines).
 *   **Commit Messages:** Write clear and concise commit messages that explain the "what" and "why" of a change.
 *   **Phase reference examples:** Maintain one committed runnable project per development phase under `examples/phases/` so each phase has a durable implementation reference in-repo.

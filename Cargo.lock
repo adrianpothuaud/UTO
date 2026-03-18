@@ -3327,6 +3327,9 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "tempfile",
+ "uto-runner",
+ "uto-test",
 ]
 
 [[package]]
@@ -3366,6 +3369,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "uto-runner"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tokio",
+ "uto-core",
+]
+
+[[package]]
 name = "uto-site"
 version = "0.1.0"
 dependencies = [
@@ -3378,6 +3391,15 @@ dependencies = [
  "thiserror 1.0.69",
  "toml",
  "walkdir",
+]
+
+[[package]]
+name = "uto-test"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "tokio",
+ "uto-core",
 ]
 
 [[package]]

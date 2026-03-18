@@ -64,6 +64,26 @@ Next priorities:
 - Explore natural-language test interpretation
 - Build self-healing test trial loops
 
+### ✅ End-User Simplicity in Framework Projects *(Phase 4.1 baseline complete)*
+
+UTO project templates are moving to an authoring style where test code does not manually manage driver lifecycle.
+
+Current pattern in generated/phase examples:
+
+```rust
+let web = uto_test::startNewSession("chrome").await?;
+let mobile = uto_test::startNewSessionWithArg("android", 16).await?;
+```
+
+The helper keeps setup/session lifecycle visible through logs while keeping test blocks concise.
+
+Next priorities in this work stream:
+
+- Define stable `uto-report/v1` schema/type surfaces and documentation examples (Phase 4.2)
+- Add native readable HTML report rendering derived from `uto-report/v1` JSON (offline-readable, schema-aware)
+- Expand mobile parity fixtures and intent reliability hardening (Phase 4.3)
+- Add a committed Phase 4 reference project under `examples/phases/`
+
 ### ⚡ Hybrid Orchestrator *(Future)*
 
 - gRPC command plane design with `tonic`
