@@ -8,8 +8,22 @@ use uto_core::{
     error::{UtoError, UtoResult},
     session::{mobile::MobileCapabilities, mobile::MobileSession, web::WebSession},
 };
+use uto_reporter::ReportEvent;
 
 use crate::managed_session::ManagedSession;
+use crate::managed_session::SharedEvents;
+
+fn report_event(report_events: &Option<SharedEvents>, stage: &str, status: &str, detail: serde_json::Value) {
+    if let Some(shared) = report_events {
+        if let Ok(mut events) = shared.lock() {
+            events.push(ReportEvent {
+                stage: stage.to_string(),
+                status: status.to_string(),
+                detail,
+            });
+        }
+    }
+}
 
 /// Starts a new managed session with a simple target identifier.
 pub async fn start_new_session(target: &str) -> UtoResult<ManagedSession> {
@@ -24,9 +38,19 @@ pub async fn start_new_session_with_hint(
     target: &str,
     android_api_level_hint: u16,
 ) -> UtoResult<ManagedSession> {
+    start_new_session_with_hint_and_events(target, android_api_level_hint, None).await
+}
+
+pub(crate) async fn start_new_session_with_hint_and_events(
+    target: &str,
+    android_api_level_hint: u16,
+    report_events: Option<SharedEvents>,
+) -> UtoResult<ManagedSession> {
     match normalize_target(target)? {
-        NormalizedTarget::Chrome => start_web_session().await,
-        NormalizedTarget::Android => start_android_session(android_api_level_hint).await,
+        NormalizedTarget::Chrome => start_web_session(report_events).await,
+        NormalizedTarget::Android => {
+            start_android_session(android_api_level_hint, report_events).await
+        }
     }
 }
 
@@ -58,26 +82,107 @@ fn normalize_target(target: &str) -> UtoResult<NormalizedTarget> {
     }
 }
 
-async fn start_web_session() -> UtoResult<ManagedSession> {
-    let chrome_version = find_chrome_version()?;
+async fn start_web_session(report_events: Option<SharedEvents>) -> UtoResult<ManagedSession> {
+    let chrome_version = match find_chrome_version() {
+        Ok(version) => {
+            report_event(
+                &report_events,
+                "env.chrome_discovery",
+                "ok",
+                serde_json::json!({ "chrome_version": version }),
+            );
+            version
+        }
+        Err(err) => {
+            report_event(
+                &report_events,
+                "env.chrome_discovery",
+                "failed",
+                serde_json::json!({ "error": err.to_string() }),
+            );
+            return Err(err);
+        }
+    };
     log::info!("uto-test: discovered chrome version {}", chrome_version);
 
-    let chromedriver = find_or_provision_chromedriver(&chrome_version).await?;
+    let chromedriver = match find_or_provision_chromedriver(&chrome_version).await {
+        Ok(path) => {
+            report_event(
+                &report_events,
+                "env.chromedriver_provision",
+                "ok",
+                serde_json::json!({ "path": path.display().to_string() }),
+            );
+            path
+        }
+        Err(err) => {
+            report_event(
+                &report_events,
+                "env.chromedriver_provision",
+                "failed",
+                serde_json::json!({ "error": err.to_string() }),
+            );
+            return Err(err);
+        }
+    };
     log::info!("uto-test: using chromedriver at {}", chromedriver.display());
 
-    let driver = driver::start_chromedriver(&chromedriver).await?;
+    let driver = match driver::start_chromedriver(&chromedriver).await {
+        Ok(driver) => {
+            report_event(
+                &report_events,
+                "driver.chromedriver_start",
+                "ok",
+                serde_json::json!({ "url": driver.url, "port": driver.port }),
+            );
+            driver
+        }
+        Err(err) => {
+            report_event(
+                &report_events,
+                "driver.chromedriver_start",
+                "failed",
+                serde_json::json!({ "error": err.to_string() }),
+            );
+            return Err(err);
+        }
+    };
     log::info!("uto-test: started chromedriver at {}", driver.url);
 
-    let session = WebSession::new_with_args(
+    let session = match WebSession::new_with_args(
         &driver.url,
         &["--headless=new", "--no-sandbox", "--disable-dev-shm-usage"],
     )
-    .await?;
+    .await
+    {
+        Ok(session) => {
+            report_event(
+                &report_events,
+                "session.web_create",
+                "ok",
+                serde_json::json!({ "driver_url": driver.url }),
+            );
+            session
+        }
+        Err(err) => {
+            report_event(
+                &report_events,
+                "session.web_create",
+                "failed",
+                serde_json::json!({ "driver_url": driver.url, "error": err.to_string() }),
+            );
+            let _ = driver.stop();
+            return Err(err);
+        }
+    };
 
-    Ok(ManagedSession::from_web(session, driver))
+    Ok(ManagedSession::from_web(session, driver, report_events))
 }
 
-async fn start_android_session(android_api_level_hint: u16) -> UtoResult<ManagedSession> {
+async fn start_android_session(
+    android_api_level_hint: u16,
+    report_events: Option<SharedEvents>,
+) -> UtoResult<ManagedSession> {
     if android_api_level_hint > 0 {
         log::info!(
             "uto-test: android API hint {} requested (informational)",
@@ -85,12 +190,54 @@ async fn start_android_session(android_api_level_hint: u16) -> UtoResult<Managed
         );
     }
 
-    let setup = prepare_mobile_environment(&MobileSetupOptions {
+    let setup = match prepare_mobile_environment(&MobileSetupOptions {
         require_online_device: true,
         ..MobileSetupOptions::default()
-    })?;
+    }) {
+        Ok(setup) => {
+            report_event(
+                &report_events,
+                "env.mobile_setup",
+                "ok",
+                serde_json::json!({
+                    "android_sdk_root": setup.android_sdk.root.display().to_string(),
+                    "appium_path": setup.appium_path.display().to_string(),
+                    "device_serial": setup.device_serial,
+                }),
+            );
+            setup
+        }
+        Err(err) => {
+            report_event(
+                &report_events,
+                "env.mobile_setup",
+                "failed",
+                serde_json::json!({ "error": err.to_string() }),
+            );
+            return Err(err);
+        }
+    };
 
-    let appium = driver::start_appium(&setup.appium_path).await?;
+    let appium = match driver::start_appium(&setup.appium_path).await {
+        Ok(appium) => {
+            report_event(
+                &report_events,
+                "driver.appium_start",
+                "ok",
+                serde_json::json!({ "url": appium.url, "port": appium.port }),
+            );
+            appium
+        }
+        Err(err) => {
+            report_event(
+                &report_events,
+                "driver.appium_start",
+                "failed",
+                serde_json::json!({ "error": err.to_string() }),
+            );
+            return Err(err);
+        }
+    };
     log::info!("uto-test: started appium at {}", appium.url);
 
     let device_serial = setup
@@ -98,9 +245,29 @@ async fn start_android_session(android_api_level_hint: u16) -> UtoResult<Managed
         .unwrap_or_else(|| "emulator-5554".to_string());
     let caps = MobileCapabilities::android(device_serial);
 
-    let session = MobileSession::new(&appium.url, caps).await?;
+    let session = match MobileSession::new(&appium.url, caps).await {
+        Ok(session) => {
+            report_event(
+                &report_events,
+                "session.mobile_create",
+                "ok",
+                serde_json::json!({ "driver_url": appium.url }),
+            );
+            session
+        }
+        Err(err) => {
+            report_event(
+                &report_events,
+                "session.mobile_create",
+                "failed",
+                serde_json::json!({ "driver_url": appium.url, "error": err.to_string() }),
+            );
+            let _ = appium.stop();
+            return Err(err);
+        }
+    };
 
-    Ok(ManagedSession::from_mobile(session, appium))
+    Ok(ManagedSession::from_mobile(session, appium, report_events))
 }
 
 #[cfg(test)]

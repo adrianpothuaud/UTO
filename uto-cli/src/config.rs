@@ -4,7 +4,14 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 pub const PROJECT_SCHEMA_VERSION: &str = "1";
-pub const REPORT_SCHEMA_VERSION: &str = "uto-report/v1";
+pub const DEFAULT_REPORT_SCHEMA_VERSION: &str = uto_reporter::UTO_SUITE_SCHEMA_V1;
+
+fn is_supported_report_schema(schema: &str) -> bool {
+    matches!(
+        schema,
+        uto_reporter::UTO_REPORT_SCHEMA_V1 | uto_reporter::UTO_SUITE_SCHEMA_V1
+    )
+}
 
 /// UTO project configuration from uto.json.
 #[derive(Debug, Serialize, Deserialize)]
@@ -28,10 +35,12 @@ impl UtoProjectConfig {
             ));
         }
 
-        if self.report_schema != REPORT_SCHEMA_VERSION {
+        if !is_supported_report_schema(&self.report_schema) {
             return Err(format!(
-                "Unsupported report_schema '{}'. Expected {}",
-                self.report_schema, REPORT_SCHEMA_VERSION
+                "Unsupported report_schema '{}'. Expected {} or {}",
+                self.report_schema,
+                uto_reporter::UTO_REPORT_SCHEMA_V1,
+                uto_reporter::UTO_SUITE_SCHEMA_V1,
             ));
         }
 
@@ -84,28 +93,46 @@ pub fn validate_project_runner(project: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// Validates report JSON structure.
+/// Parsed report — either a single-run or a multi-test suite.
+pub enum ParsedReport {
+    Single(uto_reporter::UtoReportV1),
+    Suite(uto_reporter::UtoSuiteReportV1),
+}
+
+/// Validates report JSON and returns the appropriate typed report.
+///
+/// Supports both `uto-report/v1` (single run) and `uto-suite/v1` (suite run).
 pub fn parse_report_json(
     report_value: &serde_json::Value,
-) -> Result<uto_reporter::UtoReportV1, String> {
+) -> Result<ParsedReport, String> {
     let schema_version = report_value
         .get("schema_version")
         .and_then(|v| v.as_str())
         .ok_or_else(|| "Invalid report: missing schema_version".to_string())?;
 
-    if schema_version != REPORT_SCHEMA_VERSION {
-        return Err(format!(
-            "Unsupported report schema '{}'. Expected {}",
-            schema_version, REPORT_SCHEMA_VERSION
-        ));
+    match schema_version {
+        uto_reporter::UTO_REPORT_SCHEMA_V1 => {
+            let parsed: uto_reporter::UtoReportV1 =
+                serde_json::from_value(report_value.clone())
+                    .map_err(|e| format!("Invalid uto-report/v1 shape: {e}"))?;
+            if parsed.status.trim().is_empty() {
+                return Err("Invalid report: missing status".to_string());
+            }
+            Ok(ParsedReport::Single(parsed))
+        }
+        uto_reporter::UTO_SUITE_SCHEMA_V1 => {
+            let parsed: uto_reporter::UtoSuiteReportV1 =
+                serde_json::from_value(report_value.clone())
+                    .map_err(|e| format!("Invalid uto-suite/v1 shape: {e}"))?;
+            if parsed.status.trim().is_empty() {
+                return Err("Invalid suite report: missing status".to_string());
+            }
+            Ok(ParsedReport::Suite(parsed))
+        }
+        other => Err(format!(
+            "Unsupported report schema '{other}'. Expected {} or {}",
+            uto_reporter::UTO_REPORT_SCHEMA_V1,
+            uto_reporter::UTO_SUITE_SCHEMA_V1,
+        )),
     }
-
-    let parsed: uto_reporter::UtoReportV1 = serde_json::from_value(report_value.clone())
-        .map_err(|e| format!("Invalid report shape: {e}"))?;
-
-    if parsed.status.trim().is_empty() {
-        return Err("Invalid report: missing status".to_string());
-    }
-
-    Ok(parsed)
 }

@@ -55,6 +55,73 @@ pub struct ReportEvent {
     pub detail: Value,
 }
 
+// ---------------------------------------------------------------------------
+// Suite schema (uto-suite/v1)
+// ---------------------------------------------------------------------------
+
+/// Schema version constant for a multi-test suite run.
+pub const UTO_SUITE_SCHEMA_V1: &str = "uto-suite/v1";
+
+/// Pass/fail/skip summary counts for a suite run.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SuiteSummary {
+    pub total: usize,
+    pub passed: usize,
+    pub failed: usize,
+    pub skipped: usize,
+}
+
+/// Result of a single named test case within a suite run.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestCaseResult {
+    pub name: String,
+    /// `passed` | `failed` | `skipped`
+    pub status: String,
+    pub timeline: ReportTimeline,
+    pub events: Vec<ReportEvent>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+/// Top-level structured report artifact for a multi-test suite run.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UtoSuiteReportV1 {
+    pub schema_version: String,
+    pub framework: String,
+    pub suite_id: String,
+    pub mode: String,
+    /// `passed` | `partial` | `failed`
+    pub status: String,
+    pub timeline: ReportTimeline,
+    pub summary: SuiteSummary,
+    pub tests: Vec<TestCaseResult>,
+}
+
+impl UtoSuiteReportV1 {
+    /// Creates a new in-progress suite report payload.
+    pub fn new(suite_id: String, mode: String, start_ms: u64) -> Self {
+        Self {
+            schema_version: UTO_SUITE_SCHEMA_V1.to_string(),
+            framework: "uto".to_string(),
+            suite_id,
+            mode,
+            status: "running".to_string(),
+            timeline: ReportTimeline {
+                started_at_unix_ms: start_ms,
+                finished_at_unix_ms: None,
+                duration_ms: None,
+            },
+            summary: SuiteSummary {
+                total: 0,
+                passed: 0,
+                failed: 0,
+                skipped: 0,
+            },
+            tests: Vec::new(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

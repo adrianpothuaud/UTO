@@ -54,7 +54,7 @@ POC phase isolation rule:
 Framework-facing workflow components now include:
 
 - `uto-core/` — core engine (env discovery/provisioning, driver lifecycle, W3C session protocol, vision/intent)
-- `uto-test/` — end-user test helper crate (simple session start/close API)
+- `uto-test/` — end-user test helper crate (simple session start/close API + `Suite` multi-test runner)
 - `uto-reporter/` — structured `uto-report/v1` schema, HTML/JSON emission
 - `uto-logger/` — modern structured logging + loader/spinner utilities for long-running tasks
 - `uto-runner/` — CLI option parsing for generated-project runners
@@ -128,8 +128,11 @@ Phase 4 refocuses UTO from core engine capability toward end-user framework expe
 
 **Iteration 4.2 Completion (Report Schema and HTML Rendering):**
 1. Defined typed `uto-report/v1` schema in `uto-reporter/src/schema.rs` with `UtoReportV1`, `ReportEvent`, `ReportTimeline` structs
+2. Extended reporting with typed `uto-suite/v1` schema for multi-test runs (`UtoSuiteReportV1`, `TestCaseResult`, `SuiteSummary`)
 2. Implemented `uto-reporter` crate with standalone report accumulation (`Report` impl with payload serialization)
+3. Implemented `SuiteReport` accumulator for named per-test timelines and event streams
 3. Implemented deterministic offline HTML rendering in `uto-reporter/src/html.rs` with security hardening (XSS-safe entity escaping)
+4. Upgraded native HTML UX with theme toggle persistence, live search/filter, suite test filtering, and expand/collapse controls
 4. Integrated `uto-reporter` into `uto-cli` for JSON/HTML report generation via `uto report` command
 5. Added `--html` and `--html-output` flags to `uto report` command for artifact generation
 6. Added integration tests validating HTML output structure and XSS protection
@@ -151,6 +154,7 @@ Phase 4 refocuses UTO from core engine capability toward end-user framework expe
    - JSON + HTML report generation workflows
    - Web and mobile execution paths with graceful fallbacks
    - Test examples using `uto-test` helpers (`startNewSession`, `wait_for_intent`)
+   - Suite-based project runner with multiple named tests and isolated sessions
 2. Updated CLI smoke-test validation script (`examples/validate-cli.sh`) to execute phase4-framework project and verify HTML artifact generation
 3. Updated static site navigation in `uto-site/templates/base.html` and `uto-site/templates/index.html`:
    - Added "Getting Started" and "Troubleshooting" links to main navigation
@@ -260,11 +264,13 @@ cross-platform test job remains stable without custom runner provisioning.
 
 ### Reporting Architecture (Phase 4+)
 
-- `uto-reporter` owns all report serialization: `UtoReportV1` schema, JSON round-trip (via serde), and offline HTML rendering
+- `uto-reporter` owns all report serialization: `UtoReportV1` (single run), `UtoSuiteReportV1` (multi-test suite), JSON round-trip (via serde), and offline HTML rendering
 - All generated projects and reference projects depend on `uto-reporter` to emit results
-- Report schema is versioned; see `uto-report/v1` constant in `uto-reporter/src/schema.rs`
+- Report schemas are versioned; see `uto-report/v1` and `uto-suite/v1` constants in `uto-reporter/src/schema.rs`
 - HTML rendering is deterministic (no external dependencies, inline CSS, XSS-safe entity escaping)
-- Integration point: `Report::new(enabled, file_path, mode_string)` → `report.event(...)` → `report.finish(...)` → `report.emit()` → `write_report_html(report.payload(), &path)`
+- Integration points:
+   - single-run: `Report::new(enabled, file_path, mode_string)` → `report.event(...)` → `report.finish(...)` → `report.emit()`
+   - multi-test: `Suite::new(CliOptions::from_env()).test(...).run().await` → emits `uto-suite/v1` JSON + HTML
 
 ### Logging Architecture (Phase 4+)
 

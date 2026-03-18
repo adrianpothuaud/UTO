@@ -3,6 +3,11 @@ use uto_core::{
     error::{UtoError, UtoResult},
     session::{mobile::MobileSession, web::WebSession, UtoElement, UtoSession},
 };
+use uto_reporter::ReportEvent;
+
+use std::sync::{Arc, Mutex};
+
+pub(crate) type SharedEvents = Arc<Mutex<Vec<ReportEvent>>>;
 
 pub(crate) enum SessionInner {
     Web(WebSession),
@@ -17,22 +22,45 @@ pub struct ManagedSession {
     inner: Option<SessionInner>,
     driver: Option<DriverProcess>,
     target: &'static str,
+    report_events: Option<SharedEvents>,
 }
 
 impl ManagedSession {
-    pub(crate) fn from_web(session: WebSession, driver: DriverProcess) -> Self {
+    pub(crate) fn from_web(
+        session: WebSession,
+        driver: DriverProcess,
+        report_events: Option<SharedEvents>,
+    ) -> Self {
         Self {
             inner: Some(SessionInner::Web(session)),
             driver: Some(driver),
             target: "chrome",
+            report_events,
         }
     }
 
-    pub(crate) fn from_mobile(session: MobileSession, driver: DriverProcess) -> Self {
+    pub(crate) fn from_mobile(
+        session: MobileSession,
+        driver: DriverProcess,
+        report_events: Option<SharedEvents>,
+    ) -> Self {
         Self {
             inner: Some(SessionInner::Mobile(session)),
             driver: Some(driver),
             target: "android",
+            report_events,
+        }
+    }
+
+    fn record_event(&self, stage: &str, status: &str, detail: serde_json::Value) {
+        if let Some(events) = &self.report_events {
+            if let Ok(mut guard) = events.lock() {
+                guard.push(ReportEvent {
+                    stage: stage.to_string(),
+                    status: status.to_string(),
+                    detail,
+                });
+            }
         }
     }
 
@@ -43,79 +71,193 @@ impl ManagedSession {
 
     /// Navigates the active session to a URL/deep-link.
     pub async fn goto(&self, url: &str) -> UtoResult<()> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Web(session)) => session.goto(url).await,
             Some(SessionInner::Mobile(session)) => session.goto(url).await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(()) => self.record_event(
+                "session.goto",
+                "ok",
+                serde_json::json!({ "target": self.target(), "url": url }),
+            ),
+            Err(err) => self.record_event(
+                "session.goto",
+                "failed",
+                serde_json::json!({ "target": self.target(), "url": url, "error": err.to_string() }),
+            ),
         }
+
+        result
     }
 
     /// Returns page title/app activity title.
     pub async fn title(&self) -> UtoResult<String> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Web(session)) => session.title().await,
             Some(SessionInner::Mobile(session)) => session.title().await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(title) => self.record_event(
+                "session.title",
+                "ok",
+                serde_json::json!({ "target": self.target(), "title": title }),
+            ),
+            Err(err) => self.record_event(
+                "session.title",
+                "failed",
+                serde_json::json!({ "target": self.target(), "error": err.to_string() }),
+            ),
         }
+
+        result
     }
 
     /// Finds an element by selector.
     pub async fn find_element(&self, selector: &str) -> UtoResult<UtoElement> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Web(session)) => session.find_element(selector).await,
             Some(SessionInner::Mobile(session)) => session.find_element(selector).await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(element) => self.record_event(
+                "session.find_element",
+                "ok",
+                serde_json::json!({
+                    "target": self.target(),
+                    "selector": selector,
+                    "resolved_selector": element.selector,
+                    "label": element.label,
+                }),
+            ),
+            Err(err) => self.record_event(
+                "session.find_element",
+                "failed",
+                serde_json::json!({ "target": self.target(), "selector": selector, "error": err.to_string() }),
+            ),
         }
+
+        result
     }
 
     /// Selects an element by human-readable label.
     pub async fn select(&self, label: &str) -> UtoResult<UtoElement> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Web(session)) => session.select(label).await,
             Some(SessionInner::Mobile(session)) => session.select(label).await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(element) => self.record_event(
+                "intent.select",
+                "ok",
+                serde_json::json!({
+                    "target": self.target(),
+                    "label": label,
+                    "resolved_selector": element.selector,
+                }),
+            ),
+            Err(err) => self.record_event(
+                "intent.select",
+                "failed",
+                serde_json::json!({ "target": self.target(), "label": label, "error": err.to_string() }),
+            ),
         }
+
+        result
     }
 
     /// Clicks by intent label.
     pub async fn click_intent(&self, label: &str) -> UtoResult<()> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Web(session)) => session.click_intent(label).await,
             Some(SessionInner::Mobile(session)) => session.click_intent(label).await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(()) => self.record_event(
+                "intent.click",
+                "ok",
+                serde_json::json!({ "target": self.target(), "label": label }),
+            ),
+            Err(err) => self.record_event(
+                "intent.click",
+                "failed",
+                serde_json::json!({ "target": self.target(), "label": label, "error": err.to_string() }),
+            ),
         }
+
+        result
     }
 
     /// Fills an input by intent label.
     pub async fn fill_intent(&self, label: &str, value: &str) -> UtoResult<()> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Web(session)) => session.fill_intent(label, value).await,
             Some(SessionInner::Mobile(session)) => session.fill_intent(label, value).await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(()) => self.record_event(
+                "intent.fill",
+                "ok",
+                serde_json::json!({ "target": self.target(), "label": label, "value": value }),
+            ),
+            Err(err) => self.record_event(
+                "intent.fill",
+                "failed",
+                serde_json::json!({ "target": self.target(), "label": label, "error": err.to_string() }),
+            ),
         }
+
+        result
     }
 
     /// Reads text from the provided element.
     pub async fn get_text(&self, element: &UtoElement) -> UtoResult<String> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Web(session)) => session.get_text(element).await,
             Some(SessionInner::Mobile(session)) => session.get_text(element).await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(text) => self.record_event(
+                "assert.get_text",
+                "ok",
+                serde_json::json!({ "target": self.target(), "selector": element.selector, "text": text }),
+            ),
+            Err(err) => self.record_event(
+                "assert.get_text",
+                "failed",
+                serde_json::json!({ "target": self.target(), "selector": element.selector, "error": err.to_string() }),
+            ),
         }
+
+        result
     }
 
     /// Launches an Android activity for mobile sessions.
@@ -124,7 +266,7 @@ impl ManagedSession {
         app_package: &str,
         app_activity: &str,
     ) -> UtoResult<()> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Mobile(session)) => {
                 session.launch_activity(app_package, app_activity).await
             }
@@ -134,7 +276,31 @@ impl ManagedSession {
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(()) => self.record_event(
+                "session.launch_activity",
+                "ok",
+                serde_json::json!({
+                    "target": self.target(),
+                    "app_package": app_package,
+                    "app_activity": app_activity,
+                }),
+            ),
+            Err(err) => self.record_event(
+                "session.launch_activity",
+                "failed",
+                serde_json::json!({
+                    "target": self.target(),
+                    "app_package": app_package,
+                    "app_activity": app_activity,
+                    "error": err.to_string(),
+                }),
+            ),
         }
+
+        result
     }
 
     // -----------------------------------------------------------------------
@@ -146,7 +312,7 @@ impl ManagedSession {
     /// Polls the page source / accessibility tree every 50ms until the element
     /// selector matches or timeout is exceeded.
     pub async fn wait_for_element(&self, selector: &str, timeout_ms: u64) -> UtoResult<UtoElement> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Mobile(session)) => {
                 session.wait_for_element(selector, timeout_ms).await
             }
@@ -157,7 +323,32 @@ impl ManagedSession {
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(element) => self.record_event(
+                "mobile.wait_for_element",
+                "ok",
+                serde_json::json!({
+                    "target": self.target(),
+                    "selector": selector,
+                    "timeout_ms": timeout_ms,
+                    "resolved_selector": element.selector,
+                }),
+            ),
+            Err(err) => self.record_event(
+                "mobile.wait_for_element",
+                "failed",
+                serde_json::json!({
+                    "target": self.target(),
+                    "selector": selector,
+                    "timeout_ms": timeout_ms,
+                    "error": err.to_string(),
+                }),
+            ),
         }
+
+        result
     }
 
     /// Scrolls through the page to find an element by intent label, then clicks it.
@@ -172,7 +363,7 @@ impl ManagedSession {
 
     /// Scrolls with custom maximum scroll attempts.
     pub async fn scroll_intent_with_max(&self, label: &str, max_scrolls: usize) -> UtoResult<()> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Mobile(session)) => {
                 session.scroll_intent(label, max_scrolls).await
             }
@@ -183,7 +374,27 @@ impl ManagedSession {
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(()) => self.record_event(
+                "mobile.scroll_intent",
+                "ok",
+                serde_json::json!({ "target": self.target(), "label": label, "max_scrolls": max_scrolls }),
+            ),
+            Err(err) => self.record_event(
+                "mobile.scroll_intent",
+                "failed",
+                serde_json::json!({
+                    "target": self.target(),
+                    "label": label,
+                    "max_scrolls": max_scrolls,
+                    "error": err.to_string(),
+                }),
+            ),
         }
+
+        result
     }
 
     /// Waits for an element to be resolvable by intent label, then clicks it.
@@ -191,7 +402,7 @@ impl ManagedSession {
     /// Use this helper when the element is likely in-view but the accessibility
     /// tree is loading asynchronously. Polls every 200ms until found or timeout.
     pub async fn wait_for_intent(&self, label: &str, timeout_ms: u64) -> UtoResult<()> {
-        match self.inner.as_ref() {
+        let result = match self.inner.as_ref() {
             Some(SessionInner::Mobile(session)) => {
                 session.wait_for_intent(label, timeout_ms).await
             }
@@ -201,20 +412,61 @@ impl ManagedSession {
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
+        };
+
+        match &result {
+            Ok(()) => self.record_event(
+                "mobile.wait_for_intent",
+                "ok",
+                serde_json::json!({ "target": self.target(), "label": label, "timeout_ms": timeout_ms }),
+            ),
+            Err(err) => self.record_event(
+                "mobile.wait_for_intent",
+                "failed",
+                serde_json::json!({
+                    "target": self.target(),
+                    "label": label,
+                    "timeout_ms": timeout_ms,
+                    "error": err.to_string(),
+                }),
+            ),
         }
+
+        result
     }
 
     /// Closes the WebDriver session and stops the managed driver process.
     pub async fn close(mut self) -> UtoResult<()> {
+        let target = self.target;
         if let Some(inner) = self.inner.take() {
-            match inner {
+            let result = match inner {
                 SessionInner::Web(session) => Box::new(session).close().await?,
                 SessionInner::Mobile(session) => Box::new(session).close().await?,
-            }
+            };
+            self.record_event(
+                "session.close",
+                "ok",
+                serde_json::json!({ "target": target }),
+            );
+            result
         }
 
         if let Some(driver) = self.driver.take() {
-            driver.stop()?;
+            match driver.stop() {
+                Ok(()) => self.record_event(
+                    "driver.stop",
+                    "ok",
+                    serde_json::json!({ "target": target }),
+                ),
+                Err(err) => {
+                    self.record_event(
+                        "driver.stop",
+                        "failed",
+                        serde_json::json!({ "target": target, "error": err.to_string() }),
+                    );
+                    return Err(err);
+                }
+            }
         }
 
         Ok(())
@@ -231,6 +483,7 @@ mod tests {
             inner: None,
             driver: None,
             target,
+            report_events: None,
         }
     }
 

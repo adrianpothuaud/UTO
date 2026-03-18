@@ -1,77 +1,120 @@
 {
-  "schema_version": "uto-report/v1",
+  "schema_version": "uto-suite/v1",
   "framework": "uto",
-  "run_id": "run-1773831425771-38356",
+  "suite_id": "suite-1773843907715-5224",
   "mode": "web",
   "status": "passed",
   "timeline": {
-    "started_at_unix_ms": 1773831425771,
-    "finished_at_unix_ms": 1773831427474,
-    "duration_ms": 1703
+    "started_at_unix_ms": 1773843907715,
+    "finished_at_unix_ms": 1773843913217,
+    "duration_ms": 5502
   },
-  "events": [
+  "summary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0
+  },
+  "tests": [
     {
-      "stage": "env.chrome_discovery",
-      "status": "ok",
-      "detail": {
-        "chrome_version": "146.0.7680.80"
-      }
+      "name": "web: page title is non-empty",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773843907715,
+        "finished_at_unix_ms": 1773843909081,
+        "duration_ms": 1366
+      },
+      "events": [
+        {
+          "stage": "session.start",
+          "status": "ok",
+          "detail": {
+            "target": "web"
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
     },
     {
-      "stage": "env.chromedriver_provision",
-      "status": "ok",
-      "detail": {
-        "path": "/Users/adrian/.uto/cache/chromedriver/146/chromedriver"
-      }
+      "name": "web: hero copy is visible",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773843909081,
+        "finished_at_unix_ms": 1773843910384,
+        "duration_ms": 1303
+      },
+      "events": [
+        {
+          "stage": "session.start",
+          "status": "ok",
+          "detail": {
+            "target": "web"
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
     },
     {
-      "stage": "driver.chromedriver_start",
-      "status": "ok",
-      "detail": {
-        "url": "http://localhost:21357",
-        "port": 21357
-      }
+      "name": "web: inline form fill and assert",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773843910384,
+        "finished_at_unix_ms": 1773843911866,
+        "duration_ms": 1482
+      },
+      "events": [
+        {
+          "stage": "session.start",
+          "status": "ok",
+          "detail": {
+            "target": "web"
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
     },
     {
-      "stage": "session.web_create",
-      "status": "ok",
-      "detail": {
-        "driver_url": "http://localhost:21357"
-      }
-    },
-    {
-      "stage": "session.goto",
-      "status": "ok",
-      "detail": {
-        "target": "data:text/html"
-      }
-    },
-    {
-      "stage": "intent.fill",
-      "status": "ok",
-      "detail": {
-        "label": "Email Address",
-        "value": "phase4@uto.dev"
-      }
-    },
-    {
-      "stage": "intent.click",
-      "status": "ok",
-      "detail": {
-        "label": "Submit Order"
-      }
-    },
-    {
-      "stage": "assert.output",
-      "status": "ok",
-      "detail": {
-        "text": "phase4@uto.dev"
-      }
-    },
-    {
-      "stage": "driver.chromedriver_stop",
-      "status": "ok",
-      "detail": {}
+      "name": "web: multi-step navigation",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773843911866,
+        "finished_at_unix_ms": 1773843913217,
+        "duration_ms": 1351
+      },
+      "events": [
+        {
+          "stage": "session.start",
+          "status": "ok",
+          "detail": {
+            "target": "web"
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
     }
   ]
 }

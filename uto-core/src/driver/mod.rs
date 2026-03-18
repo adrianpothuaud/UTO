@@ -55,6 +55,17 @@ impl DriverProcess {
     }
 }
 
+impl Drop for DriverProcess {
+    /// Best-effort process-group cleanup on drop.
+    ///
+    /// This ensures driver processes are killed when their owner is dropped
+    /// without an explicit `stop()` call (e.g. after a test panic or early return).
+    fn drop(&mut self) {
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Starting ChromeDriver
 // ---------------------------------------------------------------------------

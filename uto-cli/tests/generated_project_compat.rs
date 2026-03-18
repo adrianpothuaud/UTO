@@ -79,7 +79,7 @@ fn generated_mobile_project_compiles_with_uto_test_and_uto_runner() {
 
     let runner =
         fs::read_to_string(project.join("src/bin/uto_project_runner.rs")).expect("read runner");
-    assert!(runner.contains("use uto_reporter::Report;"));
+    assert!(runner.contains("use uto_test::{ManagedSession, Suite};"));
     assert!(runner.contains("use uto_runner::{CliOptions, RunMode};"));
 
     let check = cargo_check_tests(&project);

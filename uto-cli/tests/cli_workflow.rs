@@ -52,6 +52,29 @@ fn init_scaffolds_expected_project_files() {
     assert!(project.join("src/bin/uto_project_runner.rs").exists());
     assert!(project.join("tests/web_example.rs").exists());
     assert!(project.join("tests/mobile_example.rs").exists());
+
+    let uto_json = fs::read_to_string(project.join("uto.json")).expect("read uto.json");
+    assert!(uto_json.contains(r#""report_schema": "uto-suite/v1""#));
+}
+
+#[test]
+fn run_accepts_suite_schema_in_project_config() {
+    let temp = TempDir::new().expect("temp dir");
+    let project = create_project(&temp, "run-suite-schema");
+
+    let output = run_uto(&[
+        "run",
+        "--project",
+        project.to_str().expect("project path utf-8"),
+        "--target",
+        "web",
+    ]);
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("Unsupported report_schema"),
+        "stderr: {stderr}"
+    );
 }
 
 #[test]
@@ -200,7 +223,7 @@ fn report_generates_html_when_flag_set() {
         html_path.display()
     );
     let html_content = fs::read_to_string(&html_path).expect("read HTML");
-    assert!(html_content.contains("UTO Execution Report"));
+    assert!(html_content.contains("Execution Report"));
     assert!(html_content.contains("run-456"));
     assert!(html_content.contains("session.goto"));
     assert!(html_content.contains("uto-report/v1"));

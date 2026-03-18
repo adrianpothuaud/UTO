@@ -3,7 +3,9 @@
 use std::fs;
 use std::process::Command;
 
-use crate::config::{UtoProjectConfig, PROJECT_SCHEMA_VERSION, REPORT_SCHEMA_VERSION};
+use crate::config::{
+    DEFAULT_REPORT_SCHEMA_VERSION, PROJECT_SCHEMA_VERSION, UtoProjectConfig,
+};
 use crate::io::write_json;
 use crate::templates;
 
@@ -52,7 +54,7 @@ pub mod init {
             default_target: parsed.template.clone(),
             report_dir: ".uto/reports".to_string(),
             uto_root: parsed.uto_root.display().to_string(),
-            report_schema: REPORT_SCHEMA_VERSION.to_string(),
+            report_schema: DEFAULT_REPORT_SCHEMA_VERSION.to_string(),
         };
 
         config.validate()?;
@@ -163,28 +165,52 @@ pub mod report {
         let report_value: serde_json::Value = crate::io::read_json(report_path.clone())?;
         let report = crate::config::parse_report_json(&report_value)?;
 
-        println!("UTO Report Summary");
-        println!("==================");
-        println!("Schema: {}", report.schema_version);
-        println!("Run ID: {}", report.run_id);
-        println!("Mode: {}", report.mode);
-        println!("Status: {}", report.status);
-        println!(
-            "Duration (ms): {}",
-            report.timeline.duration_ms.unwrap_or_default()
-        );
-        println!("Events: {}", report.events.len());
-        println!("Report: {}", report_path.display());
-
-        if parsed.html {
-            let html_path = parsed
+        let html_path = if parsed.html {
+            let p = parsed
                 .html_output
                 .unwrap_or_else(|| report_path.with_extension("html"));
-            if let Some(parent) = html_path.parent() {
+            if let Some(parent) = p.parent() {
                 fs::create_dir_all(parent).map_err(|e| e.to_string())?;
             }
-            uto_reporter::write_report_html(&report, &html_path)?;
-            println!("HTML: {}", html_path.display());
+            Some(p)
+        } else {
+            None
+        };
+
+        match report {
+            crate::config::ParsedReport::Single(r) => {
+                println!("UTO Report Summary");
+                println!("==================");
+                println!("Schema: {}", r.schema_version);
+                println!("Run ID: {}", r.run_id);
+                println!("Mode: {}", r.mode);
+                println!("Status: {}", r.status);
+                println!("Duration (ms): {}", r.timeline.duration_ms.unwrap_or_default());
+                println!("Events: {}", r.events.len());
+                println!("Report: {}", report_path.display());
+                if let Some(hp) = html_path {
+                    uto_reporter::write_report_html(&r, &hp)?;
+                    println!("HTML: {}", hp.display());
+                }
+            }
+            crate::config::ParsedReport::Suite(s) => {
+                println!("UTO Suite Report Summary");
+                println!("========================");
+                println!("Schema: {}", s.schema_version);
+                println!("Suite ID: {}", s.suite_id);
+                println!("Mode: {}", s.mode);
+                println!("Status: {}", s.status);
+                println!("Duration (ms): {}", s.timeline.duration_ms.unwrap_or_default());
+                println!(
+                    "Tests: {} total | {} passed | {} failed | {} skipped",
+                    s.summary.total, s.summary.passed, s.summary.failed, s.summary.skipped
+                );
+                println!("Report: {}", report_path.display());
+                if let Some(hp) = html_path {
+                    uto_reporter::write_suite_html(&s, &hp)?;
+                    println!("HTML: {}", hp.display());
+                }
+            }
         }
 
         Ok(())

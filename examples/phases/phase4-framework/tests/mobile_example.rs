@@ -1,23 +1,24 @@
+#[path = "support/mod.rs"]
+mod support;
+
 #[tokio::test]
-async fn mobile_example_phase4_uses_mobile_helpers_or_skips() {
-    let session = match uto_test::startNewSessionWithArg("android", 16).await {
-        Ok(session) => session,
-        Err(err) => {
-            println!("Skipping mobile example: mobile session could not be created: {err}");
-            return;
-        }
+async fn mobile_example_phase4_launches_settings_or_skips() {
+    let Some(session) = support::start_mobile_or_skip().await else {
+        return;
     };
 
-    if let Err(err) = session
-        .launch_android_activity("com.android.settings", ".Settings")
-        .await
-    {
-        println!("Skipping mobile launch activity: {err}");
-        let _ = session.close().await;
-        return;
+    if let Err(err) = phase4_framework::mobile::settings::settings_launches(session).await {
+        println!("Skipping mobile settings launch scenario: {err}");
     }
+}
 
-    let _ = session.wait_for_intent("Search", 1500).await;
+#[tokio::test]
+async fn mobile_example_phase4_resolves_search_intent_or_skips() {
+    let Some(session) = support::start_mobile_or_skip().await else {
+        return;
+    };
 
-    session.close().await.expect("close mobile session");
+    if let Err(err) = phase4_framework::mobile::settings::search_intent_resolves(session).await {
+        println!("Skipping mobile search scenario: {err}");
+    }
 }

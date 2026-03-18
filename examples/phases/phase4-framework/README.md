@@ -5,10 +5,11 @@ Committed reference project for UTO Phase 4 framework maturity.
 This project demonstrates the current framework state:
 
 - `uto-runner` CLI option parsing (`--target`, `--json`, `--report-file`)
-- `uto-reporter` structured `uto-report/v1` JSON output
-- `uto-reporter` deterministic HTML report output from JSON source-of-truth
-- `uto-logger` modern structured logs plus loader/spinner support
-- web + mobile execution paths with graceful mobile fallback behavior
+- `uto-test::Suite` multi-test execution with isolated sessions per named case
+- `uto-reporter` structured `uto-suite/v1` JSON output plus native HTML suite reports
+- multi-file scenario organization under `src/web/` and `src/mobile/`
+- authored integration tests grouped by capability under `tests/`
+- web + mobile execution paths with graceful mobile fallback behavior in authored tests
 
 ## Run
 
@@ -39,5 +40,11 @@ cargo run -p uto-cli -- run \
 cd examples/phases/phase4-framework
 cargo test
 ```
+
+Current authored test layout:
+
+- `tests/web_example.rs`: basic web smoke and content assertions
+- `tests/web_intent_example.rs`: intent-driven web flows
+- `tests/mobile_example.rs`: mobile helper flows with graceful skip behavior
 
 Mobile tests skip gracefully when required host tooling is unavailable.

@@ -30,8 +30,15 @@ This script will:
 3. summarize results with `uto report`
 4. generate a native HTML artifact with `uto report --html`
 
-Generated reports are JSON artifacts with a versioned schema (`schema_version`), run identity (`run_id`), timeline metadata, and step events.
+Generated reports are JSON artifacts with a versioned schema (`schema_version`), run or suite identity, timeline metadata, and step events.
 
 For local debugging and CI artifact readability, the same report can be rendered as a single-file HTML output derived from the JSON source of truth.
+
+The committed Phase 4 reference project now uses a multi-file suite layout:
+
+- `src/web/*.rs` for grouped web scenarios
+- `src/mobile/*.rs` for grouped mobile scenarios
+- `tests/*.rs` for authored integration coverage grouped by capability
+- native `uto-suite/v1` HTML reports from the runner
 
 By default it validates the web target. Set `WITH_MOBILE=1` to also validate mobile.

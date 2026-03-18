@@ -36,7 +36,7 @@ Phase 4.1 completion in `uto-cli` includes:
 
 Phase 4.2 and 4.3 additions include:
 
-- `uto-report/v1` typed schema and native HTML report generation (`uto report --html`)
+- `uto-report/v1` and `uto-suite/v1` typed schemas with native HTML report generation (`uto report --html`)
 - mobile parity helper APIs for intent reliability (`wait_for_element`, `wait_for_intent`, `scroll_intent`)
 - Android fixture-focused integration tests with graceful skip behavior when Appium/device tooling is unavailable
 
@@ -111,11 +111,12 @@ cargo run -p uto-poc --bin phase3_intent_poc
 UTO_DEMO=mobile cargo run -p uto-poc --bin phase3_intent_poc
 ```
 
-**JSON Report Output:**
+**JSON / HTML Suite Report Output:**
 
 ```bash
 UTO_REPORT_FORMAT=json cargo run -p uto-poc --bin phase3_intent_poc
 UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./report.json cargo run -p uto-poc --bin phase3_intent_poc
+UTO_REPORT_FORMAT=json UTO_REPORT_FILE=./report.json UTO_REPORT_HTML=1 cargo run -p uto-poc --bin phase3_intent_poc -- --html
 ```
 
 ## Framework CLI
@@ -135,11 +136,14 @@ Generates:
 - `uto.json` (project config)
 - `.uto/reports/` (report directory)
 
-Example test style in generated projects:
+Example Suite style in generated projects:
 
 ```rust
-let web = uto_test::startNewSession("chrome").await?;
-let mobile = uto_test::startNewSessionWithArg("android", 16).await?;
+let code = uto_test::Suite::new(uto_runner::CliOptions::from_env())
+	.test("web: page title is non-empty", web_title_test)
+	.test("web: inline form assertion", web_form_test)
+	.run()
+	.await;
 ```
 
 Rust-style variants are also available:
@@ -183,7 +187,7 @@ UTO keeps one committed example project per development phase under `examples/ph
 These projects are intended as stable references, similar to the executable binaries in `poc/src/bin`.
 
 - Phase 3 reference project: `examples/phases/phase3-intent`
-- Phase 4 reference project: `examples/phases/phase4-framework`
+- Phase 4 reference project: `examples/phases/phase4-framework` (multi-file suite + native HTML)
 
 ### Phase 2: Mobile Session Demo (Appium)
 
