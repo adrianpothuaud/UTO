@@ -51,7 +51,37 @@ Phase 4.2 and 4.3 additions include:
 - `docs`: ADRs and project direction documents
 - `examples`: CLI-generated smoke projects plus committed per-phase reference projects
 
-## Quick Start
+## Install
+
+The fastest way to get the `uto` CLI is the one-line installer (macOS / Linux):
+
+```sh
+curl -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.ps1 | iex
+```
+
+The installer checks for Rust (installs via [rustup](https://rustup.rs) if missing), builds the `uto` binary from source, and prints getting-started instructions.
+
+To pin to a specific release:
+
+```sh
+UTO_REF=v0.1.0 curl -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh
+```
+
+After install, scaffold your first project:
+
+```sh
+uto init ./my-tests --template web
+uto run  --project ./my-tests --target web
+uto report --project ./my-tests --html
+```
+
+## Quick Start (from source)
 
 ### 1. Build
 
