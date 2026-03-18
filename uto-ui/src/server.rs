@@ -10,6 +10,10 @@
 //! | GET    | `/ws`        | WebSocket upgrade — live event stream / run relay         |
 
 use std::path::PathBuf;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
 
 use axum::{
     extract::{
@@ -20,7 +24,7 @@ use axum::{
     routing::get,
     Router,
 };
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, Mutex, RwLock};
 
 /// Embedded SPA — compiled into the binary at build time.
 const INDEX_HTML: &str = include_str!("assets/index.html");
@@ -32,14 +36,13 @@ const INDEX_HTML: &str = include_str!("assets/index.html");
 /// Configuration options for the UI server.
 #[derive(Debug, Clone)]
 pub struct UiOptions {
-    /// Path to the UTO project directory (used for project name display and future run integration).
+    /// Path to the UTO project directory (used for project name display and run integration).
     pub project: PathBuf,
     /// Local port for the HTTP + WebSocket server. Default: `4000`.
     pub port: u16,
     /// Automatically open the browser after the server starts. Default: `false`.
     pub open: bool,
     /// Enable watch mode (auto re-run on file change). Default: `false`.
-    /// Note: filesystem watcher integration is planned for Iteration 5.4.
     pub watch: bool,
     /// Path to a saved `uto-suite/v1` or `uto-report/v1` JSON artifact to replay. Default: `None`.
     pub report: Option<PathBuf>,
@@ -65,10 +68,16 @@ impl Default for UiOptions {
 struct AppState {
     /// Display name derived from project directory or `uto.json`.
     project_name: String,
-    /// Pre-loaded report artifact (from `--report` flag), or `None`.
-    report: Option<serde_json::Value>,
-    /// Broadcast channel for streaming live events to WebSocket clients.
+    /// Project directory — used when spawning a live run subprocess.
+    project: PathBuf,
+    /// Shared, mutable report artifact.  Updated after each live run.
+    report: Arc<RwLock<Option<serde_json::Value>>>,
+    /// Broadcast channel for streaming live events to all WebSocket clients.
     tx: broadcast::Sender<String>,
+    /// Whether a run subprocess is currently active.
+    run_active: Arc<AtomicBool>,
+    /// Kill handle for the active run subprocess (if any).
+    kill_handle: Arc<Mutex<Option<crate::runner::KillHandle>>>,
 }
 
 // ---------------------------------------------------------------------------
@@ -91,11 +100,12 @@ fn create_router(state: AppState) -> Router {
 /// Start the UTO UI server asynchronously.
 ///
 /// Binds an HTTP + WebSocket server on `localhost:<port>`, serves the embedded
-/// SPA, and optionally replays a saved report artifact over WebSocket on
-/// client connect. Blocks until `SIGINT` / `Ctrl+C` is received.
+/// SPA, optionally replays a saved report artifact over WebSocket on client
+/// connect, and optionally watches the project `tests/` directory for changes.
+/// Blocks until `SIGINT` / `Ctrl+C` is received.
 pub async fn start_server(opts: UiOptions) -> Result<(), String> {
-    // Load the report artifact if one was specified.
-    let report = if let Some(ref path) = opts.report {
+    // Load the initial report artifact (from `--report`), if provided.
+    let initial_report = if let Some(ref path) = opts.report {
         let content = std::fs::read_to_string(path)
             .map_err(|e| format!("Failed to read report '{}': {e}", path.display()))?;
         let value: serde_json::Value = serde_json::from_str(&content)
@@ -110,9 +120,40 @@ pub async fn start_server(opts: UiOptions) -> Result<(), String> {
     let (tx, _rx) = broadcast::channel(256);
     let state = AppState {
         project_name,
-        report,
+        project: opts.project.clone(),
+        report: Arc::new(RwLock::new(initial_report)),
         tx,
+        run_active: Arc::new(AtomicBool::new(false)),
+        kill_handle: Arc::new(Mutex::new(None)),
     };
+
+    // Start the filesystem watcher when `--watch` is enabled.
+    if opts.watch {
+        // Watch the tests/ sub-directory; fall back to the project root.
+        let watch_path = {
+            let tests_dir = opts.project.join("tests");
+            if tests_dir.exists() {
+                tests_dir
+            } else {
+                opts.project.clone()
+            }
+        };
+        let watch_state = state.clone();
+        let rt = tokio::runtime::Handle::current();
+        match crate::watcher::start_watcher(watch_path.clone(), move || {
+            let s = watch_state.clone();
+            rt.spawn(async move { handle_trigger_run(s).await });
+        }) {
+            Ok(()) => {
+                log::info!("Watch mode active — watching '{}'", watch_path.display());
+                println!("  Watch mode  →  watching '{}'", watch_path.display());
+            }
+            Err(e) => {
+                log::warn!("Watch mode unavailable: {e}");
+                println!("  Watch mode unavailable: {e}");
+            }
+        }
+    }
 
     let app = create_router(state);
 
@@ -128,9 +169,6 @@ pub async fn start_server(opts: UiOptions) -> Result<(), String> {
 
     if opts.open {
         open_browser(&url);
-    }
-    if opts.watch {
-        println!("  Watch mode: planned for Iteration 5.4");
     }
 
     axum::serve(listener, app)
@@ -164,13 +202,14 @@ async fn serve_index() -> Html<&'static str> {
 async fn api_status(State(state): State<AppState>) -> impl IntoResponse {
     Json(serde_json::json!({
         "project": state.project_name,
-        "status": "ready",
+        "status": if state.run_active.load(Ordering::Relaxed) { "running" } else { "ready" },
     }))
 }
 
 async fn api_report(State(state): State<AppState>) -> impl IntoResponse {
-    match state.report {
-        Some(r) => Json(r).into_response(),
+    let guard = state.report.read().await;
+    match &*guard {
+        Some(r) => Json(r.clone()).into_response(),
         None => Json(serde_json::Value::Null).into_response(),
     }
 }
@@ -182,19 +221,22 @@ async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl
 async fn handle_ws(mut socket: WebSocket, state: AppState) {
     let mut rx = state.tx.subscribe();
 
-    // If a report artifact was loaded at startup, push it to the new client.
-    if let Some(report) = &state.report {
-        let msg = serde_json::json!({ "type": "report", "payload": report });
-        if socket
-            .send(Message::Text(msg.to_string().into()))
-            .await
-            .is_err()
-        {
-            return;
+    // Push the pre-loaded report (if any) to the new client immediately.
+    {
+        let guard = state.report.read().await;
+        if let Some(report) = &*guard {
+            let msg = serde_json::json!({ "type": "report", "payload": report });
+            if socket
+                .send(Message::Text(msg.to_string().into()))
+                .await
+                .is_err()
+            {
+                return;
+            }
         }
     }
 
-    // Relay broadcast events and listen for client control messages.
+    // Relay broadcast events and handle client control messages.
     loop {
         tokio::select! {
             event = rx.recv() => {
@@ -209,11 +251,61 @@ async fn handle_ws(mut socket: WebSocket, state: AppState) {
             }
             msg = socket.recv() => {
                 match msg {
+                    Some(Ok(Message::Text(text))) => {
+                        handle_ws_message(text.as_str(), state.clone()).await;
+                    }
                     Some(Ok(Message::Close(_))) | None => break,
                     _ => {}
                 }
             }
         }
+    }
+}
+
+/// Dispatch an incoming WebSocket text message to the appropriate handler.
+async fn handle_ws_message(text: &str, state: AppState) {
+    if let Ok(msg) = serde_json::from_str::<serde_json::Value>(text) {
+        match msg.get("type").and_then(|t| t.as_str()) {
+            Some("trigger_run") => handle_trigger_run(state).await,
+            Some("stop_run") => handle_stop_run(state).await,
+            _ => {}
+        }
+    }
+}
+
+/// Start a live run subprocess if none is currently active.
+async fn handle_trigger_run(state: AppState) {
+    // Atomically claim the run slot; notify clients if already occupied.
+    if state
+        .run_active
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        let _ = state.tx.send(
+            serde_json::json!({
+                "type": "run_ignored",
+                "payload": { "reason": "run_already_active" }
+            })
+            .to_string(),
+        );
+        return;
+    }
+
+    let handle = crate::runner::start_run(
+        state.project.clone(),
+        state.tx.clone(),
+        state.report.clone(),
+        state.run_active.clone(),
+    )
+    .await;
+
+    *state.kill_handle.lock().await = Some(handle);
+}
+
+/// Stop the currently active run subprocess (if any).
+async fn handle_stop_run(state: AppState) {
+    if let Some(h) = state.kill_handle.lock().await.take() {
+        h.kill();
     }
 }
 
@@ -284,8 +376,11 @@ mod tests {
         let (tx, _) = broadcast::channel(16);
         AppState {
             project_name: "test-project".to_string(),
-            report: None,
+            project: PathBuf::from("."),
+            report: Arc::new(RwLock::new(None)),
             tx,
+            run_active: Arc::new(AtomicBool::new(false)),
+            kill_handle: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -293,8 +388,11 @@ mod tests {
         let (tx, _) = broadcast::channel(16);
         AppState {
             project_name: "report-project".to_string(),
-            report: Some(report),
+            project: PathBuf::from("."),
+            report: Arc::new(RwLock::new(Some(report))),
             tx,
+            run_active: Arc::new(AtomicBool::new(false)),
+            kill_handle: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -346,6 +444,25 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn api_status_shows_running_when_active() {
+        let state = test_state();
+        state.run_active.store(true, Ordering::SeqCst);
+        let app = create_router(state);
+        let resp = app
+            .oneshot(
+                Request::get("/api/status")
+                    .body(axum::body::Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(resp.status().as_u16(), 200);
+        let body = resp.into_body().collect().await.unwrap().to_bytes();
+        let json: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(json["status"], "running");
+    }
+
+    #[tokio::test]
     async fn api_report_returns_null_when_no_report_loaded() {
         let app = create_router(test_state());
         let resp = app
@@ -388,6 +505,26 @@ mod tests {
         let json: serde_json::Value = serde_json::from_slice(&body).unwrap();
         assert_eq!(json["schema_version"], "uto-suite/v1");
         assert_eq!(json["status"], "passed");
+    }
+
+    #[tokio::test]
+    async fn handle_trigger_run_is_idempotent_when_active() {
+        let state = test_state();
+        let mut rx = state.tx.subscribe();
+        // Pre-set run_active so that a second trigger_run is ignored.
+        state.run_active.store(true, Ordering::SeqCst);
+        handle_trigger_run(state).await;
+        // Should have broadcast run_ignored.
+        let msg = rx.try_recv().expect("should have received run_ignored");
+        let v: serde_json::Value = serde_json::from_str(&msg).unwrap();
+        assert_eq!(v["type"], "run_ignored");
+    }
+
+    #[tokio::test]
+    async fn handle_stop_run_is_noop_when_no_run_active() {
+        let state = test_state();
+        // Should not panic when there is nothing to stop.
+        handle_stop_run(state).await;
     }
 
     #[tokio::test]

@@ -4,7 +4,7 @@ Date: 2026-03-18
 
 ## Status
 
-Active — Iteration 5.1 and 5.2 delivered
+Active — Iterations 5.1, 5.2, 5.3, and 5.4 delivered
 
 ## Context
 
@@ -151,17 +151,16 @@ All new crate dependencies must pass advisory-database security review before ad
 3. Add `--watch` and `--open` CLI flags.
 4. Validate end-to-end on macOS, Linux, and Windows.
 5. Add Phase 5 reference project under `examples/phases/phase5-ui-mode/`.
-
 ## Done Criteria for Phase 5 MVP
 
 - [x] `uto ui` starts without error on a Phase 4+ project directory.
 - [x] Navigating to `http://localhost:4000` shows the UTO UI with the test tree.
 - [x] Loading a saved `uto-suite/v1` artifact via `--report` replays events in the UI.
-- [ ] Triggering a run from the UI spawns `uto run` and streams events live.
-- [ ] Watch mode re-runs on file change.
+- [x] Triggering a run from the UI spawns `uto run` and streams events live.
+- [x] Watch mode re-runs on file change.
 - [ ] Screenshots attached to report events are displayed in the timeline panel.
 - [x] Platform badge correctly shows `web` or `mobile` per test.
-- [ ] All tests pass on macOS, Linux, and Windows CI.
+- [x] All tests pass on macOS, Linux, and Windows CI.
 - [x] A committed Phase 5 reference project exists under `examples/phases/phase5-ui-mode/`.
 
 ## Consequences
