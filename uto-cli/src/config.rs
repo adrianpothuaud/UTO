@@ -5,12 +5,33 @@ use std::path::Path;
 
 pub const PROJECT_SCHEMA_VERSION: &str = "1";
 pub const DEFAULT_REPORT_SCHEMA_VERSION: &str = uto_reporter::UTO_SUITE_SCHEMA_V1;
+pub const DEFAULT_FRAMEWORK_VERSION: &str = "4.5";
 
 fn is_supported_report_schema(schema: &str) -> bool {
     matches!(
         schema,
         uto_reporter::UTO_REPORT_SCHEMA_V1 | uto_reporter::UTO_SUITE_SCHEMA_V1
     )
+}
+
+fn parse_framework_version(value: &str) -> Result<(u32, u32), String> {
+    let mut parts = value.split('.');
+    let major = parts
+        .next()
+        .ok_or_else(|| "missing major version".to_string())?
+        .parse::<u32>()
+        .map_err(|_| "major version is not numeric".to_string())?;
+    let minor = parts
+        .next()
+        .ok_or_else(|| "missing minor version".to_string())?
+        .parse::<u32>()
+        .map_err(|_| "minor version is not numeric".to_string())?;
+
+    if parts.next().is_some() {
+        return Err("expected format '<major>.<minor>'".to_string());
+    }
+
+    Ok((major, minor))
 }
 
 /// UTO project configuration from uto.json.
@@ -23,6 +44,8 @@ pub struct UtoProjectConfig {
     pub report_dir: String,
     pub uto_root: String,
     pub report_schema: String,
+    #[serde(default)]
+    pub framework_version: Option<String>,
 }
 
 impl UtoProjectConfig {
@@ -54,6 +77,15 @@ impl UtoProjectConfig {
             return Err("Invalid uto.json: report_dir must not be empty".to_string());
         }
 
+        if let Some(version) = &self.framework_version {
+            parse_framework_version(version).map_err(|reason| {
+                format!(
+                    "Invalid uto.json: framework_version '{}' is invalid ({reason})",
+                    version
+                )
+            })?;
+        }
+
         let _ = super::parsing::normalize_target(&self.default_target)?;
         Ok(())
     }
@@ -79,18 +111,6 @@ pub fn load_project_config(project: &Path) -> Result<UtoProjectConfig, String> {
     let config: UtoProjectConfig = super::io::read_json(config_path)?;
     config.validate()?;
     Ok(config)
-}
-
-/// Validates that a project runner exists.
-pub fn validate_project_runner(project: &Path) -> Result<(), String> {
-    let runner = project.join("src/bin/uto_project_runner.rs");
-    if !runner.exists() {
-        return Err(format!(
-            "Missing project runner: {}. Re-run `uto init` or restore the generated runner.",
-            runner.display()
-        ));
-    }
-    Ok(())
 }
 
 /// Parsed report — either a single-run or a multi-test suite.

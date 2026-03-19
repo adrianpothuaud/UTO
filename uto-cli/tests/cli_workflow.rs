@@ -41,6 +41,48 @@ fn create_project(temp: &TempDir, name: &str) -> PathBuf {
     project
 }
 
+fn set_framework_version(project: &Path, version: &str) {
+    let config_path = project.join("uto.json");
+    let config_raw = fs::read_to_string(&config_path).expect("read uto.json");
+    let mut config: serde_json::Value =
+        serde_json::from_str(&config_raw).expect("parse uto.json as JSON");
+    config["framework_version"] = serde_json::Value::String(version.to_string());
+    fs::write(
+        &config_path,
+        serde_json::to_string_pretty(&config).expect("serialize uto.json"),
+    )
+    .expect("write uto.json");
+}
+
+fn add_legacy_runner(project: &Path) {
+    let bin_dir = project.join("src/bin");
+    fs::create_dir_all(&bin_dir).expect("create src/bin");
+    fs::write(
+        bin_dir.join("uto_project_runner.rs"),
+        r#"fn main() {
+    let report_path = std::env::var("UTO_REPORT_JSON").expect("UTO_REPORT_JSON");
+
+    let report = serde_json::json!({
+        "schema_version": "uto-report/v1",
+        "framework": "uto",
+        "run_id": "legacy-run",
+        "mode": "web",
+        "status": "passed",
+        "timeline": {
+            "started_at_unix_ms": 1,
+            "finished_at_unix_ms": 2,
+            "duration_ms": 1
+        },
+        "events": []
+    });
+
+    std::fs::write(report_path, serde_json::to_string_pretty(&report).unwrap()).unwrap();
+}
+"#,
+    )
+    .expect("write legacy runner");
+}
+
 #[test]
 fn init_scaffolds_expected_project_files() {
     let temp = TempDir::new().expect("temp dir");
@@ -49,12 +91,14 @@ fn init_scaffolds_expected_project_files() {
     assert!(project.join("uto.json").exists());
     assert!(project.join("Cargo.toml").exists());
     assert!(project.join("README.md").exists());
-    assert!(project.join("src/bin/uto_project_runner.rs").exists());
+    assert!(project.join("src/lib.rs").exists());
+    assert!(!project.join("src/bin/uto_project_runner.rs").exists());
     assert!(project.join("tests/web_example.rs").exists());
     assert!(project.join("tests/mobile_example.rs").exists());
 
     let uto_json = fs::read_to_string(project.join("uto.json")).expect("read uto.json");
     assert!(uto_json.contains(r#""report_schema": "uto-suite/v1""#));
+    assert!(uto_json.contains(r#""framework_version": "4.5""#));
 }
 
 #[test]
@@ -78,11 +122,9 @@ fn run_accepts_suite_schema_in_project_config() {
 }
 
 #[test]
-fn run_fails_fast_when_runner_is_missing() {
+fn run_works_without_project_runner_binary() {
     let temp = TempDir::new().expect("temp dir");
-    let project = create_project(&temp, "run-missing-runner");
-
-    fs::remove_file(project.join("src/bin/uto_project_runner.rs")).expect("remove runner");
+    let project = create_project(&temp, "run-runnerless");
 
     let output = run_uto(&[
         "run",
@@ -92,10 +134,63 @@ fn run_fails_fast_when_runner_is_missing() {
         "web",
     ]);
 
-    assert!(!output.status.success());
+    assert!(
+        output.status.success(),
+        "run failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    assert!(project.join(".uto/reports/last-run.json").exists());
+    assert!(project.join(".uto/reports/last-run.html").exists());
+}
+
+#[test]
+fn legacy_runner_warns_for_framework_4_6() {
+    let temp = TempDir::new().expect("temp dir");
+    let project = create_project(&temp, "run-legacy-46");
+
+    set_framework_version(&project, "4.6");
+    add_legacy_runner(&project);
+
+    let output = run_uto(&[
+        "run",
+        "--project",
+        project.to_str().expect("project path utf-8"),
+        "--target",
+        "web",
+    ]);
+
+    assert!(
+        output.status.success(),
+        "run failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("legacy sunset window"), "stderr: {stderr}");
+}
+
+#[test]
+fn legacy_runner_rejected_for_framework_4_8() {
+    let temp = TempDir::new().expect("temp dir");
+    let project = create_project(&temp, "run-legacy-48");
+
+    set_framework_version(&project, "4.8");
+    add_legacy_runner(&project);
+
+    let output = run_uto(&[
+        "run",
+        "--project",
+        project.to_str().expect("project path utf-8"),
+        "--target",
+        "web",
+    ]);
+
+    assert!(!output.status.success(), "expected uto run to fail");
+
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("Missing project runner"),
+        stderr.contains("Legacy runner mode is disabled for framework_version 4.8"),
         "stderr: {stderr}"
     );
 }

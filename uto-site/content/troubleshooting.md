@@ -1,39 +1,20 @@
 +++
 title = "Troubleshooting"
-description = "Resolve common UTO setup, run, and report issues across web and mobile environments."
+description = "Public troubleshooting index for UTO private beta with support redirection."
 template = "page"
 slug = "troubleshooting"
 +++
 
 # Troubleshooting
 
-## Web run fails to create browser session
+Detailed troubleshooting guides are currently available to approved private beta participants.
 
-- Ensure Chrome is installed and up to date.
-- Run `uto run --project ./my-tests --target web` with verbose output to see provisioning logs.
+## Need direct support?
 
-## Mobile run skips or fails
+- Contact [contact@uto.dev](mailto:contact@uto.dev).
+- Include your environment information and a short summary of the issue.
+- We prioritize beta participants and roadmap contributors.
 
-- Verify `adb devices` shows an online device or emulator.
-- Ensure Appium is installed and reachable from PATH.
-- Ensure UiAutomator2 driver is installed in Appium.
+## Request invite access
 
-UTO mobile tests skip gracefully when Appium or device tooling is unavailable.
-
-## Report schema validation failure
-
-Ensure the report JSON uses `schema_version: "uto-report/v1"` and regenerate reports via `uto run`.
-
-## HTML report not generated
-
-Run:
-
-```sh
-uto report --project <project-dir> --html
-```
-
-Optionally choose an output path with `--html-output`.
-
-## Still stuck?
-
-[Request early access](../early-access/) to get direct support from the UTO team.
+If you are not yet part of the beta program, apply through the [private beta page](../early-access/).

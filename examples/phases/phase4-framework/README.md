@@ -4,8 +4,8 @@ Committed reference project for UTO Phase 4 framework maturity.
 
 This project demonstrates the current framework state:
 
-- `uto-runner` CLI option parsing (`--target`, `--json`, `--report-file`)
-- `uto-test::Suite` multi-test execution with isolated sessions per named case
+- runnerless CLI-owned execution via `uto run`
+- `uto-test::uto_test` annotations for target-aware test discovery
 - `uto-reporter` structured `uto-suite/v1` JSON output plus native HTML suite reports
 - multi-file scenario organization under `src/web/` and `src/mobile/`
 - authored integration tests grouped by capability under `tests/`

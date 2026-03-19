@@ -53,8 +53,8 @@ async fn load_compiled_tests() -> Result<TestRegistry> {
 ```
 
 **Key Considerations:**
-- This is a Rust library function; test discovery must work without macros (convention-based for MVP)
-- For now, assume tests are in `tests/` and follow naming convention
+- MVP includes `#[uto_test]` support, with convention fallback for existing suites
+- For now, assume tests are in `tests/` and follow naming convention where macro is absent
 - Return structured `Result` for error handling in CLI
 
 ---
@@ -370,6 +370,7 @@ No new crate dependencies required.
 1. `uto run` detects old-style project (checks for src/bin/uto_project_runner.rs)
 2. Falls back to old behavior: `cargo run --bin uto_project_runner`
 3. Log deprecation warning: "⚠️ This project uses legacy runner binary. Run `uto migrate` to update."
+4. Keep this fallback for exactly two minor releases after Phase 4.5, then remove it.
 
 **Implementation in uto-cli:**
 ```rust
@@ -412,10 +413,10 @@ if parsed.project.join("src/bin/uto_project_runner.rs").exists() {
 - `uto migrate` command to automatically remove old runner files
 - `uto doctor` command to check project health
 
-### Phase 3: Procedural Macros (Optional)
-- Add `#[uto_test]` macro for explicit test marking
-- Would replace convention-based discovery
-- Not required for MVP
+### Phase 3: Procedural Macros (Already in MVP, polish phase)
+- Harden `#[uto_test]` diagnostics and developer ergonomics
+- Expand examples and docs around explicit test marking
+- Keep convention-based compatibility for existing suites during transition
 
 ### Phase 4: Watch Mode Integration
 - `uto run --watch` for auto-rerun on file changes

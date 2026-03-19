@@ -60,9 +60,14 @@ fn generated_web_project_compiles_with_uto_test_and_uto_runner() {
     let cargo_toml =
         fs::read_to_string(project.join("Cargo.toml")).expect("read generated Cargo.toml");
     assert!(cargo_toml.contains("uto-test"));
-    assert!(cargo_toml.contains("uto-runner"));
     assert!(cargo_toml.contains("uto-reporter"));
     assert!(cargo_toml.contains("uto-logger"));
+
+    let uto_json = fs::read_to_string(project.join("uto.json")).expect("read generated uto.json");
+    assert!(uto_json.contains(r#""framework_version": "4.5""#));
+
+    let web_test = fs::read_to_string(project.join("tests/web_example.rs")).expect("read web test");
+    assert!(web_test.contains("#[uto_test(target = \"web\")]"));
 
     let check = cargo_check_tests(&project);
     assert!(
@@ -77,10 +82,14 @@ fn generated_mobile_project_compiles_with_uto_test_and_uto_runner() {
     let temp = TempDir::new().expect("temp dir");
     let project = init_project(&temp, "compat-mobile", "mobile");
 
-    let runner =
-        fs::read_to_string(project.join("src/bin/uto_project_runner.rs")).expect("read runner");
-    assert!(runner.contains("use uto_test::{ManagedSession, Suite};"));
-    assert!(runner.contains("use uto_runner::{CliOptions, RunMode};"));
+    assert!(!project.join("src/bin/uto_project_runner.rs").exists());
+
+    let uto_json = fs::read_to_string(project.join("uto.json")).expect("read generated uto.json");
+    assert!(uto_json.contains(r#""framework_version": "4.5""#));
+
+    let mobile_test =
+        fs::read_to_string(project.join("tests/mobile_example.rs")).expect("read mobile test");
+    assert!(mobile_test.contains("#[uto_test(target = \"mobile\")]"));
 
     let check = cargo_check_tests(&project);
     assert!(

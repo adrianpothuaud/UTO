@@ -55,12 +55,12 @@ POC phase isolation rule:
 Framework-facing workflow components now include:
 
 - `uto-core/` — core engine (env discovery/provisioning, driver lifecycle, W3C session protocol, vision/intent)
-- `uto-test/` — end-user test helper crate (simple session start/close API + `Suite` multi-test runner)
+- `uto-test/` — end-user test helper crate (simple session start/close API + `Suite` utilities + `#[uto_test]` macro export)
 - `uto-reporter/` — structured `uto-report/v1` schema, HTML/JSON emission
 - `uto-logger/` — modern structured logging + loader/spinner utilities for long-running tasks
-- `uto-runner/` — CLI option parsing for generated-project runners
+- `uto-runner/` — shared runner option types retained for compatibility surfaces
 - `uto-ui/` — interactive UI mode server: embedded HTTP + WebSocket server + browser SPA (`uto ui` command)
-- `uto-cli/` — framework CLI entrypoint for project lifecycle commands (`init`, `run`, `report`, `ui`)
+- `uto-cli/` — framework CLI entrypoint for project lifecycle commands (`init`, `run`, `report`, `ui`) with CLI-owned test execution
 - `examples/` — generated-project validation flow for CLI smoke testing
 
 For mobile readiness, `src/env/` now also performs best-effort auto-fixes:
@@ -168,11 +168,11 @@ Phase 4 refocuses UTO from core engine capability toward end-user framework expe
 
 **Architectural Separation of Concerns (Phase 4):**
 - `uto-core/` — infrastructure/protocol (env, driver, session, vision, intent)
-- `uto-test/` — end-user test helpers (session lifecycle)
+- `uto-test/` — end-user test helpers (session lifecycle + `#[uto_test]` annotation surface)
 - `uto-reporter/` — report schema + JSON/HTML generation (versioned, machine-readable)
 - `uto-logger/` — structured logging + progress visualization (process-aware, callable from anywhere)
-- `uto-runner/` — CLI option parsing for generated projects (minimal, re-exports from uto-reporter)
-- `uto-cli/` — framework orchestration (init, run, report, ui commands)
+- `uto-runner/` — compatibility-focused option/type crate used by existing surfaces
+- `uto-cli/` — framework orchestration (init, run, report, ui commands), including runnerless test discovery/execution
 - Phase examples (`examples/phases/*`) — committed reference projects per phase, durable in-repo
 
 **Phase 4 Validation:**
@@ -205,7 +205,7 @@ Phase 5 delivers the `uto ui` interactive browser-based test runner and debugger
 11. Fixed pre-existing clippy `let_unit_value` lint in `uto-test/src/managed_session.rs`
 
 **Iteration 5.3 + 5.4 Completion:**
-1. Created `uto-ui/src/runner.rs` — subprocess bridge: spawns `cargo run --bin uto_project_runner`, relays stdout/stderr as `log` WebSocket events, broadcasts `run_started` / `run_finished` with updated report
+1. Created `uto-ui/src/runner.rs` — subprocess bridge: spawns `uto run --project <dir>`, relays stdout/stderr as `log` WebSocket events, broadcasts `run_started` / `run_finished` with updated report
 2. Created `uto-ui/src/watcher.rs` — filesystem watcher using `notify` crate with 300 ms debounce; watches `tests/` directory
 3. Wired `--watch` flag: on file change, auto-triggers a re-run via `handle_trigger_run`
 4. Wired Run / Stop controls: WebSocket `trigger_run` / `stop_run` messages handled by server

@@ -186,26 +186,21 @@ BENEFITS:
 │ ROLLOUT PHASES                                              │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
-│ NOW (Phase 4.4)                                             │
-│  └─ Document improvement (ADR 0018) [PROPOSAL PHASE]        │
-│                                                              │
-│ PHASE 4.5 (Early Iteration 1)                              │
-│  ├─ Add runner library entry point to uto-test             │
-│  ├─ Prototype test discovery & execution                   │
+│ PHASE 4.5 (Implementation Target)                          │
+│  ├─ Add framework-owned execution path                     │
 │  ├─ Modify uto-cli/src/commands/run.rs                     │
-│  └─ Validate with phase4-framework example                 │
-│                                                              │
-│ PHASE 4.6 (Iteration 2)                                    │
 │  ├─ Stop generating runner.rs in new projects              │
-│  ├─ Add deprecation warning for old projects               │
-│  ├─ Provide migration documentation                        │
-│  └─ Support both old & new styles                          │
+│  ├─ Include #[uto_test] in MVP templates                   │
+│  └─ Migrate phase4-framework + ui-showcase immediately     │
 │                                                              │
-│ PHASE 5.0+ (Beyond MVP)                                    │
-│  ├─ Optional #[uto_test] procedural macro                  │
-│  ├─ Test discovery caching & optimization                 │
-│  ├─ Full cleanup of old runner.rs files                    │
-│  └─ UX alignment with UI mode (Phase 5)                    │
+│ PHASE 4.6 + 4.7 (Compatibility Window)                    │
+│  ├─ Keep legacy runner mode with deprecation warnings      │
+│  ├─ Provide migration guidance                              │
+│  └─ Track adoption and remove blockers                      │
+│                                                              │
+│ PHASE 4.8 (Removal Point)                                  │
+│  ├─ Remove legacy runner fallback                           │
+│  └─ Enforce transparent CLI-owned execution                 │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -218,6 +213,7 @@ BENEFITS:
 - [ ] Add new module: `src/dispatch.rs` — runtime test context & dispatch logic
 - [ ] Add `pub async fn run_project_tests(target: &str, options: CliOptions) -> Result<i32>`
 - [ ] Implement test discovery via `cargo metadata` + convention (tests/ directory)
+- [ ] Add MVP `#[uto_test]` support and registry/discovery wiring
 - [ ] Load & execute test functions, emit events to reporter
 
 ### uto-cli Changes

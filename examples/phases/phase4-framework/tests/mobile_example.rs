@@ -1,6 +1,9 @@
 #[path = "support/mod.rs"]
 mod support;
 
+use uto_test::uto_test;
+
+#[uto_test(target = "mobile")]
 #[tokio::test]
 async fn mobile_example_phase4_launches_settings_or_skips() {
     let Some(session) = support::start_mobile_or_skip().await else {
@@ -12,6 +15,7 @@ async fn mobile_example_phase4_launches_settings_or_skips() {
     }
 }
 
+#[uto_test(target = "mobile")]
 #[tokio::test]
 async fn mobile_example_phase4_resolves_search_intent_or_skips() {
     let Some(session) = support::start_mobile_or_skip().await else {

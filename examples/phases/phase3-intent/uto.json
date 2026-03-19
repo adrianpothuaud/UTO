@@ -5,5 +5,6 @@
   "default_target": "web",
   "report_dir": ".uto/reports",
   "uto_root": "../../..",
-  "report_schema": "uto-report/v1"
+  "report_schema": "uto-report/v1",
+  "framework_version": "4.5"
 }

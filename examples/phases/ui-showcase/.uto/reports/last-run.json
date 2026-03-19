@@ -1,0 +1,188 @@
+{
+  "schema_version": "uto-suite/v1",
+  "framework": "uto",
+  "suite_id": "suite-1773895044752-59666",
+  "mode": "web",
+  "status": "passed",
+  "timeline": {
+    "started_at_unix_ms": 1773895044752,
+    "finished_at_unix_ms": 1773895059910,
+    "duration_ms": 15158
+  },
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0
+  },
+  "tests": [
+    {
+      "name": "cargo_toml_has_ui_compatible_dependencies",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773895044752,
+        "finished_at_unix_ms": 1773895054730,
+        "duration_ms": 9978
+      },
+      "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "ok",
+          "detail": {
+            "binary": "ui_features_test",
+            "name": "cargo_toml_has_ui_compatible_dependencies",
+            "target": "web",
+            "duration_ms": 9977
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "suite_report_schema_compatible_with_ui_server",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773895054730,
+        "finished_at_unix_ms": 1773895054999,
+        "duration_ms": 269
+      },
+      "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "ok",
+          "detail": {
+            "binary": "ui_features_test",
+            "name": "suite_report_schema_compatible_with_ui_server",
+            "target": "web",
+            "duration_ms": 268
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "test_directory_structure_is_valid",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773895054999,
+        "finished_at_unix_ms": 1773895055239,
+        "duration_ms": 240
+      },
+      "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "ok",
+          "detail": {
+            "binary": "ui_features_test",
+            "name": "test_directory_structure_is_valid",
+            "target": "web",
+            "duration_ms": 240
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "uto_json_schema_validation",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773895055239,
+        "finished_at_unix_ms": 1773895055473,
+        "duration_ms": 234
+      },
+      "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "ok",
+          "detail": {
+            "binary": "ui_features_test",
+            "name": "uto_json_schema_validation",
+            "target": "web",
+            "duration_ms": 234
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "web_multi_step_workflow",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773895055473,
+        "finished_at_unix_ms": 1773895058053,
+        "duration_ms": 2580
+      },
+      "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "ok",
+          "detail": {
+            "binary": "web_intent_showcase",
+            "name": "web_multi_step_workflow",
+            "target": "web",
+            "duration_ms": 2579
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "web_navigate_and_verify_visibility",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773895058053,
+        "finished_at_unix_ms": 1773895059910,
+        "duration_ms": 1857
+      },
+      "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "ok",
+          "detail": {
+            "binary": "web_intent_showcase",
+            "name": "web_navigate_and_verify_visibility",
+            "target": "web",
+            "duration_ms": 1856
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
+    }
+  ]
+}

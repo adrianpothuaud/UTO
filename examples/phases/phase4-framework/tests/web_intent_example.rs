@@ -1,6 +1,9 @@
 #[path = "support/mod.rs"]
 mod support;
 
+use uto_test::uto_test;
+
+#[uto_test(target = "web")]
 #[tokio::test]
 async fn web_example_phase4_form_flow_or_skips() {
     let Some(session) = support::start_web_or_skip().await else {
@@ -12,6 +15,7 @@ async fn web_example_phase4_form_flow_or_skips() {
         .expect("form intent scenario");
 }
 
+#[uto_test(target = "web")]
 #[tokio::test]
 async fn web_example_phase4_navigation_flow_or_skips() {
     let Some(session) = support::start_web_or_skip().await else {

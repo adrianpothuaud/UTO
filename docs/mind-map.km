@@ -1,0 +1,778 @@
+{
+  "root": {
+    "data": {
+      "id": "root",
+      "text": "UTO — Unified Testing Object"
+    },
+    "children": [
+      {
+        "data": {
+          "id": "what-is-uto",
+          "text": "What is UTO?"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "uto-tagline",
+              "text": "Vision-first, cross-platform test automation engine"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "uto-language",
+              "text": "Written in Rust"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "uto-replaces",
+              "text": "Built to replace Cypress & Playwright"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "uto-selector-free",
+              "text": "Selector-free tests — targets user intent, not CSS/XPath"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "uto-unified",
+              "text": "Unified Web + Mobile in one framework"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "uto-zero-config",
+              "text": "Zero-config — discover first, provision when missing"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "uto-cross-platform",
+              "text": "Cross-platform by design: macOS, Linux, Windows"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "data": {
+          "id": "why-uto",
+          "text": "Why UTO?"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "why-vs-cypress",
+              "text": "vs Cypress"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "cypress-web-only",
+                  "text": "Cypress is web-only — no mobile support"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "cypress-selectors",
+                  "text": "Cypress relies on brittle CSS selectors"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "why-vs-playwright",
+              "text": "vs Playwright"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "playwright-no-mobile",
+                  "text": "Playwright has no native mobile automation"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "playwright-selector-brittle",
+                  "text": "Playwright tests break on design system refactors"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "uto-advantage",
+              "text": "UTO Advantages"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "adv-vision",
+                  "text": "Vision-driven element recognition"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "adv-mobile",
+                  "text": "Web + Android + iOS — same API"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "adv-reporting",
+                  "text": "Reporting-first observability"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "adv-performance",
+                  "text": "Compiled Rust performance"
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "data": {
+          "id": "how-it-works",
+          "text": "How It Works"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "zero-config-infra",
+              "text": "Zero-Config Infrastructure"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "discover-or-deploy",
+                  "text": "Discover or Deploy strategy"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "browser-discovery",
+                  "text": "Discovers Chrome, Android SDK, Xcode"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "driver-provision",
+                  "text": "Auto-provisions ChromeDriver & Appium"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "cache-dir",
+                  "text": "Local cache in .uto/cache"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "process-groups",
+                  "text": "OS process groups (Unix) / Job Objects (Windows)"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "no-orphans",
+                  "text": "No orphaned driver processes"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "vision-recognition",
+              "text": "Vision Recognition Loop"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "ml-detection",
+                  "text": "ML-based UI element detection"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "a11y-anchor",
+                  "text": "Accessibility tree anchoring for resilience"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "intent-resolution",
+                  "text": "Intent resolution with candidate ranking"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "onnx-future",
+                  "text": "ONNX Runtime (vision engine)"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "session-model",
+              "text": "Session Model"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "w3c-protocol",
+                  "text": "W3C WebDriver protocol"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "web-session",
+                  "text": "WebSession → ChromeDriver"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "mobile-session",
+                  "text": "MobileSession → Appium"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "uto-session-trait",
+                  "text": "UtoSession unified trait"
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "data": {
+          "id": "architecture",
+          "text": "Architecture"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "crate-uto-core",
+              "text": "uto-core"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "core-env",
+                  "text": "env/ — host discovery & provisioning"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "core-driver",
+                  "text": "driver/ — process lifecycle & readiness"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "core-session",
+                  "text": "session/ — WebDriver protocol orchestration"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "crate-uto-test",
+              "text": "uto-test"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "test-api",
+                  "text": "End-user session lifecycle helpers"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "test-start",
+                  "text": "startNewSession() helper"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "test-macro",
+                  "text": "#[uto_test] macro export"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "crate-uto-cli",
+              "text": "uto-cli"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "cli-orchestration",
+                  "text": "Framework CLI orchestration"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "cli-commands",
+                  "text": "init / run / report / ui commands"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "crate-uto-reporter",
+              "text": "uto-reporter"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "reporter-schema",
+                  "text": "uto-report/v1 schema"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "reporter-json",
+                  "text": "JSON structured output"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "reporter-html",
+                  "text": "HTML report generation"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "crate-uto-ui",
+              "text": "uto-ui"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "ui-http",
+                  "text": "Embedded HTTP + WebSocket server"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "ui-spa",
+                  "text": "Browser SPA for test management"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "crate-uto-logger",
+              "text": "uto-logger"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "logger-structured",
+                  "text": "Structured logging"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "logger-spinner",
+                  "text": "Loader/spinner for long-running tasks"
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "data": {
+          "id": "installation",
+          "text": "Installation"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "install-mac-linux",
+              "text": "macOS / Linux"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "install-mac-cmd",
+                  "text": "curl -sSf https://…/install.sh | sh"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "install-windows",
+              "text": "Windows (PowerShell)"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "install-win-cmd",
+                  "text": "irm https://…/install.ps1 | iex"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "install-source",
+              "text": "From Source"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "install-cargo",
+                  "text": "cargo build --workspace"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "install-prereqs",
+                  "text": "Requires: Rust, Chrome (auto-provisioned)"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "install-zero-setup",
+              "text": "No manual driver setup needed"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "data": {
+          "id": "usage",
+          "text": "Usage / CLI"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "cli-init",
+              "text": "uto init"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "init-desc",
+                  "text": "Scaffold a new automation project"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "init-example",
+                  "text": "uto init ./my-tests --template web"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "cli-run",
+              "text": "uto run"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "run-desc",
+                  "text": "Execute test suites"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "run-example",
+                  "text": "uto run --project ./my-tests --target web"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "run-targets",
+                  "text": "Targets: web, android, ios"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "cli-report",
+              "text": "uto report"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "report-desc",
+                  "text": "Render machine/human-readable results"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "report-example",
+                  "text": "uto report --project ./my-tests --html"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "cli-ui",
+              "text": "uto ui"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "ui-desc",
+                  "text": "Interactive browser-based test dashboard"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "ui-features",
+                  "text": "Real-time event stream, watch mode, report replay"
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "data": {
+          "id": "reporting",
+          "text": "Reporting & Observability"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "report-json",
+              "text": "Structured JSON baseline (uto-report/v1)"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "report-html",
+              "text": "Native HTML rendering"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "report-ci",
+              "text": "CI artifact compatible"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "report-coverage",
+              "text": "Covers: env setup → intent resolution → assertions"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "report-schema",
+              "text": "Versioned schema with uto-suite/v1"
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "data": {
+          "id": "platforms",
+          "text": "Platform Support"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "platform-host",
+              "text": "Host OS"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "os-macos",
+                  "text": "macOS"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "os-linux",
+                  "text": "Linux"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "os-windows",
+                  "text": "Windows"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "data": {
+              "id": "platform-target",
+              "text": "Test Targets"
+            },
+            "children": [
+              {
+                "data": {
+                  "id": "target-web",
+                  "text": "Web → Chrome via ChromeDriver"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "target-android",
+                  "text": "Android → Appium + uiautomator2"
+                },
+                "children": []
+              },
+              {
+                "data": {
+                  "id": "target-ios",
+                  "text": "iOS → Appium (in progress)"
+                },
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "data": {
+          "id": "roadmap",
+          "text": "Roadmap"
+        },
+        "children": [
+          {
+            "data": {
+              "id": "phase-1-2",
+              "text": "Phase 1-2 ✅ Zero-config infra + Driver comms"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "phase-3",
+              "text": "Phase 3 ✅ Vision recognition loop + Intent API"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "phase-4",
+              "text": "Phase 4 ✅ CLI lifecycle + HTML reporting + Mobile parity"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "phase-5",
+              "text": "Phase 5 ✅ Interactive UI mode (uto ui)"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "phase-6",
+              "text": "Phase 6 🎯 UTO Studio — visual selector-free test authoring"
+            },
+            "children": []
+          },
+          {
+            "data": {
+              "id": "phase-7",
+              "text": "Phase 7+ Self-healing tests, CI/CD integrations, cloud reporting"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "template": "default",
+  "theme": "fresh-blue",
+  "version": "1.4.43"
+}

@@ -2,249 +2,136 @@
 
 {% block content %}
 
-<!-- ===== HERO ===== -->
-<section class="hero">
-  <div class="hero-content">
-    <div class="hero-badge">🦀 Built in Rust</div>
-    <h1 class="hero-title">
-      The Automation<br />Revolution
-    </h1>
+<section class="hero stealth-grid">
+  <div class="hero-content reveal" data-reveal>
+    <div class="hero-badge">Private Beta Cohorts Open</div>
+    <h1 class="hero-title">Automation after the tool stack era.</h1>
     <p class="hero-tagline">
-      UTO is a next-generation, cross-platform automation engine that interacts
-      with UIs <em>as humans do</em> — through vision and intent, not brittle
-      DOM selectors.
+      UTO is building the missing system that teams keep trying to assemble from separate runners,
+      brittle selectors, and disconnected reporting tools. One technical core. One execution model.
+      One future-proof automation surface.
+    </p>
+    <p class="hero-meta">
+      Core implementation details remain intentionally private while beta partners help shape the public release.
     </p>
     <div class="hero-actions">
-      <a href="{{ base_path }}getting-started/" class="btn btn-primary">
-        Get Started
-      </a>
-      <a href="{{ base_path }}troubleshooting/" class="btn btn-secondary">
-        Troubleshooting
-      </a>
-      <a href="{{ base_path }}early-access/" class="btn btn-secondary">
-        Request Early Access
-      </a>
+      <a href="{{ base_path }}early-access/" class="btn btn-primary">Apply for Beta</a>
+      <a href="#beta" class="btn btn-secondary">Join Enthusiast Circle</a>
     </div>
   </div>
-  <div class="hero-code">
+  <aside class="hero-console reveal" data-reveal>
     <div class="code-window">
       <div class="code-window-bar">
         <span class="dot dot-red"></span>
         <span class="dot dot-yellow"></span>
         <span class="dot dot-green"></span>
-        <span class="code-window-title">terminal</span>
+        <span class="code-window-title">system state</span>
       </div>
-      <pre class="code-block"><code><span class="comment"># Install UTO (macOS / Linux)</span>
-<span class="kw">curl</span> -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh
+      <pre class="code-block"><code><span class="kw">status</span>           : private_beta
+<span class="kw">focus</span>            : test_automation_enthusiasts
+<span class="kw">position</span>         : no direct equivalent in market
+<span class="kw">architecture</span>     : confidential
+<span class="kw">roadmap_signal</span>   : strong and compounding
+<span class="kw">beta_capacity</span>    : limited
 
-<span class="comment"># Scaffold, run, report — four commands</span>
-<span class="kw">uto</span> init ./my-tests --template web
-<span class="kw">uto</span> run  --project ./my-tests --target web
-<span class="kw">uto</span> report --project ./my-tests --html
-<span class="kw">uto</span> ui   --project ./my-tests</code></pre>
+<span class="comment">// request invite access below</span></code></pre>
     </div>
+  </aside>
+</section>
+
+<section class="ticker-band">
+  <div class="ticker-track">
+    <span>Stealth by design</span>
+    <span>Intentional architecture</span>
+    <span>Cross-surface automation vision</span>
+    <span>Private beta, limited seats</span>
+    <span>Built for the next decade</span>
   </div>
 </section>
 
-<!-- ===== STATUS BANNER ===== -->
-<section class="status-banner">
-  <div class="status-container">
-    <span class="status-dot"></span>
-    <strong>Phases 1–5 Complete:</strong>&nbsp;CLI lifecycle, JSON+HTML reporting, mobile parity, and interactive UI mode are operational.&nbsp;&mdash;&nbsp;<a href="{{ base_path }}getting-started/">Get started →</a>
-  </div>
-</section>
-
-<!-- ===== PILLARS ===== -->
-<section class="pillars" id="features">
+<section class="pillars" id="vision">
   <div class="section-container">
-    <h2 class="section-title">Five Pillars of the Revolution</h2>
-    <p class="section-sub">Every layer is designed with a single goal: let you write tests that read like English.</p>
-
+    <h2 class="section-title reveal" data-reveal>The Vision</h2>
+    <p class="section-sub reveal" data-reveal>
+      Not another framework variation. A complete, unified automation product category that does not exist yet.
+    </p>
     <div class="pillars-grid">
-
-      <div class="pillar-card">
-        <div class="pillar-icon">🏗️</div>
-        <h3>Zero-Config Infrastructure</h3>
+      <article class="pillar-card reveal" data-reveal>
+        <h3>One Surface, Any Interface</h3>
         <p>
-          Forget setup nightmares.  UTO auto-discovers installed browsers and
-          SDKs; if nothing is found it silently provisions a version-pinned
-          driver into a local cache.  OS-level process groups guarantee no
-          zombie processes are ever left behind.
+          UTO is designed to remove the web-versus-mobile split so teams stop maintaining multiple testing philosophies.
         </p>
-        <span class="pillar-status pillar-done">✓ Complete</span>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-icon">👁️</div>
-        <h3>The Recognition Loop</h3>
+        <span class="pillar-status pillar-done">Vision Locked</span>
+      </article>
+      <article class="pillar-card reveal" data-reveal>
+        <h3>Stealth, Not Hype</h3>
         <p>
-          UTO <em>perceives</em> elements visually using an embedded ONNX ML
-          model, then anchors its guess against the Accessibility Tree via a
-          Weighted Consensus algorithm.  High-DPI coordinate normalization is
-          built in.
+          We disclose direction publicly and keep implementation mechanics private until they are hardened and defensible.
         </p>
-        <span class="pillar-status pillar-wip">⚙ In Progress</span>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-icon">🧑</div>
-        <h3>Human-Centric API</h3>
+        <span class="pillar-status pillar-wip">Private Buildout</span>
+      </article>
+      <article class="pillar-card reveal" data-reveal>
+        <h3>Operator-Level Observability</h3>
         <p>
-          Tests are written in the language of user intent.
-          <code>.select()</code>, <code>.fill()</code>,
-          <code>.should_be_visible()</code> — if a human can describe the
-          action, UTO can perform it.
+          Every run should feel explainable and inspectable, from intent to outcome, without forcing teams into ad hoc logging stacks.
         </p>
-        <span class="pillar-status pillar-planned">◷ Planned</span>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-icon">⚡</div>
-        <h3>Hybrid Orchestrator</h3>
-        <p>
-          A high-performance Rust backbone using gRPC for multi-device
-          synchronisation and binary streams for real-time visual feedback.
-          Web and Mobile are a single unified canvas.
-        </p>
-        <span class="pillar-status pillar-planned">◷ Planned</span>
-      </div>
-
-      <div class="pillar-card">
-        <div class="pillar-icon">🧩</div>
-        <h3>Simplicity by Default</h3>
-        <p>
-          UTO absorbs recurring automation friction into reusable defaults:
-          iframe targeting on web pages, scroll/fling traversal on long mobile
-          screens, and safer handling for stale element or context transitions.
-        </p>
-        <span class="pillar-status pillar-wip">⚙ In Progress</span>
-      </div>
-
+        <span class="pillar-status pillar-done">Roadmap Backbone</span>
+      </article>
     </div>
   </div>
 </section>
 
-<!-- ===== WHY UTO ===== -->
-<section class="why-uto">
-  <div class="section-container two-col">
-    <div class="why-text">
-      <h2>Why UTO?</h2>
-      <p>
-        Current tools fail because they act like <em>machines looking at code</em>
-        rather than <em>humans looking at an interface</em>.
-      </p>
-      <ul class="why-list">
-        <li>
-          <strong>Selenium / Appium</strong> — slowed by outdated request-response
-          protocols and separate tool chains for web vs. mobile.
-        </li>
-        <li>
-          <strong>Cypress / Playwright</strong> — limited to web-only or
-          browser-isolated kernels; no unified cross-platform story.
-        </li>
-        <li>
-          <strong>UTO</strong> — treats Web and Mobile as a single canvas,
-          compiled to machine code, zero JVM or Node.js overhead.
-        </li>
-      </ul>
-    </div>
-    <div class="why-stats">
-      <div class="stat-card">
-        <div class="stat-value">0</div>
-        <div class="stat-label">Manual setup steps</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">2</div>
-        <div class="stat-label">Platforms, one API</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">Rust</div>
-        <div class="stat-label">Machine-code performance</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== ROADMAP ===== -->
 <section class="roadmap" id="roadmap">
   <div class="section-container">
-    <h2 class="section-title">Roadmap</h2>
+    <h2 class="section-title reveal" data-reveal>Roadmap Momentum</h2>
     <div class="roadmap-timeline">
-
-      <div class="roadmap-item roadmap-done">
+      <div class="roadmap-item roadmap-done reveal" data-reveal>
         <div class="roadmap-marker"></div>
         <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 1 &amp; 2</span>
-          <h3>Zero-Config + Driver Communication</h3>
-          <p>Chrome / Android SDK discovery, ChromeDriver provisioning, WebSession and MobileSession via W3C WebDriver.</p>
+          <span class="roadmap-phase">Now</span>
+          <h3>Private Beta Cohorts</h3>
+          <p>Invite-only teams validate the complete user journey while we protect implementation depth.</p>
         </div>
       </div>
-
-      <div class="roadmap-item roadmap-done">
+      <div class="roadmap-item roadmap-next reveal" data-reveal>
         <div class="roadmap-marker"></div>
         <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 3</span>
-          <h3>AI Recognition Loop</h3>
-          <p>ONNX ML model foundation, visual element detection, Weighted Consensus resolver with Accessibility Tree anchoring, intent-style session API.</p>
+          <span class="roadmap-phase">Next</span>
+          <h3>Enthusiast Partner Wave</h3>
+          <p>Advanced users and test automation enthusiasts co-design workflows, naming, and operational ergonomics.</p>
         </div>
       </div>
-
-      <div class="roadmap-item roadmap-done">
+      <div class="roadmap-item reveal" data-reveal>
         <div class="roadmap-marker"></div>
         <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 4</span>
-          <h3>Framework Maturity &amp; Reporting</h3>
-          <p>First-class CLI lifecycle (<code>init</code>, <code>run</code>, <code>report</code>), structured JSON/HTML reporting, mobile parity hardening, and contributor onboarding.</p>
+          <span class="roadmap-phase">Then</span>
+          <h3>Public Technical Reveal</h3>
+          <p>The architecture, mechanisms, and detailed internals become public after the product moat is established.</p>
         </div>
       </div>
-
-      <div class="roadmap-item roadmap-done">
+      <div class="roadmap-item reveal" data-reveal>
         <div class="roadmap-marker"></div>
         <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 5</span>
-          <h3>UI Mode</h3>
-          <p>Interactive browser-based test runner and debugger (<code>uto ui</code>). Real-time event stream, test tree, watch mode, screenshot timeline, and report replay — platform-agnostic across web and mobile.</p>
+          <span class="roadmap-phase">Long Term</span>
+          <h3>Category Leadership</h3>
+          <p>Position UTO as the complete reference platform for modern, explainable UI automation.</p>
         </div>
       </div>
-
-      <div class="roadmap-item roadmap-next">
-        <div class="roadmap-marker"></div>
-        <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 6 — Next</span>
-          <h3>UTO Studio — Visual Test Authoring</h3>
-          <p>Vision-first, selector-free test recording for web and mobile. No Cypress Studio, no <code>playwright codegen</code> — UTO Studio generates real Rust test code from what you see on screen.</p>
-        </div>
-      </div>
-
-      <div class="roadmap-item">
-        <div class="roadmap-marker"></div>
-        <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 7</span>
-          <h3>Self-Healing Tests &amp; Intent Chaining</h3>
-          <p>Tests that repair themselves on first failure. Multi-step workflows expressed as named intents — executed, verified, and traced as a unit.</p>
-        </div>
-      </div>
-
-      <div class="roadmap-item">
-        <div class="roadmap-marker"></div>
-        <div class="roadmap-content">
-          <span class="roadmap-phase">Phase 8+</span>
-          <h3>CI/CD Ecosystem &amp; Cloud</h3>
-          <p>First-class GitHub Actions, GitLab CI, and Azure Pipelines integrations. Parallel execution, trend dashboards, and cloud-scale report aggregation.</p>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
 
-<!-- ===== CALL TO ACTION ===== -->
-<section class="cta">
-  <div class="cta-content">
-    <h2>Be first to the revolution.</h2>
-    <p>UTO is in active development and currently available by invitation only.
-    Join the waitlist to get early access, priority onboarding, and a direct line to the team.</p>
-    <a href="{{ base_path }}early-access/" class="btn btn-primary btn-large">Request Early Access →</a>
+<section class="cta" id="beta">
+  <div class="cta-content reveal" data-reveal>
+    <h2>Become an early signal, not a late adopter.</h2>
+    <p>
+      We are accepting beta testers and test automation enthusiasts who want direct influence on the next-generation automation stack.
+      Details are confidential, outcomes are not.
+    </p>
+    <div class="hero-actions cta-actions">
+      <a href="{{ base_path }}early-access/" class="btn btn-primary btn-large">Request Beta Access</a>
+      <a href="mailto:contact@uto.dev?subject=UTO%20Enthusiast%20Circle" class="btn btn-secondary btn-large">Join Enthusiast Circle</a>
+    </div>
   </div>
 </section>
 

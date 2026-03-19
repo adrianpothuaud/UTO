@@ -1,13 +1,13 @@
 {
   "schema_version": "uto-suite/v1",
   "framework": "uto",
-  "suite_id": "suite-1773843907715-5224",
+  "suite_id": "suite-1773895022706-58564",
   "mode": "web",
   "status": "passed",
   "timeline": {
-    "started_at_unix_ms": 1773843907715,
-    "finished_at_unix_ms": 1773843913217,
-    "duration_ms": 5502
+    "started_at_unix_ms": 1773895022706,
+    "finished_at_unix_ms": 1773895040666,
+    "duration_ms": 17960
   },
   "summary": {
     "total": 4,
@@ -17,19 +17,22 @@
   },
   "tests": [
     {
-      "name": "web: page title is non-empty",
+      "name": "web_example_phase4_hero_copy_is_visible_or_skips",
       "status": "passed",
       "timeline": {
-        "started_at_unix_ms": 1773843907715,
-        "finished_at_unix_ms": 1773843909081,
-        "duration_ms": 1366
+        "started_at_unix_ms": 1773895022706,
+        "finished_at_unix_ms": 1773895035744,
+        "duration_ms": 13038
       },
       "events": [
         {
-          "stage": "session.start",
+          "stage": "runner.test_command",
           "status": "ok",
           "detail": {
-            "target": "web"
+            "binary": "web_example",
+            "name": "web_example_phase4_hero_copy_is_visible_or_skips",
+            "target": "web",
+            "duration_ms": 13037
           }
         },
         {
@@ -42,19 +45,22 @@
       ]
     },
     {
-      "name": "web: hero copy is visible",
+      "name": "web_example_phase4_title_is_non_empty_or_skips",
       "status": "passed",
       "timeline": {
-        "started_at_unix_ms": 1773843909081,
-        "finished_at_unix_ms": 1773843910384,
-        "duration_ms": 1303
+        "started_at_unix_ms": 1773895035744,
+        "finished_at_unix_ms": 1773895036906,
+        "duration_ms": 1162
       },
       "events": [
         {
-          "stage": "session.start",
+          "stage": "runner.test_command",
           "status": "ok",
           "detail": {
-            "target": "web"
+            "binary": "web_example",
+            "name": "web_example_phase4_title_is_non_empty_or_skips",
+            "target": "web",
+            "duration_ms": 1161
           }
         },
         {
@@ -67,19 +73,22 @@
       ]
     },
     {
-      "name": "web: inline form fill and assert",
+      "name": "web_example_phase4_form_flow_or_skips",
       "status": "passed",
       "timeline": {
-        "started_at_unix_ms": 1773843910384,
-        "finished_at_unix_ms": 1773843911866,
-        "duration_ms": 1482
+        "started_at_unix_ms": 1773895036906,
+        "finished_at_unix_ms": 1773895039445,
+        "duration_ms": 2539
       },
       "events": [
         {
-          "stage": "session.start",
+          "stage": "runner.test_command",
           "status": "ok",
           "detail": {
-            "target": "web"
+            "binary": "web_intent_example",
+            "name": "web_example_phase4_form_flow_or_skips",
+            "target": "web",
+            "duration_ms": 2539
           }
         },
         {
@@ -92,19 +101,22 @@
       ]
     },
     {
-      "name": "web: multi-step navigation",
+      "name": "web_example_phase4_navigation_flow_or_skips",
       "status": "passed",
       "timeline": {
-        "started_at_unix_ms": 1773843911866,
-        "finished_at_unix_ms": 1773843913217,
-        "duration_ms": 1351
+        "started_at_unix_ms": 1773895039445,
+        "finished_at_unix_ms": 1773895040666,
+        "duration_ms": 1221
       },
       "events": [
         {
-          "stage": "session.start",
+          "stage": "runner.test_command",
           "status": "ok",
           "detail": {
-            "target": "web"
+            "binary": "web_intent_example",
+            "name": "web_example_phase4_navigation_flow_or_skips",
+            "target": "web",
+            "duration_ms": 1220
           }
         },
         {

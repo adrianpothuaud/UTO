@@ -1,6 +1,6 @@
 //! Subprocess bridge for live test run integration.
 //!
-//! Spawns `cargo run --bin uto_project_runner` inside a UTO project directory,
+//! Spawns `uto run --project <dir>` via the current `uto` executable,
 //! relays stdout and stderr as `log` WebSocket events, then broadcasts
 //! `run_started` / `run_finished` on the shared broadcast channel.
 
@@ -39,8 +39,8 @@ impl KillHandle {
 
 /// Spawn a live test run subprocess.
 ///
-/// Runs `cargo run --bin uto_project_runner -- --json --report-file <path>` in
-/// `project`.  As lines are written to the child's stdout/stderr they are
+/// Runs `uto run --project <project> --target web --report-json <path>`.
+/// As lines are written to the child's stdout/stderr they are
 /// broadcast as `{ "type": "log", "payload": { "line": "…" } }` messages.
 /// On completion a `{ "type": "run_finished", "payload": { "status": "…" } }`
 /// message is broadcast and `report_store` is updated with the freshly written
@@ -83,17 +83,29 @@ async fn run_task(
     }
     let report_file = report_dir.join("last-run.json");
 
-    // Spawn the project runner subprocess.
-    let mut child = match tokio::process::Command::new("cargo")
-        .current_dir(&project)
-        .args([
-            "run",
-            "--bin",
-            "uto_project_runner",
-            "--",
-            "--json",
-            "--report-file",
-        ])
+    let current_exe = match std::env::current_exe() {
+        Ok(path) => path,
+        Err(e) => {
+            let _ = tx.send(
+                serde_json::json!({
+                    "type": "run_finished",
+                    "payload": {
+                        "status": "failed",
+                        "error": format!("Failed to resolve current executable: {e}")
+                    }
+                })
+                .to_string(),
+            );
+            run_active.store(false, Ordering::SeqCst);
+            return;
+        }
+    };
+
+    // Spawn the CLI-owned test execution subprocess.
+    let mut child = match tokio::process::Command::new(current_exe)
+        .args(["run", "--project"])
+        .arg(&project)
+        .args(["--target", "web", "--report-json"])
         .arg(&report_file)
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
@@ -108,8 +120,7 @@ async fn run_task(
                         "status": "failed",
                         "error": format!(
                             "Failed to start test run: {e}. \
-                             Ensure 'uto_project_runner' binary is defined in the project \
-                             and 'cargo' is available in PATH."
+                             Ensure the UTO CLI executable can launch subprocesses."
                         )
                     }
                 })

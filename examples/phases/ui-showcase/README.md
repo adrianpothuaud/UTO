@@ -33,8 +33,8 @@ This:
 
 ```bash
 # Generate a JSON report
-cargo run --bin uto_project_runner -- --target web --json \
-  --report-file .uto/reports/last-run.json
+uto run --project . --target web \
+  --report-json .uto/reports/last-run.json
 
 # Load and replay it in the UI
 uto ui --report .uto/reports/last-run.json --open
@@ -48,7 +48,7 @@ uto run --project . --target web
 
 # Or with HTML report generation
 uto run --project . --target web
-uto report --html
+uto report --project . --html
 ```
 
 ## What You'll See in the UI
@@ -96,19 +96,19 @@ uto report --html
 ## Tests Included
 
 ### `tests/web_intent_showcase.rs`
-Vision-first, selector-free test interactions on a public website:
+Runnerless web tests discovered directly by `uto run`:
 
 - **Navigation & assertion** — visit a page and verify content visibility
 - **Form interactions** — fill text fields by label, not CSS selectors
 - **Multi-step workflows** — navigate, click, fill, assert in sequence
 - **Error handling** — gracefully skip if browser unavailable
 
-### `tests/web_visual_confidence.rs`
-Demonstrates UTO's recognition confidence and robustness:
+### `tests/ui_features_test.rs`
+Schema and project compatibility checks for UI-mode integration:
 
-- **Element visibility** assertions using intent labels
-- **Dynamic content** handling (wait-for patterns)
-- **Resilience** to layout changes (vision-first means CSS refactors don't break tests)
+- **uto.json** schema validation
+- **uto-suite/v1** compatibility validation
+- Dependency and test-directory sanity checks
 
 ## Features You Can Experiment With
 
@@ -188,7 +188,7 @@ uto ui --port 5000 --open
 ### Tests timeout or fail
 - Check internet connectivity (real website tests)
 - Verify Chrome version matches ChromeDriver
-- Review `cargo run` output for detailed error messages
+- Review `uto run` output for detailed error messages
 
 ### UI not updating
 - Check browser console for JavaScript errors (F12)

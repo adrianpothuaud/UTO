@@ -9,7 +9,7 @@
 //! ## Architecture
 //!
 //! - [`server`] — Axum-based HTTP + WebSocket server with embedded SPA and REST API.
-//! - [`runner`] — Subprocess bridge: spawns `cargo run --bin uto_project_runner`, relays
+//! - [`runner`] — Subprocess bridge: spawns `uto run --project <dir>`, relays
 //!   stdout/stderr as live log events over WebSocket, broadcasts `run_finished` on completion.
 //! - [`watcher`] — Filesystem watcher: watches the project `tests/` directory for changes and
 //!   auto-triggers a re-run (debounced at 300 ms) when `--watch` is enabled.
@@ -19,10 +19,8 @@
 //! ```no_run
 //! use uto_ui::{UiOptions, start_server_sync};
 //!
-//! fn main() {
-//!     let opts = UiOptions { port: 4000, ..Default::default() };
-//!     start_server_sync(opts).expect("server error");
-//! }
+//! let opts = UiOptions { port: 4000, ..Default::default() };
+//! start_server_sync(opts).expect("server error");
 //! ```
 
 pub(crate) mod runner;

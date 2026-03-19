@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="{{ description }}" />
   <title>{{ title }} — UTO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ base_path }}style.css" />
   <link rel="icon" type="image/svg+xml" href="{{ base_path }}favicon.svg" />
 </head>
@@ -15,10 +18,10 @@
         <span class="logo-u">U</span><span class="logo-t">T</span><span class="logo-o">O</span>
       </a>
       <ul class="nav-links">
-        <li><a href="{{ base_path }}">Home</a></li>
-        <li><a href="{{ base_path }}getting-started/">Getting Started</a></li>
-        <li><a href="{{ base_path }}troubleshooting/">Troubleshooting</a></li>
-        <li><a href="{{ base_path }}early-access/">Early Access</a></li>
+        <li><a href="{{ base_path }}">Vision</a></li>
+        <li><a href="{{ base_path }}#roadmap">Roadmap</a></li>
+        <li><a href="{{ base_path }}#beta">Beta</a></li>
+        <li><a href="{{ base_path }}early-access/" class="nav-cta">Apply</a></li>
       </ul>
     </nav>
   </header>
@@ -30,10 +33,11 @@
   <footer class="site-footer">
     <div class="footer-container">
       <p class="footer-tagline">
-        UTO — The Automation Revolution
+        UTO — Private Beta for the next era of UI automation
       </p>
-      <p class="footer-license">Proprietary &amp; Confidential</p>
+      <p class="footer-license">Proprietary and Confidential</p>
     </div>
   </footer>
+  <script src="{{ base_path }}site.js" defer></script>
 </body>
 </html>

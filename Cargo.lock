@@ -3783,6 +3783,16 @@ dependencies = [
  "uto-core",
  "uto-reporter",
  "uto-runner",
+ "uto-test-macros",
+]
+
+[[package]]
+name = "uto-test-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

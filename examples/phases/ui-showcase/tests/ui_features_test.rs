@@ -118,8 +118,8 @@ fn cargo_toml_has_ui_compatible_dependencies() {
     );
 
     assert!(
-        content.contains("uto-runner"),
-        "Cargo.toml must depend on uto-runner for CLI execution"
+        !content.contains("uto-runner"),
+        "Cargo.toml should not depend on uto-runner in runnerless mode"
     );
 
     assert!(

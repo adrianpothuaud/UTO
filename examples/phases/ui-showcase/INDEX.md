@@ -120,7 +120,6 @@ These are the foundational ADRs for UTO that inform the showcase project:
 - **`Cargo.toml`** — Project dependencies
 
 ### Source Code
-- **`src/bin/uto_project_runner.rs`** — Test suite runner (invoked by `uto run`)
 - **`src/lib.rs`** — Stub library (tests are in `tests/` directory)
 
 ### Test Code
@@ -196,14 +195,14 @@ uto ui --project examples/phases/ui-showcase --open --watch
 
 #### Generate & Replay Report
 ```bash
-cargo run --bin uto_project_runner -- --target web --json --report-file .uto/reports/last-run.json
+uto run --project . --target web --report-json .uto/reports/last-run.json
 uto ui --report .uto/reports/last-run.json --open
 ```
 
 #### Run Tests from CLI
 ```bash
 uto run --project examples/phases/ui-showcase --target web
-uto report --html
+uto report --project examples/phases/ui-showcase --html
 ```
 
 #### Validate Project
@@ -214,7 +213,7 @@ cargo test --test ui_features_test
 ### Key Files
 - **Project config:** `uto.json`
 - **Test code:** `tests/*.rs`
-- **Runner:** `src/bin/uto_project_runner.rs`
+- **Library root:** `src/lib.rs`
 - **Reports:** `.uto/reports/`
 
 ### Maturity Snapshot

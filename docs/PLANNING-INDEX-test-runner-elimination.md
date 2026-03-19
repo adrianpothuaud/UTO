@@ -33,7 +33,7 @@ This planning initiative documents how to eliminate the need for generated `uto_
 ## Deliverables Created
 
 ### 1. **ADR 0018: Transparent Test Execution Without Runner Binary** 
-📄 [docs/DRAFT-0018-transparent-test-execution-without-runner-binary.md](DRAFT-0018-transparent-test-execution-without-runner-binary.md)
+📄 [docs/0018-transparent-test-execution-without-runner-binary.md](0018-transparent-test-execution-without-runner-binary.md)
 
 **Purpose:** Formal architectural decision record proposing the improvement
 
@@ -126,14 +126,14 @@ This planning initiative documents how to eliminate the need for generated `uto_
 | **Runner Location** | Library function in `uto-test`: `run_project_tests(target, options)` |
 | **CLI Integration** | `uto run` calls library function directly (no subprocess for runner) |
 | **Compilation** | Keep `cargo build --lib`, but eliminate per-project binary compilation |
-| **Macros** | Optional post-MVP enhancement; not required for MVP |
-| **Backward Compat** | Support old projects for 1-2 versions; fall back gracefully |
+| **Macros** | Included in MVP: `#[uto_test]` |
+| **Backward Compat** | Fixed sunset: remove legacy mode after 2 minor releases |
 
 ### 2. Implementation Timeline
 ```
-Phase 4.5  (Iteration 1) → Prototyping with one example project
-Phase 4.6  (Iteration 2) → Deprecation, migration tooling  
-Phase 5+   (Iterations 3-4) → Macros, optimization, full cleanup
+Phase 4.5  (Implementation target) → Option A + #[uto_test] + immediate example migration
+Phase 4.6/4.7 (Compatibility window) → legacy support with warnings
+Phase 4.8  (Removal point) → remove legacy runner fallback
 ```
 
 ### 3.Scope & Files Affected
@@ -155,81 +155,67 @@ Phase 5+   (Iterations 3-4) → Macros, optimization, full cleanup
 
 ## Implementation Phases
 
-### Phase 1: MVP Prototyping (Iteration 1 — Target: 1-2 weeks)
-**Goal:** Prove the concept works with one example project
+### Phase 1: MVP Delivery (Phase 4.5)
+**Goal:** Deliver production path with immediate migration of both reference examples
 
 - Add `uto_test::run_project_tests()` library function with test discovery
 - Modify `uto run` command to use library function instead of spawning subprocess
-- Validate phase4-framework example runs identically with old and new approaches
+- Validate both phase4-framework and ui-showcase run identically under the new path
 - Document any issues discovered
 
-**Success:** `uto run --project examples/phases/phase4-framework` works with clean project structure
+**Success:** both phase examples run without local runner binaries
 
 ---
 
-### Phase 2: Deprecation & Migration (Iteration 2 — Target: 1-2 weeks)
-**Goal:** Transition to new approach for new projects while maintaining compatibility
+### Phase 2: Compatibility Window (Phase 4.6 and 4.7)
+**Goal:** Keep temporary legacy fallback while migration completes
 
 - Update `uto init` to NOT generate runner.rs for new projects
 - Add deprecation warning for old projects detected at run time
 - Provide `uto migrate` command to auto-clean old projects
-- Verify both old and new style projects work
+- Verify both old and new style projects work during the 2-minor-release window
 
-**Success:** New projects are clean, old projects work with deprecation notice
+**Success:** Legacy usage trends down with no blocker regressions
 
 ---
 
-### Phase 3: Procedural Macros (Iteration 3 — Post-MVP, optional)
-**Goal:** Improve test discoverability with explicit markers
+### Phase 3: Macro Hardening (Phase 4.6+)
+**Goal:** Improve diagnostics and ergonomics for MVP `#[uto_test]`
 
-- Design lightweight `#[uto_test]` attribute macro
-- Update templates to use macro (optional, not required)
-- Improve documentation with explicit test marking examples
+- Improve `#[uto_test]` diagnostics and error messages
+- Expand template and docs examples with explicit test marking patterns
+- Maintain compatibility with pre-macro suites during the transition window
 
 **Success:** Tests can be marked with macro for clarity; discovery more robust
 
 ---
 
-### Phase 4: Optimization & Polish (Iteration 4 — Post-MVP)
+### Phase 4: Removal & Optimization (Phase 4.8+)
 **Goal:** Performance and user experience refinements
 
 - Implement test discovery caching
 - Benchmark latency vs. old approach
 - Refine error messages
-- Full cleanup of backward compatibility code (post v1.0)
+- Remove legacy runner fallback after the 2-minor-release window
 
 **Success:** `uto run` performance ≥ old binary approach; UX smooth
 
 ---
 
-## Open Questions for Team Review
+## Resolved Product Decisions
 
-1. **Timeline Priority:**
-   - Is this a Phase 4.5 priority, or should it wait until Phase 5?
-   - Other features competing for 4.4/4.5 bandwidth?
-
-2. **Implementation Scope:**
-   - Is Option A (library runner) sufficient, or explore Option B (cargo test integration)?
-   - Accept slightly slower discovery for simpler implementation?
-
-3. **Backward Compatibility:**
-   - Support old projects indefinitely, or phase out after N versions?
-   - Mandatory migration or gentle deprecation?
-
-4. **Procedural Macros:**
-   - Required for MVP or truly optional?
-   - Worth the build-time complexity for improved discoverability?
-
-5. **Example Projects:**
-   - Migrate phase4-framework and ui-showcase immediately or in separate PR?
-   - Keep one as reference of migration for documentation?
+1. **Priority:** Phase 4.5 implementation target.
+2. **Approach:** Option A accepted.
+3. **Backward compatibility:** sunset after 2 minor releases.
+4. **Macros:** `#[uto_test]` included in MVP.
+5. **Examples:** migrate phase4-framework and ui-showcase immediately.
 
 ---
 
 ## How to Use This Planning Documentation
 
 ### For Project Managers / Decision Makers
-→ Read **ADR 0018** (DRAFT-0018-*.md) - 15 min overview of problem, solution, and decision points
+→ Read **ADR 0018** (0018-*.md) - 15 min overview of problem, solution, and decision points
 
 ### For Developers Starting Implementation
 → Follow **IMPLEMENTATION-GUIDE** (IMPLEMENTATION-GUIDE-*.md) - step-by-step file changes and code patterns
@@ -275,7 +261,7 @@ Keep in sync as this improvement is built:
 ## References & Links
 
 **Core Planning Documents (Created):**
-- [ADR 0018 (Draft)](DRAFT-0018-transparent-test-execution-without-runner-binary.md)
+- [ADR 0018](0018-transparent-test-execution-without-runner-binary.md)
 - [Architecture Comparison](ARCHITECTURE-COMPARISON-test-runner-elimination.md)
 - [Implementation Guide](IMPLEMENTATION-GUIDE-test-runner-elimination.md)
 - [Session Notes](/memories/session/runner-elimination-planning.md)
