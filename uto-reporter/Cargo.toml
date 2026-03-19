@@ -3,6 +3,13 @@ name = "uto-reporter"
 version = "0.1.0"
 edition = "2021"
 description = "Structured uto-report/v1 JSON and HTML reporting for UTO"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/uinf/uto"
+homepage = "https://utotest.dev"
+documentation = "https://docs.rs/uto-reporter"
+readme = "README.md"
+keywords = ["testing", "reporting", "automation", "json", "html"]
+categories = ["development-tools::testing"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }

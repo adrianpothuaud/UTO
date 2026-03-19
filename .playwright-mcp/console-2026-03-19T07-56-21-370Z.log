@@ -1,0 +1,4 @@
+[   39647ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:4020/assets/fake-login.png:0
+[   39647ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:4020/assets/fake-error.png:0
+[   39647ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:4020/assets/fake-run.mp4:0
+[   70033ms] [ERROR] WebSocket connection to 'ws://127.0.0.1:4020/ws' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://127.0.0.1:4020/:334

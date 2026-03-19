@@ -119,6 +119,40 @@ Publishing `uto-cli` to crates.io would enable `cargo install uto-cli` with no U
 
 Requiring users to clone the repo and build from source is adequate for Rust contributors but creates unnecessary friction for test-automation users who care only about the `uto` CLI experience. The install script removes this friction without significant maintenance cost.
 
+## Local Development Install Scripts
+
+For contributors and developers working on UTO itself, two additional install scripts are provided:
+
+- **`install-local.sh`** — POSIX sh script for macOS and Linux.
+- **`install-local.ps1`** — PowerShell script for Windows.
+
+These scripts:
+- Verify the script is run from the UTO project root directory.
+- Check if the currently installed `uto` version matches the local project version.
+- Skip installation if versions match (override with `UTO_FORCE=1`).
+- Use `cargo install --path uto-cli` to build and install from local source.
+- Support the same environment variables as the remote installers (`UTO_INSTALL_DIR`, `UTO_SKIP_RUSTUP`, plus `UTO_FORCE`).
+
+This streamlines the workflow for:
+- Testing local changes to the CLI before pushing to GitHub.
+- Validating new features in a clean install environment.
+- Iterating on the CLI without manually invoking `cargo install --path` each time.
+
+Usage:
+
+```sh
+# macOS / Linux
+./install-local.sh
+
+# Windows PowerShell
+.\install-local.ps1
+
+# Force reinstall even if version matches
+UTO_FORCE=1 ./install-local.sh
+```
+
+The local installers are documented in the README under "Local Development Install".
+
 ## Consequences
 
 ### Positive
@@ -145,13 +179,19 @@ Requiring users to clone the repo and build from source is adequate for Rust con
 ```sh
 # Unix smoke test (does not execute; validates script syntax only)
 sh -n install.sh
+sh -n install-local.sh
 
 # PowerShell syntax check
 pwsh -NoProfile -Command "Get-Content install.ps1 | Out-Null"
+pwsh -NoProfile -Command "Get-Content install-local.ps1 | Out-Null"
 
-# Manual end-to-end (requires network)
+# Manual end-to-end remote install (requires network)
 curl -sSf https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | sh
 uto init /tmp/uto-smoke --template web
+uto --version
+
+# Manual local install test (from UTO project root)
+./install-local.sh
 uto --version
 ```
 

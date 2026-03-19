@@ -67,7 +67,8 @@ fn generated_web_project_compiles_with_uto_test_and_uto_runner() {
     assert!(uto_json.contains(r#""framework_version": "4.5""#));
 
     let web_test = fs::read_to_string(project.join("tests/web_example.rs")).expect("read web test");
-    assert!(web_test.contains("#[uto_test(target = \"web\")]"));
+    assert!(web_test.contains("#[uto_test(target = \"web\""));
+    assert!(web_test.contains("use uto_test::uto_test;"));
 
     let check = cargo_check_tests(&project);
     assert!(
@@ -89,7 +90,8 @@ fn generated_mobile_project_compiles_with_uto_test_and_uto_runner() {
 
     let mobile_test =
         fs::read_to_string(project.join("tests/mobile_example.rs")).expect("read mobile test");
-    assert!(mobile_test.contains("#[uto_test(target = \"mobile\")]"));
+    assert!(mobile_test.contains("#[uto_test(target = \"mobile\""));
+    assert!(mobile_test.contains("use uto_test::uto_test;"));
 
     let check = cargo_check_tests(&project);
     assert!(

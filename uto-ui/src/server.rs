@@ -7,6 +7,7 @@
 //! | GET    | `/`          | Serve embedded SPA (`index.html`)                         |
 //! | GET    | `/api/status`| JSON `{ project, status }` — server health / project info |
 //! | GET    | `/api/report`| JSON report artifact loaded at startup, or `null`         |
+//! | GET    | `/api/tests` | JSON discovered test list from project `tests/` sources    |
 //! | GET    | `/ws`        | WebSocket upgrade — live event stream / run relay         |
 
 use std::path::PathBuf;
@@ -25,6 +26,7 @@ use axum::{
     Router,
 };
 use tokio::sync::{broadcast, Mutex, RwLock};
+use tower_http::services::ServeDir;
 
 /// Embedded SPA — compiled into the binary at build time.
 const INDEX_HTML: &str = include_str!("assets/index.html");
@@ -85,11 +87,17 @@ struct AppState {
 // ---------------------------------------------------------------------------
 
 fn create_router(state: AppState) -> Router {
+    // Serve static files from the project's .uto/reports directory
+    let reports_dir = state.project.join(".uto/reports");
+    let serve_reports = ServeDir::new(reports_dir);
+
     Router::new()
         .route("/", get(serve_index))
         .route("/api/status", get(api_status))
         .route("/api/report", get(api_report))
+        .route("/api/tests", get(api_tests))
         .route("/ws", get(ws_handler))
+        .nest_service("/.uto/reports", serve_reports)
         .with_state(state)
 }
 
@@ -142,7 +150,7 @@ pub async fn start_server(opts: UiOptions) -> Result<(), String> {
         let rt = tokio::runtime::Handle::current();
         match crate::watcher::start_watcher(watch_path.clone(), move || {
             let s = watch_state.clone();
-            rt.spawn(async move { handle_trigger_run(s).await });
+            rt.spawn(async move { handle_trigger_run(s, None).await });
         }) {
             Ok(()) => {
                 log::info!("Watch mode active — watching '{}'", watch_path.display());
@@ -214,6 +222,13 @@ async fn api_report(State(state): State<AppState>) -> impl IntoResponse {
     }
 }
 
+async fn api_tests(State(state): State<AppState>) -> impl IntoResponse {
+    match discover_project_tests(&state.project) {
+        Ok(tests) => Json(serde_json::json!({ "tests": tests })).into_response(),
+        Err(e) => Json(serde_json::json!({ "tests": [], "error": e })).into_response(),
+    }
+}
+
 async fn ws_handler(ws: WebSocketUpgrade, State(state): State<AppState>) -> impl IntoResponse {
     ws.on_upgrade(move |socket| handle_ws(socket, state))
 }
@@ -266,7 +281,10 @@ async fn handle_ws(mut socket: WebSocket, state: AppState) {
 async fn handle_ws_message(text: &str, state: AppState) {
     if let Ok(msg) = serde_json::from_str::<serde_json::Value>(text) {
         match msg.get("type").and_then(|t| t.as_str()) {
-            Some("trigger_run") => handle_trigger_run(state).await,
+            Some("trigger_run") => {
+                let selection = parse_selection(&msg);
+                handle_trigger_run(state, selection).await
+            }
             Some("stop_run") => handle_stop_run(state).await,
             _ => {}
         }
@@ -274,7 +292,7 @@ async fn handle_ws_message(text: &str, state: AppState) {
 }
 
 /// Start a live run subprocess if none is currently active.
-async fn handle_trigger_run(state: AppState) {
+async fn handle_trigger_run(state: AppState, selection: Option<crate::runner::RunSelection>) {
     // Atomically claim the run slot; notify clients if already occupied.
     if state
         .run_active
@@ -296,6 +314,7 @@ async fn handle_trigger_run(state: AppState) {
         state.tx.clone(),
         state.report.clone(),
         state.run_active.clone(),
+        selection,
     )
     .await;
 
@@ -334,6 +353,146 @@ fn derive_project_name(project: &std::path::Path) -> String {
         .and_then(|s| s.to_str())
         .unwrap_or("uto-project")
         .to_string()
+}
+
+fn parse_selection(msg: &serde_json::Value) -> Option<crate::runner::RunSelection> {
+    let payload = msg.get("payload")?;
+    let test_bin = payload.get("test_bin")?.as_str()?.trim();
+    let test_name = payload.get("test_name")?.as_str()?.trim();
+    if test_bin.is_empty() || test_name.is_empty() {
+        return None;
+    }
+    Some(crate::runner::RunSelection {
+        test_bin: test_bin.to_string(),
+        test_name: test_name.to_string(),
+    })
+}
+
+fn parse_test_target_from_attr(line: &str) -> Option<String> {
+    if line.contains("target") && line.contains("\"web\"") {
+        return Some("web".to_string());
+    }
+    if line.contains("target") && line.contains("\"mobile\"") {
+        return Some("mobile".to_string());
+    }
+    None
+}
+
+fn infer_target_from_name(name: &str) -> Option<String> {
+    if name.starts_with("web_") {
+        return Some("web".to_string());
+    }
+    if name.starts_with("mobile_") {
+        return Some("mobile".to_string());
+    }
+    None
+}
+
+fn extract_fn_name(line: &str) -> Option<String> {
+    let prefixes = ["pub async fn ", "async fn ", "pub fn ", "fn "];
+    let prefix = prefixes.into_iter().find(|p| line.starts_with(p))?;
+    let rest = &line[prefix.len()..];
+    let mut name = String::new();
+    for ch in rest.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '_' {
+            name.push(ch);
+        } else {
+            break;
+        }
+    }
+    if name.is_empty() {
+        None
+    } else {
+        Some(name)
+    }
+}
+
+fn parse_tests_from_source(test_bin: &str, source: &str) -> Vec<serde_json::Value> {
+    let mut out = Vec::new();
+    let mut pending_test_attr = false;
+    let mut pending_target: Option<String> = None;
+
+    for line in source.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with("#[") {
+            if trimmed.contains("tokio::test") || trimmed.starts_with("#[test") {
+                pending_test_attr = true;
+            }
+            if trimmed.contains("uto_test") {
+                pending_target = parse_test_target_from_attr(trimmed);
+            }
+            continue;
+        }
+
+        if let Some(test_name) = extract_fn_name(trimmed) {
+            if pending_test_attr || pending_target.is_some() {
+                let target = pending_target
+                    .clone()
+                    .or_else(|| infer_target_from_name(&test_name));
+                out.push(serde_json::json!({
+                    "test_bin": test_bin,
+                    "test_name": test_name,
+                    "target": target,
+                }));
+            }
+            pending_test_attr = false;
+            pending_target = None;
+            continue;
+        }
+
+        if !trimmed.is_empty() && !trimmed.starts_with("//") {
+            pending_test_attr = false;
+        }
+    }
+
+    out
+}
+
+fn discover_project_tests(project: &std::path::Path) -> Result<Vec<serde_json::Value>, String> {
+    let tests_root = project.join("tests");
+    if !tests_root.exists() {
+        return Ok(Vec::new());
+    }
+
+    let mut tests = Vec::new();
+    for entry in std::fs::read_dir(&tests_root).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("rs") {
+            continue;
+        }
+
+        let test_bin = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .ok_or_else(|| format!("Invalid test filename: {}", path.display()))?
+            .to_string();
+        let source = std::fs::read_to_string(&path)
+            .map_err(|e| format!("Failed to read test source '{}': {e}", path.display()))?;
+        tests.extend(parse_tests_from_source(&test_bin, &source));
+    }
+
+    tests.sort_by(|a, b| {
+        let a_bin = a
+            .get("test_bin")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default();
+        let b_bin = b
+            .get("test_bin")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default();
+        let a_name = a
+            .get("test_name")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default();
+        let b_name = b
+            .get("test_name")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default();
+        a_bin.cmp(b_bin).then_with(|| a_name.cmp(b_name))
+    });
+
+    Ok(tests)
 }
 
 async fn shutdown_signal() {
@@ -508,12 +667,49 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn api_tests_returns_discovered_tests() {
+        let temp = tempfile::tempdir().unwrap();
+        let tests_dir = temp.path().join("tests");
+        std::fs::create_dir_all(&tests_dir).unwrap();
+        std::fs::write(
+            tests_dir.join("web_example.rs"),
+            "#[tokio::test]\nasync fn web_login() {}\n",
+        )
+        .unwrap();
+
+        let (tx, _) = broadcast::channel(16);
+        let app = create_router(AppState {
+            project_name: "p".to_string(),
+            project: temp.path().to_path_buf(),
+            report: Arc::new(RwLock::new(None)),
+            tx,
+            run_active: Arc::new(AtomicBool::new(false)),
+            kill_handle: Arc::new(Mutex::new(None)),
+        });
+
+        let resp = app
+            .oneshot(
+                Request::get("/api/tests")
+                    .body(axum::body::Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(resp.status().as_u16(), 200);
+
+        let body = resp.into_body().collect().await.unwrap().to_bytes();
+        let json: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(json["tests"].as_array().unwrap().len(), 1);
+        assert_eq!(json["tests"][0]["test_name"], "web_login");
+    }
+
+    #[tokio::test]
     async fn handle_trigger_run_is_idempotent_when_active() {
         let state = test_state();
         let mut rx = state.tx.subscribe();
         // Pre-set run_active so that a second trigger_run is ignored.
         state.run_active.store(true, Ordering::SeqCst);
-        handle_trigger_run(state).await;
+        handle_trigger_run(state, None).await;
         // Should have broadcast run_ignored.
         let msg = rx.try_recv().expect("should have received run_ignored");
         let v: serde_json::Value = serde_json::from_str(&msg).unwrap();

@@ -3,6 +3,13 @@ name = "uto-core"
 version = "0.1.0"
 edition = "2021"
 description = "Unified Testing Object - The Cross-Platform Automation Engine"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/uinf/uto"
+homepage = "https://utotest.dev"
+documentation = "https://docs.rs/uto-core"
+readme = "README.md"
+keywords = ["webdriver", "appium", "automation", "testing", "selenium"]
+categories = ["development-tools::testing", "web-programming"]
 
 [lib]
 name = "uto_core"

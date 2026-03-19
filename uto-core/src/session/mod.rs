@@ -80,6 +80,43 @@ pub enum SessionConfig {
 /// Both [`WebSession`] and [`MobileSession`] implement this trait, which means
 /// test logic can be written against `UtoSession` without caring whether it is
 /// running against a browser or a mobile device.
+///
+/// # RUST LEARNING: Async traits with `#[async_trait]`
+///
+/// Rust doesn't natively support `async fn` in traits (as of Rust 1.75).
+/// The `async_trait` macro works around this limitation by transforming:
+///
+/// ```rust,ignore
+/// #[async_trait]
+/// trait UtoSession {
+///     async fn goto(&self, url: &str) -> UtoResult<()>;
+/// }
+/// ```
+///
+/// Into something like:
+///
+/// ```rust,ignore
+/// trait UtoSession {
+///     fn goto<'a>(&'a self, url: &'a str)
+///         -> Pin<Box<dyn Future<Output = UtoResult<()>> + Send + 'a>>;
+/// }
+/// ```
+///
+/// This allows async methods in traits to work with trait objects (`Box<dyn UtoSession>`).
+///
+/// # RUST LEARNING: Marker traits (Send + Sync)
+///
+/// `Send + Sync` are **marker traits** that ensure thread safety:
+///
+/// - `Send`: The type can be transferred between threads (sent to another thread)
+/// - `Sync`: The type can be shared between threads (references can be sent)
+///
+/// UtoSession requires `Send + Sync` because:
+/// 1. Async runtimes (Tokio) may move tasks between threads
+/// 2. Sessions may be shared across multiple async tasks
+///
+/// Most types are automatically `Send + Sync` unless they contain thread-unsafe
+/// primitives like `Rc` or raw pointers.
 #[async_trait]
 pub trait UtoSession: Send + Sync {
     /// Navigates to the given URL (web) or deep-link URI (mobile).
@@ -97,6 +134,20 @@ pub trait UtoSession: Send + Sync {
     async fn select(&self, label: &str) -> UtoResult<UtoElement>;
 
     /// Resolves and clicks an element by intent label.
+    ///
+    /// # RUST LEARNING: Default trait methods
+    ///
+    /// This method has a default implementation that uses other trait methods.
+    /// Implementors of `UtoSession` don't need to implement this method unless
+    /// they want to provide a specialized version.
+    ///
+    /// **Why is this useful?** It reduces boilerplate - we only need to implement
+    /// the core methods (`select` and `click`), and get the convenience methods
+    /// (`click_intent`, `fill_intent`) for free.
+    ///
+    /// **The `?` operator chains errors:**
+    /// 1. `self.select(label).await?` - Find element or return error
+    /// 2. `self.click(&element).await` - Click it (final operation returns the result)
     async fn click_intent(&self, label: &str) -> UtoResult<()> {
         let element = self.select(label).await?;
         self.click(&element).await
@@ -123,5 +174,26 @@ pub trait UtoSession: Send + Sync {
     async fn screenshot(&self) -> UtoResult<Vec<u8>>;
 
     /// Closes the session and releases all associated resources.
+    ///
+    /// # RUST LEARNING: Consuming self with `Box<Self>`
+    ///
+    /// This method signature `self: Box<Self>` is unusual but important:
+    ///
+    /// - `self` (not `&self`) means the method *consumes* the session
+    /// - After calling `close()`, the session cannot be used again
+    /// - `Box<Self>` means the session must be boxed (heap-allocated)
+    ///
+    /// **Why `Box<Self>` instead of just `self`?**
+    ///
+    /// Because `UtoSession` is often used as a trait object (`Box<dyn UtoSession>`),
+    /// we need to specify that `self` is already boxed. This pattern allows us to
+    /// take ownership of the boxed trait object and properly clean up resources.
+    ///
+    /// **Usage pattern:**
+    /// ```rust,ignore
+    /// let session: Box<dyn UtoSession> = Box::new(WebSession::new(...));
+    /// // ... use session ...
+    /// session.close().await?;  // Session is consumed, can't use it anymore
+    /// ```
     async fn close(self: Box<Self>) -> UtoResult<()>;
 }

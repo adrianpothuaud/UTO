@@ -69,8 +69,20 @@ body{background:radial-gradient(circle at 12% -5%,var(--bg4),transparent 46%),ra
 .ti-icon{font-size:.85rem;flex-shrink:0;width:16px;text-align:center}
 .ti-name{font-size:.83rem;font-weight:500;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ti-meta{font-size:.7rem;color:var(--tx3);margin-top:1px;padding-left:22px}
+.ti-strip{display:flex;gap:3px;align-items:center;margin-top:4px;padding-left:22px;flex-wrap:wrap}
+.ti-dot{width:7px;height:7px;border-radius:50%;border:1px solid var(--bd)}
+.ti-dot.ok{background:var(--ok);border-color:var(--ok-bd)}
+.ti-dot.fail{background:var(--fail);border-color:var(--fail-bd)}
+.ti-dot.skip{background:var(--skip);border-color:var(--bd)}
+.ti-dot.warn{background:var(--warn);border-color:var(--warn-bd)}
+.ti-err{font-size:.68rem;color:var(--fail);margin-top:3px;padding-left:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .no-tests{padding:24px 14px;font-size:.82rem;color:var(--tx3);text-align:center;line-height:1.6}
 .no-tests code{font-family:var(--mono);font-size:.75rem;background:var(--bg3);padding:1px 5px;border-radius:3px}
+.test-group-hdr{padding:6px 12px 4px;font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);background:var(--bg3);border-bottom:1px solid var(--bd2);border-top:1px solid var(--bd2);display:flex;align-items:center;gap:5px;user-select:none}
+.ti-run-btn{margin-left:auto;flex-shrink:0;width:20px;height:20px;border-radius:4px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.68rem;color:var(--tx3);opacity:0;transition:opacity .12s,background .1s;padding:0}
+.test-item:hover .ti-run-btn,.test-item.sel .ti-run-btn{opacity:1}
+.ti-run-btn:hover{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+.ti-run-btn:disabled{opacity:.35;cursor:default}
 
 /* Toolbar */
 .toolbar{padding:9px 14px;border-bottom:1px solid var(--bd);background:var(--bg2);display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -78,12 +90,16 @@ body{background:radial-gradient(circle at 12% -5%,var(--bg4),transparent 46%),ra
 .btn:hover:not(:disabled){background:var(--bg3);transform:translateY(-1px)}
 .btn:disabled{opacity:.45;cursor:default}
 .btn-run{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+.btn-run-sel{background:var(--acc-bg);color:var(--acc);border-color:var(--acc-bd)}
 .btn-run:hover:not(:disabled){background:color-mix(in srgb,var(--ok-bg) 78%,var(--ok))}
 .btn-stop{background:var(--fail-bg);color:var(--fail);border-color:var(--fail-bd)}
 .btn-stop:hover:not(:disabled){background:color-mix(in srgb,var(--fail-bg) 78%,var(--fail))}
 .btn-replay{background:var(--acc-bg);color:var(--acc);border-color:var(--acc-bd)}
 .btn-replay:hover:not(:disabled){background:color-mix(in srgb,var(--acc-bg) 78%,var(--acc))}
 .status-chip{font-size:.74rem;color:var(--tx3);padding:3px 9px;border-radius:20px;background:var(--bg3);border:1px solid var(--bd);transition:color .2s}
+.run-progress{height:4px;background:var(--bg3);border-bottom:1px solid var(--bd2);position:relative;display:none}
+.run-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--acc),var(--ok));transition:width .18s ease}
+.run-progress-label{position:absolute;right:10px;top:-16px;font-size:.67rem;color:var(--tx3);font-family:var(--mono)}
 
 /* Badges */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.67rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
@@ -99,21 +115,64 @@ body{background:radial-gradient(circle at 12% -5%,var(--bg4),transparent 46%),ra
 .td-name{font-size:.92rem;font-weight:700;margin-bottom:5px}
 .td-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .td-err{margin-top:8px;padding:7px 10px;background:var(--fail-bg);border:1px solid var(--fail-bd);border-radius:var(--radius-sm);font-family:var(--mono);font-size:.74rem;color:var(--fail);white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto}
+.step-timeline-wrap{padding:8px 14px;border-bottom:1px solid var(--bd2);background:var(--bg2);display:none}
+.step-timeline-title{font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:6px}
+.step-timeline{display:flex;gap:2px;align-items:stretch;height:16px;overflow-x:auto;padding-bottom:2px}
+.step-seg{border:1px solid transparent;border-radius:4px;min-width:4px;cursor:pointer;flex:1 1 auto;transition:transform .1s ease, opacity .1s ease}
+.step-seg:hover{transform:translateY(-1px);opacity:.95}
+.step-seg.ok{background:var(--ok-bg);border-color:var(--ok-bd)}
+.step-seg.fail{background:var(--fail-bg);border-color:var(--fail-bd)}
+.step-seg.skip{background:var(--skip-bg);border-color:var(--bd)}
+.step-seg.warn{background:var(--warn-bg);border-color:var(--warn-bd)}
+.step-seg.running{background:var(--acc-bg);border-color:var(--acc-bd);animation:livePulse 1.1s ease-in-out infinite}
+.step-timeline-empty{font-size:.74rem;color:var(--tx3)}
+
+/* Log controls + assets */
+.event-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 14px;border-bottom:1px solid var(--bd2);background:var(--bg2);flex-shrink:0}
+.event-tools-left{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.event-tools-label{font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3)}
+.event-select{height:27px;padding:2px 7px;border-radius:6px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:.74rem}
+.event-check{display:flex;align-items:center;gap:5px;color:var(--tx2);font-size:.74rem}
+.event-search{height:27px;min-width:180px;padding:3px 8px;border-radius:6px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-size:.74rem;outline:none}
+.event-search:focus{border-color:var(--acc-bd)}
+.event-tools-right{font-size:.72rem;color:var(--tx3);font-family:var(--mono)}
+
+.assets-wrap{padding:8px 14px;border-bottom:1px solid var(--bd2);background:var(--bg2);display:none;flex-shrink:0}
+.assets-hdr{font-size:.69rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.assets-badge{font-size:.67rem;color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:1px 7px}
+.assets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.asset-card{border:1px solid var(--bd2);border-radius:8px;background:var(--bg3);overflow:hidden}
+.asset-preview{height:100px;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--tx3);font-size:.72rem}
+.asset-preview img,.asset-preview video{width:100%;height:100%;object-fit:cover;display:block}
+.asset-meta{padding:6px 8px}
+.asset-name{font-size:.74rem;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-sub{font-size:.67rem;color:var(--tx3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-link{display:inline-block;margin-top:5px;font-size:.68rem;color:var(--acc);text-decoration:none}
+.asset-link:hover{text-decoration:underline}
 
 /* Events */
 .events-wrap{flex:1;overflow-y:auto;min-height:0}
-.event-hdr{display:grid;grid-template-columns:90px 72px 1fr;gap:0;padding:5px 0;border-bottom:1px solid var(--bd);background:var(--bg2);position:sticky;top:0;z-index:10;flex-shrink:0}
+.event-hdr{display:grid;grid-template-columns:108px 88px 78px 1fr;gap:0;padding:5px 0;border-bottom:1px solid var(--bd);background:var(--bg2);position:sticky;top:0;z-index:10;flex-shrink:0}
 .eh-cell{padding:4px 10px;font-size:.67rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3)}
-.event-row{display:grid;grid-template-columns:90px 72px 1fr;gap:0;border-bottom:1px solid var(--bd2);font-size:.8rem;cursor:pointer;transition:background .07s}
+.event-row{display:grid;grid-template-columns:108px 88px 78px 1fr;gap:0;border-bottom:1px solid var(--bd2);font-size:.8rem;cursor:pointer;transition:background .07s}
 .event-row:hover{background:var(--bg3)}
 .event-row.xpanded{background:var(--bg3)}
 .ev-stage{padding:7px 10px;color:var(--tx3);font-size:.71rem;font-family:var(--mono);border-right:1px solid var(--bd2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-stage-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;margin-right:5px;font-family:var(--font)}
 .ev-st{padding:7px 10px;border-right:1px solid var(--bd2);display:flex;align-items:center;gap:4px;font-size:.75rem;font-weight:600}
 .ev-st.ok{color:var(--ok)}.ev-st.fail,.ev-st.error{color:var(--fail)}.ev-st.warn{color:var(--warn)}.ev-st.skip{color:var(--skip)}.ev-st.running{color:var(--acc)}
-.ev-detail{padding:7px 10px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem}
+.ev-dur{padding:7px 10px;border-right:1px solid var(--bd2);color:var(--tx3);font-size:.73rem;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-detail{padding:7px 10px;color:var(--tx2);overflow:visible;font-size:.8rem}
 .ev-expand{grid-column:1/-1;padding:9px 14px 11px;background:var(--bg3);border-top:1px solid var(--bd2);display:none}
 .ev-expand.show{display:block}
 .ev-json{font-family:var(--mono);font-size:.73rem;color:var(--tx);white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto}
+.event-screenshots{display:flex;gap:8px;margin-top:6px}
+.ev-screenshot{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none}
+.ev-screenshot img{width:72px;height:54px;object-fit:cover;border:1px solid var(--bd2);border-radius:3px;cursor:pointer;transition:all .15s}
+.ev-screenshot img:hover{opacity:.85;border-color:var(--acc);transform:scale(1.05)}
+.ev-ss-label{font-size:.68rem;color:var(--tx3)}
+.event-row.live-running{position:relative;animation:livePulse 1.2s ease-in-out infinite}
+.event-row.live-running::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--acc)}
 .no-events{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;color:var(--tx3);gap:9px;text-align:center}
 .ne-icon{font-size:2.4rem;opacity:.5}
 .ne-sub{font-size:.8rem}
@@ -128,6 +187,7 @@ body{background:radial-gradient(circle at 12% -5%,var(--bg4),transparent 46%),ra
 .spin-wrap{display:flex;align-items:center;justify-content:center;padding:20px;color:var(--tx3);font-size:.82rem;gap:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:13px;height:13px;border:2px solid var(--bd);border-top-color:var(--acc);border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0}
+@keyframes livePulse{0%{background:transparent}50%{background:color-mix(in srgb,var(--acc-bg) 45%,transparent)}100%{background:transparent}}
 
 @media(max-width:640px){.sidebar{width:200px}}
 </style>
@@ -167,19 +227,52 @@ body{background:radial-gradient(circle at 12% -5%,var(--bg4),transparent 46%),ra
   <!-- Main pane: toolbar + events -->
   <div class="main-pane">
     <div class="toolbar">
-      <button class="btn btn-run" id="btn-run" onclick="triggerRun()" title="Run full test suite">▶ Run</button>
+      <button class="btn btn-run" id="btn-run" onclick="triggerRun()" title="Run all tests (keyboard: R)">▶ Run All</button>
+      <button class="btn btn-run-sel" id="btn-run-selected" onclick="triggerRunSelected()" title="Run selected test (keyboard: Enter)" disabled>▷ Run</button>
       <button class="btn btn-stop" id="btn-stop" onclick="stopRun()" title="Stop running suite" disabled>■ Stop</button>
       <button class="btn btn-replay" id="btn-replay" onclick="replayReport()" title="Replay loaded report" disabled>⏮ Replay</button>
       <div class="spacer"></div>
       <span class="status-chip" id="status-chip">ready</span>
       <span id="platform-badge"></span>
     </div>
+    <div class="run-progress" id="run-progress">
+      <div class="run-progress-fill" id="run-progress-fill"></div>
+      <span class="run-progress-label" id="run-progress-label"></span>
+    </div>
 
     <div id="test-detail" style="display:none"></div>
+    <div class="step-timeline-wrap" id="step-timeline-wrap">
+      <div class="step-timeline-title">Step timeline</div>
+      <div class="step-timeline" id="step-timeline"></div>
+      <div class="step-timeline-empty" id="step-timeline-empty" style="display:none">No timing data yet</div>
+    </div>
+
+    <div class="event-tools" id="event-tools" style="display:none">
+      <div class="event-tools-left">
+        <span class="event-tools-label">Logs</span>
+        <select class="event-select" id="event-view" onchange="onEventControlsChanged()" aria-label="Log detail level">
+          <option value="compact">Compact</option>
+          <option value="smart" selected>Readable</option>
+          <option value="raw">Raw JSON</option>
+        </select>
+        <label class="event-check"><input type="checkbox" id="event-only-failed" onchange="onEventControlsChanged()"> Only failures</label>
+        <input class="event-search" type="text" id="event-search" placeholder="Search logs…" oninput="onEventControlsChanged()" aria-label="Search logs">
+      </div>
+      <div class="event-tools-right" id="event-tools-count"></div>
+    </div>
+
+    <div class="assets-wrap" id="assets-wrap">
+      <div class="assets-hdr">
+        <span>Assets</span>
+        <span class="assets-badge" id="assets-count">0</span>
+      </div>
+      <div class="assets-grid" id="assets-grid"></div>
+    </div>
 
     <div class="event-hdr" id="event-hdr" style="display:none">
       <div class="eh-cell">Stage</div>
       <div class="eh-cell">Status</div>
+      <div class="eh-cell">Duration</div>
       <div class="eh-cell">Detail</div>
     </div>
 
@@ -211,6 +304,19 @@ var ws = null;
 var wsRetryMs = 1500;
 var report = null;
 var selIdx = -1;
+var liveActiveRow = null;
+var currentEvents = [];
+var runLive = false;
+var lastRunDurationMs = 0;
+var discoveredTests = [];
+var selectedTestRef = null;
+var eventViewMode = 'smart';
+var eventOnlyFailed = false;
+var eventQuery = '';
+var currentAssets = [];
+var liveSuiteTests = {};
+var liveSuiteOrder = [];
+var liveCurrentTestKey = null;
 
 // ============================================================
 // Theme
@@ -239,6 +345,7 @@ function connectWs() {
   ws.addEventListener('open', function() {
     setConn(true);
     wsRetryMs = 1500;
+    setRunButtonsForConnState(true);
   });
 
   ws.addEventListener('message', function(evt) {
@@ -249,6 +356,7 @@ function connectWs() {
     setConn(false);
     setTimeout(connectWs, wsRetryMs);
     wsRetryMs = Math.min(wsRetryMs * 2, 15000);
+    setRunButtonsForConnState(false);
   });
 
   ws.addEventListener('error', function() { setConn(false); });
@@ -264,8 +372,10 @@ function setConn(ok) {
 function handleMsg(msg) {
   if (msg.type === 'report') loadReport(msg.payload);
   else if (msg.type === 'event') appendLiveEvent(msg.payload);
+  else if (msg.type === 'test_started') onTestStarted(msg.payload || {});
+  else if (msg.type === 'test_finished') onTestFinished(msg.payload || {});
   else if (msg.type === 'log') appendLogLine(msg.payload);
-  else if (msg.type === 'run_started') onRunStarted();
+  else if (msg.type === 'run_started') onRunStarted(msg.payload || {});
   else if (msg.type === 'run_finished') onRunFinished(msg.payload);
   else if (msg.type === 'run_ignored') onRunIgnored(msg.payload);
 }
@@ -280,14 +390,49 @@ function loadStatus() {
     .catch(function() { document.getElementById('project-name').textContent = 'UTO UI'; });
 }
 
+function setRunButtonsForConnState(connected) {
+  var runBtn = document.getElementById('btn-run');
+  var selBtn = document.getElementById('btn-run-selected');
+  if (!connected) {
+    runBtn.disabled = true;
+    selBtn.disabled = true;
+    runBtn.title = 'Reconnecting to server…';
+    selBtn.title = 'Reconnecting to server…';
+  } else if (!runLive) {
+    runBtn.disabled = false;
+    runBtn.title = 'Run all tests (keyboard: R)';
+    selBtn.disabled = !selectedTestRef || !selectedTestRef.test_bin || !selectedTestRef.test_name;
+    if (selectedTestRef && selectedTestRef.test_name) {
+      selBtn.title = 'Run: ' + selectedTestRef.test_name + ' (keyboard: Enter)';
+    }
+  }
+}
+
 function fetchReport() {
   fetch('/api/report')
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d && d.schema_version) loadReport(d);
-      else renderEmptyTree();
+      else renderDiscoveredTests();
     })
-    .catch(function() { renderEmptyTree(); });
+    .catch(function() { renderDiscoveredTests(); });
+}
+
+function fetchTests() {
+  fetch('/api/tests')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      discoveredTests = (d && Array.isArray(d.tests)) ? d.tests : [];
+      selectedTestRef = null;
+      renderDiscoveredTests();
+      document.getElementById('btn-run-selected').disabled = true;
+    })
+    .catch(function() {
+      discoveredTests = [];
+      selectedTestRef = null;
+      renderEmptyTree();
+      document.getElementById('btn-run-selected').disabled = true;
+    });
 }
 
 // ============================================================
@@ -296,8 +441,32 @@ function fetchReport() {
 function loadReport(r) {
   report = r;
   document.getElementById('btn-replay').disabled = false;
-  if (r.schema_version === 'uto-suite/v1') renderSuite(r);
-  else if (r.schema_version === 'uto-report/v1') renderSingle(r);
+  if (r.schema_version === 'uto-suite/v1') {
+    // In discovery mode, keep the full discovered list in the sidebar and only
+    // sync per-test status icons + detail panel.
+    if (discoveredTests.length) {
+      renderSummary(r.summary || {}, r.timeline, r.mode);
+      setStatus(r.status, r.mode);
+      syncDiscoveredTestIcons(r.tests || []);
+
+      var cnt = document.getElementById('test-count');
+      cnt.textContent = discoveredTests.length;
+      cnt.style.display = discoveredTests.length ? '' : 'none';
+
+      if (r.tests && r.tests.length) {
+        var first = r.tests[0];
+        var idx = discoveredTests.findIndex(function(dt) {
+          return dt && dt.test_name === first.name;
+        });
+        if (idx >= 0) selectDiscoveredTest(idx, discoveredTests[idx]);
+        selectTest(0, first);
+      }
+      return;
+    }
+    renderSuite(r);
+  } else if (r.schema_version === 'uto-report/v1') {
+    renderSingle(r);
+  }
 }
 
 function renderSuite(r) {
@@ -311,25 +480,33 @@ function renderSuite(r) {
 
   list.innerHTML = '';
   tests.forEach(function(t, i) {
+    var viewTest = hydrateReportTest(t);
+    var events = viewTest.events || [];
+    var failedEvents = countFailedEvents(events);
+    var stepCount = events.length;
+    var stepSummary = stepCount + ' step' + (stepCount === 1 ? '' : 's') + (failedEvents ? ' · ' + failedEvents + ' failed' : '');
+    var errLine = (viewTest.error || '').split('\n')[0];
     var item = document.createElement('div');
     item.className = 'test-item';
     item.dataset.idx = i;
-    item.dataset.name = (t.name || '').toLowerCase();
-    item.onclick = function() { selectTest(i, t); };
+    item.dataset.name = (viewTest.name || '').toLowerCase();
+    item.onclick = function() { selectTest(i, viewTest); };
 
     item.innerHTML =
       '<div class="ti-row">' +
-        '<span class="ti-icon">' + statusIcon(t.status) + '</span>' +
-        '<span class="ti-name">' + esc(t.name || 'unnamed') + '</span>' +
+        '<span class="ti-icon">' + statusIcon(viewTest.status) + '</span>' +
+        '<span class="ti-name">' + esc(viewTest.name || 'unnamed') + '</span>' +
       '</div>' +
-      '<div class="ti-meta">' + durLabel(t.timeline) + '</div>';
+      '<div class="ti-meta">' + esc(stepSummary) + (durLabel(viewTest.timeline) ? ' · ' + durLabel(viewTest.timeline) : '') + '</div>' +
+      outcomeStripHtml(events) +
+      (errLine ? '<div class="ti-err" title="' + esc(errLine) + '">❌ ' + esc(errLine) + '</div>' : '');
     list.appendChild(item);
   });
 
   var s = r.summary || {};
   renderSummary(s, r.timeline, r.mode);
   setStatus(r.status, r.mode);
-
+  syncDiscoveredTestIcons(tests);
   if (tests.length > 0) selectTest(0, tests[0]);
 }
 
@@ -356,11 +533,220 @@ function renderEmptyTree() {
   document.getElementById('test-count').style.display = 'none';
 }
 
-function selectTest(idx, t) {
+// After a suite run, update the ◎ icons in discovered-test view with pass/fail/skip symbols.
+// Matches by test name (report test.name vs discoveredTest.test_name).
+function syncDiscoveredTestIcons(suiteTests) {
+  if (!Array.isArray(suiteTests) || !discoveredTests.length) return;
+  var nameToStatus = {};
+  suiteTests.forEach(function(t) {
+    if (t && t.name) nameToStatus[t.name] = t.status || 'unknown';
+  });
+  discoveredTests.forEach(function(dt, i) {
+    var st = nameToStatus[dt.test_name];
+    if (!st) return;
+    var iconEl = document.getElementById('di-icon-' + i);
+    if (iconEl) iconEl.textContent = statusIcon(st);
+  });
+}
+
+function renderDiscoveredTests() {
+  var list = document.getElementById('test-list');
+  var cnt = document.getElementById('test-count');
+
+  if (!discoveredTests.length) {
+    renderEmptyTree();
+    return;
+  }
+
+  cnt.textContent = discoveredTests.length;
+  cnt.style.display = '';
+  list.innerHTML = '';
+
+  // Group by test_bin for a Cypress-like file/spec grouping
+  var groups = {};
+  var groupOrder = [];
+  discoveredTests.forEach(function(t, i) {
+    var bin = t.test_bin || 'tests';
+    if (!groups[bin]) { groups[bin] = []; groupOrder.push(bin); }
+    groups[bin].push({ t: t, i: i });
+  });
+
+  groupOrder.forEach(function(bin) {
+    // Group header (mirrors Cypress's spec filename header)
+    if (groupOrder.length > 1) {
+      var hdr = document.createElement('div');
+      hdr.className = 'test-group-hdr';
+      hdr.innerHTML = '<span>📁</span><span>' + esc(bin) + '</span>';
+      list.appendChild(hdr);
+    }
+
+    groups[bin].forEach(function(entry) {
+      var t = entry.t;
+      var i = entry.i;
+      var item = document.createElement('div');
+      item.className = 'test-item';
+      item.dataset.idx = i;
+      item.dataset.name = ((t.test_name || '') + ' ' + (t.test_bin || '')).toLowerCase();
+      item.onclick = function(e) {
+        if (e.target.classList.contains('ti-run-btn')) return;
+        selectDiscoveredTest(i, t);
+      };
+      var btnId = 'inline-run-' + i;
+      item.innerHTML =
+        '<div class="ti-row">' +
+          '<span class="ti-icon" id="di-icon-' + i + '">◎</span>' +
+          '<span class="ti-name">' + esc(t.test_name || 'unnamed') + '</span>' +
+          '<button class="ti-run-btn" id="' + btnId + '" title="Run this test" onclick="triggerRunInline(' + i + ')">▷</button>' +
+        '</div>' +
+        '<div class="ti-meta">' + esc((groupOrder.length > 1 ? '' : bin) + (t.target ? (groupOrder.length > 1 ? '' : ' · ') + t.target : '')) + '</div>';
+      list.appendChild(item);
+    });
+  });
+
+  selectDiscoveredTest(0, discoveredTests[0]);
+}
+
+function makeLiveTestKey(testBin, testName) {
+  return String(testBin || '') + '::' + String(testName || '');
+}
+
+function findDiscoveredTestIndex(testBin, testName) {
+  return discoveredTests.findIndex(function(t) {
+    return t && t.test_bin === testBin && t.test_name === testName;
+  });
+}
+
+function setDiscoveredTestIcon(idx, status) {
+  var iconEl = document.getElementById('di-icon-' + idx);
+  if (!iconEl) return;
+  iconEl.textContent = statusIcon(status);
+}
+
+function ensureLiveTestState(payload) {
+  var key = makeLiveTestKey(payload && payload.test_bin, payload && payload.test_name);
+  var state = liveSuiteTests[key];
+  if (!state) {
+    state = {
+      name: (payload && payload.test_name) || 'unnamed',
+      test_bin: (payload && payload.test_bin) || '',
+      mode: (payload && payload.target) || (report && report.mode) || 'web',
+      status: 'running',
+      error: null,
+      timeline: {},
+      events: []
+    };
+    liveSuiteTests[key] = state;
+    liveSuiteOrder.push(key);
+  }
+  return state;
+}
+
+function renderSelectedLiveTest(state) {
+  if (!state) return;
+
+  var detail = document.getElementById('test-detail');
+  detail.style.display = 'block';
+  detail.innerHTML =
+    '<div class="test-detail">' +
+      '<div class="td-name">' + esc(state.name || 'unnamed') + '</div>' +
+      '<div class="td-meta">' +
+        '<span class="badge ' + stBadgeClass(state.status) + '">' + esc(state.status || 'running') + '</span> ' +
+        platBadgeHtml(state.mode) +
+        (state.timeline && state.timeline.duration_ms ? ' <span style="font-size:.75rem;color:var(--tx3)">' + durLabel(state.timeline) + '</span>' : '') +
+      '</div>' +
+      '<div style="margin-top:8px;font-size:.74rem;color:var(--tx3)">' + esc(state.test_bin || '') + '</div>' +
+      (state.error ? '<div class="td-err">' + esc(state.error) + '</div>' : '') +
+    '</div>';
+
+  currentEvents = Array.isArray(state.events) ? state.events.slice() : [];
+  renderEventsList();
+  renderStepTimeline(currentEvents);
+  updateRunProgressFromEvents(currentEvents);
+}
+
+function lookupLiveStateForReportTest(t) {
+  if (!t || !t.name) return null;
+
+  if (t.test_bin) {
+    var direct = liveSuiteTests[makeLiveTestKey(t.test_bin, t.name)];
+    if (direct) return direct;
+  }
+
+  var idx = discoveredTests.findIndex(function(dt) {
+    return dt && dt.test_name === t.name;
+  });
+  if (idx >= 0) {
+    var key = makeLiveTestKey(discoveredTests[idx].test_bin, discoveredTests[idx].test_name);
+    if (liveSuiteTests[key]) return liveSuiteTests[key];
+  }
+
+  var names = Object.keys(liveSuiteTests).filter(function(key) {
+    return liveSuiteTests[key] && liveSuiteTests[key].name === t.name;
+  });
+  return names.length === 1 ? liveSuiteTests[names[0]] : null;
+}
+
+function hydrateReportTest(t) {
+  var liveState = lookupLiveStateForReportTest(t);
+  if (!liveState) return t;
+
+  var reportEvents = Array.isArray(t.events) ? t.events : [];
+  var liveEvents = Array.isArray(liveState.events) ? liveState.events : [];
+  if (liveEvents.length <= reportEvents.length) return t;
+
+  return {
+    name: t.name,
+    status: t.status || liveState.status,
+    timeline: Object.assign({}, t.timeline || {}, liveState.timeline || {}),
+    events: liveEvents.slice(),
+    error: t.error || liveState.error,
+    mode: t.mode || liveState.mode,
+    test_bin: liveState.test_bin
+  };
+}
+
+function selectDiscoveredTest(idx, t) {
   document.querySelectorAll('.test-item.sel').forEach(function(el) { el.classList.remove('sel'); });
-  var items = document.querySelectorAll('.test-item');
-  if (items[idx]) items[idx].classList.add('sel');
+  document.querySelectorAll('.test-item').forEach(function(el) {
+    if (parseInt(el.dataset.idx, 10) === idx) el.classList.add('sel');
+  });
   selIdx = idx;
+  selectedTestRef = {
+    test_bin: t.test_bin,
+    test_name: t.test_name,
+    target: t.target || 'web'
+  };
+
+  var hasSelection = !!(selectedTestRef.test_bin && selectedTestRef.test_name);
+  document.getElementById('btn-run-selected').disabled = !hasSelection;
+  if (hasSelection) {
+    document.getElementById('btn-run-selected').title =
+      'Run: ' + (t.test_name || '') + ' (keyboard: Enter)';
+  }
+
+  var liveState = liveSuiteTests[makeLiveTestKey(selectedTestRef.test_bin, selectedTestRef.test_name)];
+  if (liveState) {
+    renderSelectedLiveTest(liveState);
+    return;
+  }
+
+  var detail = document.getElementById('test-detail');
+  detail.style.display = 'block';
+  detail.innerHTML =
+    '<div class="test-detail">' +
+      '<div class="td-name">' + esc(t.test_name || 'unnamed') + '</div>' +
+      '<div class="td-meta">' +
+        '<span class="badge badge-pending">not run</span>' +
+        (t.target ? ' <span style="font-size:.75rem;color:var(--tx3)">' + esc(t.target) + '</span>' : '') +
+      '</div>' +
+      '<div style="margin-top:1rem;font-size:.82rem;color:var(--tx3)">Press Enter or click ▷ to run this test.</div>' +
+    '</div>';
+  showEvents([]);
+}
+
+function selectTest(idx, t) {
+  t = hydrateReportTest(t);
+  document.getElementById('btn-run-selected').disabled = !selectedTestRef.test_bin || !selectedTestRef.test_name;
 
   var detail = document.getElementById('test-detail');
   detail.style.display = 'block';
@@ -384,67 +770,212 @@ function selectSingle() {
 }
 
 function showEvents(events) {
+  currentEvents = Array.isArray(events) ? events.slice() : [];
+  renderEventsList();
+  renderStepTimeline(currentEvents);
+}
+
+function appendLiveEvent(evt) {
+  if (evt && evt.event && evt.test_name) {
+    var liveState = ensureLiveTestState(evt);
+    liveState.events.push(evt.event);
+    if (evt.target) liveState.mode = evt.target;
+
+    var eventStatus = ((evt.event && evt.event.status) || '').toLowerCase();
+    if (eventStatus === 'failed' || eventStatus === 'error' || eventStatus === 'partial') {
+      liveState.status = 'failed';
+      if (evt.event && evt.event.detail && evt.event.detail.error) {
+        liveState.error = evt.event.detail.error;
+      }
+    }
+
+    var idx = findDiscoveredTestIndex(evt.test_bin, evt.test_name);
+    if (idx >= 0) setDiscoveredTestIcon(idx, liveState.status === 'failed' ? 'failed' : 'running');
+
+    if (selectedTestRef && selectedTestRef.test_bin === evt.test_bin && selectedTestRef.test_name === evt.test_name) {
+      renderSelectedLiveTest(liveState);
+    }
+    return;
+  }
+
+  currentEvents.push(evt);
+  renderEventsList();
+  renderStepTimeline(currentEvents);
+  updateRunProgressFromEvents(currentEvents);
+}
+
+function onTestStarted(payload) {
+  var liveState = ensureLiveTestState(payload || {});
+  liveState.status = 'running';
+  if (payload && payload.target) liveState.mode = payload.target;
+  liveCurrentTestKey = makeLiveTestKey(payload && payload.test_bin, payload && payload.test_name);
+
+  var idx = findDiscoveredTestIndex(payload && payload.test_bin, payload && payload.test_name);
+  if (idx >= 0) {
+    setDiscoveredTestIcon(idx, 'running');
+    selectDiscoveredTest(idx, discoveredTests[idx]);
+  } else {
+    renderSelectedLiveTest(liveState);
+  }
+}
+
+function onTestFinished(payload) {
+  var liveState = ensureLiveTestState(payload || {});
+  var finalStatus = (payload && payload.status) || liveState.status || 'passed';
+  liveState.status = finalStatus;
+  liveState.error = (payload && payload.error) || liveState.error;
+  liveState.timeline = liveState.timeline || {};
+  if (payload && typeof payload.duration_ms === 'number') {
+    liveState.timeline.duration_ms = payload.duration_ms;
+  }
+
+  // Update the runner.test_command event status to reflect final outcome
+  if (liveState.events && liveState.events.length > 0) {
+    var cmdEvt = liveState.events[0];
+    if (cmdEvt && cmdEvt.stage && cmdEvt.stage.indexOf('runner.test_command') >= 0) {
+      cmdEvt.status = finalStatus === 'passed' ? 'ok' : 'failed';
+    }
+  }
+
+  var idx = findDiscoveredTestIndex(payload && payload.test_bin, payload && payload.test_name);
+  if (idx >= 0) setDiscoveredTestIcon(idx, liveState.status);
+
+  if (selectedTestRef && payload && selectedTestRef.test_bin === payload.test_bin && selectedTestRef.test_name === payload.test_name) {
+    renderSelectedLiveTest(liveState);
+  }
+}
+
+function appendLogLine(payload) {
+  var evt = {
+    stage: 'log',
+    status: 'running',
+    ts_ms: payload && payload.ts_ms,
+    detail: {
+      message: (payload && payload.line) || '',
+      ts_ms: payload && payload.ts_ms
+    }
+  };
+  appendLiveEvent(evt);
+}
+
+function addEventRow(container, evt, idx, sourceEvents) {
+  var row = document.createElement('div');
+  row.className = 'event-row';
+  row.id = 'ev-row-' + idx;
+  var stClass = (evt.status || '').replace('passed', 'ok').replace('failed', 'fail');
+  var detail = eventViewMode === 'raw' ? JSON.stringify(evt.detail || {}, null, 0) : fmtDetailByMode(evt, eventViewMode);
+  var stage = evt.stage || '';
+  var icon = stepIconForEvent(evt);
+  var durationText = formatEventDuration(evt, idx, sourceEvents || []);
+  var rawJson = JSON.stringify(evt.detail || {}, null, 2);
+
+  // Check for screenshots in intent events
+  var screenshotHtml = '';
+  if (evt.detail && (evt.detail.screenshot_before || evt.detail.screenshot_after)) {
+    screenshotHtml = '<div class="event-screenshots">';
+    if (evt.detail.screenshot_before) {
+      screenshotHtml += '<a href="' + esc(evt.detail.screenshot_before) + '" target="_blank" class="ev-screenshot">' +
+        '<img src="' + esc(evt.detail.screenshot_before) + '" alt="before" title="Before action"/>' +
+        '<span class="ev-ss-label">Before</span></a>';
+    }
+    if (evt.detail.screenshot_after) {
+      screenshotHtml += '<a href="' + esc(evt.detail.screenshot_after) + '" target="_blank" class="ev-screenshot">' +
+        '<img src="' + esc(evt.detail.screenshot_after) + '" alt="after" title="After action"/>' +
+        '<span class="ev-ss-label">After</span></a>';
+    }
+    screenshotHtml += '</div>';
+  }
+
+  row.innerHTML =
+    '<div class="ev-stage"><span class="ev-stage-icon">' + icon + '</span>' + esc(stage) + '</div>' +
+    '<div class="ev-st ' + stClass + '">' + statusIcon(evt.status) + ' ' + esc(evt.status || '') + '</div>' +
+    '<div class="ev-dur">' + durationText + '</div>' +
+    '<div class="ev-detail">' + esc(detail) + screenshotHtml + '</div>' +
+    '<div class="ev-expand" id="xp-' + idx + '">' +
+      '<pre class="ev-json">' + esc(rawJson) + '</pre>' +
+    '</div>';
+  row.onclick = function() { toggleExpand('xp-' + idx, row); };
+  container.appendChild(row);
+  return row;
+}
+
+function onEventControlsChanged() {
+  var view = document.getElementById('event-view');
+  var onlyFailed = document.getElementById('event-only-failed');
+  var query = document.getElementById('event-search');
+  eventViewMode = view ? view.value : 'smart';
+  eventOnlyFailed = !!(onlyFailed && onlyFailed.checked);
+  eventQuery = (query && query.value ? query.value : '').toLowerCase();
+  renderEventsList();
+}
+
+function renderEventsList() {
   var noEvt = document.getElementById('no-events');
   var evList = document.getElementById('events-list');
   var evHdr = document.getElementById('event-hdr');
+  var tools = document.getElementById('event-tools');
+  var count = document.getElementById('event-tools-count');
 
-  if (!events || !events.length) {
+  if (!currentEvents.length) {
     noEvt.style.display = 'flex';
-    noEvt.innerHTML = '<span class="ne-icon">◎</span><span>No events for this test</span>';
+    noEvt.innerHTML = runLive
+      ? '<span class="ne-icon">⏳</span><span>Run started, waiting for first log/event…</span>'
+      : '<span class="ne-icon">◎</span><span>No events for this test</span>';
+    evList.innerHTML = '';
+    evHdr.style.display = runLive ? 'grid' : 'none';
+    tools.style.display = runLive ? 'flex' : 'none';
+    renderAssets([]);
+    return;
+  }
+
+  var filtered = currentEvents.filter(function(evt) {
+    if (eventOnlyFailed) {
+      var s = ((evt && evt.status) || '').toLowerCase();
+      var isFailure = s === 'failed' || s === 'error' || s === 'partial' || (evt && evt.detail && evt.detail.error);
+      if (!isFailure) return false;
+    }
+
+    if (!eventQuery) return true;
+    var hay = [
+      evt && evt.stage,
+      evt && evt.status,
+      fmtDetailByMode(evt, 'smart'),
+      evt && evt.detail ? JSON.stringify(evt.detail) : ''
+    ].join(' ').toLowerCase();
+    return hay.indexOf(eventQuery) >= 0;
+  });
+
+  tools.style.display = 'flex';
+  count.textContent = filtered.length + ' / ' + currentEvents.length + ' shown';
+
+  if (!filtered.length) {
+    noEvt.style.display = 'flex';
+    noEvt.innerHTML = '<span class="ne-icon">⌕</span><span>No logs match current filters</span>';
     evList.innerHTML = '';
     evHdr.style.display = 'none';
+    renderAssets(extractAssetsFromEvents(currentEvents));
     return;
   }
 
   noEvt.style.display = 'none';
   evHdr.style.display = 'grid';
   evList.innerHTML = '';
-  events.forEach(function(evt, i) { addEventRow(evList, evt, i); });
-}
+  filtered.forEach(function(evt) {
+    var idx = currentEvents.indexOf(evt);
+    addEventRow(evList, evt, idx, currentEvents);
+  });
 
-function appendLiveEvent(evt) {
-  var noEvt = document.getElementById('no-events');
-  var evList = document.getElementById('events-list');
-  var evHdr = document.getElementById('event-hdr');
-  noEvt.style.display = 'none';
-  evHdr.style.display = 'grid';
-  var idx = evList.children.length;
-  addEventRow(evList, evt, idx);
-  evList.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
-}
+  if (runLive) {
+    var lastVisible = evList.lastElementChild;
+    if (liveActiveRow) liveActiveRow.classList.remove('live-running');
+    if (lastVisible) {
+      lastVisible.classList.add('live-running');
+      liveActiveRow = lastVisible;
+      lastVisible.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }
 
-function appendLogLine(payload) {
-  var line = (payload && payload.line) || '';
-  var noEvt = document.getElementById('no-events');
-  var evList = document.getElementById('events-list');
-  var evHdr = document.getElementById('event-hdr');
-  noEvt.style.display = 'none';
-  evHdr.style.display = 'grid';
-  var row = document.createElement('div');
-  row.className = 'event-row';
-  row.innerHTML =
-    '<div class="ev-stage" style="color:var(--tx3)">log</div>' +
-    '<div class="ev-st ok" style="color:var(--tx3)">ℹ</div>' +
-    '<div class="ev-detail" style="font-family:var(--mono);font-size:.75rem;color:var(--tx2)">' + esc(line) + '</div>' +
-    '<div class="ev-expand"></div>';
-  evList.appendChild(row);
-  row.scrollIntoView({ behavior: 'smooth', block: 'end' });
-}
-
-function addEventRow(container, evt, idx) {
-  var row = document.createElement('div');
-  row.className = 'event-row';
-  var stClass = (evt.status || '').replace('passed', 'ok').replace('failed', 'fail');
-  var detail = fmtDetail(evt.detail);
-  row.innerHTML =
-    '<div class="ev-stage">' + esc(evt.stage || '') + '</div>' +
-    '<div class="ev-st ' + stClass + '">' + statusIcon(evt.status) + ' ' + esc(evt.status || '') + '</div>' +
-    '<div class="ev-detail">' + esc(detail) + '</div>' +
-    '<div class="ev-expand" id="xp-' + idx + '">' +
-      '<pre class="ev-json">' + esc(JSON.stringify(evt.detail, null, 2)) + '</pre>' +
-    '</div>';
-  row.onclick = function() { toggleExpand('xp-' + idx, row); };
-  container.appendChild(row);
+  renderAssets(extractAssetsFromEvents(currentEvents));
 }
 
 function toggleExpand(id, row) {
@@ -461,7 +992,21 @@ function triggerRun() {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'trigger_run' }));
   }
-  onRunStarted();
+  onRunStarted({ ts_ms: 0 });
+}
+
+function triggerRunSelected() {
+  if (!selectedTestRef || !selectedTestRef.test_bin || !selectedTestRef.test_name) return;
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({
+      type: 'trigger_run',
+      payload: {
+        test_bin: selectedTestRef.test_bin,
+        test_name: selectedTestRef.test_name
+      }
+    }));
+  }
+  onRunStarted({ ts_ms: 0 });
 }
 
 function stopRun() {
@@ -470,25 +1015,91 @@ function stopRun() {
   }
 }
 
+// Triggered by the per-test inline ▷ button in the sidebar
+function triggerRunInline(idx) {
+  var t = discoveredTests[idx];
+  if (!t) return;
+  selectDiscoveredTest(idx, t);
+  // Small delay so the selection highlight renders before the run starts
+  setTimeout(triggerRunSelected, 30);
+}
+
+// Keyboard shortcuts: ↑/↓ navigate tests, Enter runs selected, R runs all
+document.addEventListener('keydown', function(e) {
+  // Ignore if focus is inside an input/textarea
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+
+  var items = document.querySelectorAll('.test-item');
+  var idxArray = [];
+  items.forEach(function(el) { if (el.dataset.idx !== undefined) idxArray.push(parseInt(el.dataset.idx, 10)); });
+  var pos = idxArray.indexOf(selIdx);
+
+  if (e.key === 'ArrowDown' || e.key === 'j') {
+    e.preventDefault();
+    var next = pos < idxArray.length - 1 ? pos + 1 : pos;
+    var t = discoveredTests[idxArray[next]];
+    if (t) {
+      selectDiscoveredTest(idxArray[next], t);
+      items[next] && items[next].scrollIntoView({ block: 'nearest' });
+    }
+  } else if (e.key === 'ArrowUp' || e.key === 'k') {
+    e.preventDefault();
+    var prev = pos > 0 ? pos - 1 : 0;
+    var t2 = discoveredTests[idxArray[prev]];
+    if (t2) {
+      selectDiscoveredTest(idxArray[prev], t2);
+      items[prev] && items[prev].scrollIntoView({ block: 'nearest' });
+    }
+  } else if (e.key === 'Enter') {
+    if (!document.getElementById('btn-run-selected').disabled) triggerRunSelected();
+  } else if (e.key === 'r' || e.key === 'R') {
+    if (!document.getElementById('btn-run').disabled) triggerRun();
+  }
+});
+
 function replayReport() {
   if (report) loadReport(report);
 }
 
-function onRunStarted() {
+function onRunStarted(payload) {
   setStatus('running', null);
+  runLive = true;
+  currentEvents = [];
+  liveSuiteTests = {};
+  liveSuiteOrder = [];
+  liveCurrentTestKey = null;
   document.getElementById('btn-stop').disabled = false;
   document.getElementById('btn-run').disabled = true;
+  document.getElementById('btn-run-selected').disabled = true;
+  // Mark all inline run buttons as disabled during active run
+  document.querySelectorAll('.ti-run-btn').forEach(function(b) { b.disabled = true; });
   document.getElementById('events-list').innerHTML = '';
-  document.getElementById('no-events').style.display = 'none';
-  document.getElementById('event-hdr').style.display = 'grid';
+  renderEventsList();
   document.getElementById('summary-bar').style.display = 'none';
+  showRunProgress(0, lastRunDurationMs, payload && payload.ts_ms);
+  renderStepTimeline([]);
+  liveActiveRow = null;
 }
 
 function onRunFinished(payload) {
   var st = (payload && payload.status) || 'done';
+  runLive = false;
   setStatus(st, null);
   document.getElementById('btn-stop').disabled = true;
   document.getElementById('btn-run').disabled = false;
+  document.getElementById('btn-run-selected').disabled = !selectedTestRef || !selectedTestRef.test_bin || !selectedTestRef.test_name;
+  // Re-enable per-test run buttons
+  document.querySelectorAll('.ti-run-btn').forEach(function(b) { b.disabled = false; });
+  var finalMs = payload && typeof payload.ts_ms === 'number' ? payload.ts_ms : inferTotalMs(currentEvents);
+  if (finalMs > 0) {
+    lastRunDurationMs = finalMs;
+    showRunProgress(finalMs, finalMs, finalMs);
+  }
+  if (liveActiveRow) {
+    liveActiveRow.classList.remove('live-running');
+    liveActiveRow = null;
+  }
+  renderStepTimeline(currentEvents);
   // Only reload the report when the run completed naturally (not when stopped).
   if (payload && st !== 'stopped') fetchReport();
 }
@@ -515,6 +1126,8 @@ function renderSummary(s, timeline, mode) {
   document.getElementById('sum-failed').textContent = s.failed || 0;
   document.getElementById('sum-skipped').textContent = s.skipped || 0;
   document.getElementById('sum-duration').textContent = durLabel(timeline);
+  var d = extractTimelineDuration(timeline);
+  if (d > 0) lastRunDurationMs = d;
   if (mode) document.getElementById('platform-badge').innerHTML = platBadgeHtml(mode);
 }
 
@@ -574,14 +1187,342 @@ function durLabel(timeline) {
   return ms < 1000 ? ms + 'ms' : (ms / 1000).toFixed(1) + 's';
 }
 
-function fmtDetail(d) {
+function fmtDetail(evt) {
+  if (!evt) return '';
+  var d = evt.detail;
   if (!d) return '';
   if (typeof d === 'string') return d;
+
+  var stage = ((evt.stage || '') + '').toLowerCase();
+  if (typeof d.url === 'string' && d.url) return d.url;
+  if (typeof d.error === 'string' && d.error) return d.error;
+  if (typeof d.message === 'string' && d.message) return d.message;
+
+  var label = d.label || d.intent || d.target || d.name;
+  if (label && (stage.indexOf('intent') >= 0 || d.candidates || d.confidence !== undefined)) {
+    var conf = d.confidence;
+    var confLabel = conf === undefined || conf === null ? '' : (' (' + Math.round(Number(conf) * 100) + '%)');
+    var top = (Array.isArray(d.candidates) && d.candidates.length) ? d.candidates[0] : null;
+    if (top && top.label) return String(label) + ' -> ' + top.label + confLabel;
+    return String(label) + confLabel;
+  }
+
+  if (d.expected !== undefined || d.actual !== undefined || stage.indexOf('assert') >= 0) {
+    var expected = d.expected !== undefined ? d.expected : '?';
+    var actual = d.actual !== undefined ? d.actual : '?';
+    return 'expected: ' + expected + ' actual: ' + actual;
+  }
+
   var keys = Object.keys(d);
   if (!keys.length) return '{}';
   var k = keys[0];
   var v = d[k];
   return k + ': ' + (typeof v === 'object' ? JSON.stringify(v) : v);
+}
+
+function fmtDetailByMode(evt, mode) {
+  if (!evt) return '';
+  if (mode === 'raw') return JSON.stringify(evt.detail || {});
+  if (mode === 'compact') return fmtDetail(evt);
+  return fmtReadableDetail(evt);
+}
+
+function fmtReadableDetail(evt) {
+  if (!evt) return '';
+  var stage = String(evt.stage || '').toLowerCase();
+  var d = evt.detail || {};
+
+  if (stage === 'log') return String(d.message || 'log line');
+  if (stage.indexOf('env.chrome_discovery') >= 0) return 'Discover local Chrome version ' + (d.chrome_version || 'unknown');
+  if (stage.indexOf('env.chromedriver_provision') >= 0) return 'Resolve ChromeDriver at ' + (d.path || 'local cache');
+  if (stage.indexOf('env.mobile_setup') >= 0) return 'Prepare mobile environment' + (d.device_serial ? ' for ' + d.device_serial : '');
+  if (stage.indexOf('driver.chromedriver_start') >= 0) return 'Start ChromeDriver at ' + (d.url || ('port ' + (d.port || '?')));
+  if (stage.indexOf('driver.appium_start') >= 0) return 'Start Appium at ' + (d.url || ('port ' + (d.port || '?')));
+  if (stage.indexOf('session.web_create') >= 0) return 'Create web session via ' + (d.driver_url || 'driver');
+  if (stage.indexOf('session.mobile_create') >= 0) return 'Create mobile session via ' + (d.driver_url || 'driver');
+  if (stage.indexOf('session.goto') >= 0) return 'Navigate to ' + (d.url || 'target url');
+  if (stage.indexOf('session.find_element') >= 0) return 'Find element ' + (d.selector || d.resolved_selector || 'unknown selector');
+  if (stage.indexOf('session.click') >= 0) return 'Click element ' + (d.selector || 'unknown selector');
+  if (stage.indexOf('session.type_text') >= 0) return 'Type text into ' + (d.selector || 'unknown selector');
+  if (stage.indexOf('session.close') >= 0) return 'Close browser or device session';
+  if (stage.indexOf('driver.stop') >= 0) return 'Stop managed driver process';
+  if (stage.indexOf('intent.click') >= 0) return 'Click \u201c' + (d.label || 'unknown') + '\u201d' + (d.resolved_selector ? ' \u2192 ' + d.resolved_selector : '') + (evt.status === 'failed' ? ' \u2715 not found' : '');
+  if (stage.indexOf('intent.fill') >= 0) return 'Fill \u201c' + (d.label || 'unknown') + '\u201d' + (d.value !== undefined ? ' \u2192 "' + String(d.value).replace(/./g, '\u2022') + '"' : '') + (d.resolved_selector ? ' (' + d.resolved_selector + ')' : '') + (evt.status === 'failed' ? ' \u2715 not found' : '');
+  if (stage.indexOf('intent.select') >= 0) return 'Resolve \u201c' + (d.label || 'unknown') + '\u201d' + (d.resolved_selector ? ' \u2192 ' + d.resolved_selector : (evt.status === 'failed' ? ' \u2715 not found' : ''));
+  if (stage.indexOf('mobile.wait_for_element') >= 0) return 'Wait for mobile element ' + (d.selector || 'selector');
+  if (stage.indexOf('mobile.wait_for_intent') >= 0) return 'Wait for mobile intent "' + (d.label || 'unknown') + '"';
+  if (stage.indexOf('mobile.scroll_intent') >= 0) return 'Scroll until intent "' + (d.label || 'unknown') + '" resolves';
+  if (stage.indexOf('assert.get_text') >= 0) return 'Read text from ' + (d.selector || 'selector');
+  if (stage.indexOf('runner.test_command') >= 0 && evt.status === 'running') return 'Launch cargo test for ' + (d.name || d.test_name || 'selected test');
+  if (stage.indexOf('runner.test_command') >= 0) return 'Run test binary ' + (d.binary || d.test_bin || 'unknown');
+  if (stage.indexOf('test.result') >= 0) return 'Result: ' + (d.outcome || evt.status || 'unknown');
+
+  if (d.error) return 'Error: ' + d.error;
+  if (d.message) return d.message;
+  return fmtDetail(evt);
+}
+
+function isAssetPath(s) {
+  if (!s || typeof s !== 'string') return false;
+  var t = s.toLowerCase();
+  return /\.(png|jpg|jpeg|webp|gif|bmp|mp4|webm|mov)(\?|#|$)/.test(t);
+}
+
+function assetKind(s) {
+  var t = String(s || '').toLowerCase();
+  if (/\.(mp4|webm|mov)(\?|#|$)/.test(t)) return 'video';
+  return 'image';
+}
+
+function collectAssetsFromValue(v, bucket, stage, idx, sourceKey) {
+  if (!v) return;
+  if (typeof v === 'string') {
+    if (isAssetPath(v)) {
+      bucket.push({ path: v, kind: assetKind(v), stage: stage || 'event', idx: idx, sourceKey: sourceKey || 'value' });
+    }
+    return;
+  }
+  if (Array.isArray(v)) {
+    v.forEach(function(item) { collectAssetsFromValue(item, bucket, stage, idx, sourceKey); });
+    return;
+  }
+  if (typeof v === 'object') {
+    Object.keys(v).forEach(function(k) {
+      collectAssetsFromValue(v[k], bucket, stage, idx, sourceKey || k);
+    });
+  }
+}
+
+function extractAssetsFromEvents(events) {
+  var found = [];
+  if (!Array.isArray(events)) return found;
+
+  events.forEach(function(evt, idx) {
+    var stage = evt && evt.stage ? evt.stage : 'event';
+    var detail = evt && evt.detail ? evt.detail : null;
+    collectAssetsFromValue(detail, found, stage, idx, null);
+
+    // Also detect artifact-like paths embedded in plain log text.
+    var msg = detail && detail.message ? String(detail.message) : '';
+    if (msg) {
+      var re = /([^\s"'`]+\.(?:png|jpg|jpeg|webp|gif|bmp|mp4|webm|mov))/ig;
+      var m;
+      while ((m = re.exec(msg)) !== null) {
+        found.push({ path: m[1], kind: assetKind(m[1]), stage: stage, idx: idx, sourceKey: 'message' });
+      }
+    }
+  });
+
+  var uniq = [];
+  var seen = {};
+  found.forEach(function(a) {
+    var key = a.path + '|' + a.stage + '|' + a.idx;
+    if (seen[key]) return;
+    seen[key] = true;
+    uniq.push(a);
+  });
+  return uniq;
+}
+
+function renderAssets(assets) {
+  currentAssets = Array.isArray(assets) ? assets : [];
+  var wrap = document.getElementById('assets-wrap');
+  var grid = document.getElementById('assets-grid');
+  var count = document.getElementById('assets-count');
+
+  count.textContent = String(currentAssets.length);
+  if (!currentAssets.length) {
+    wrap.style.display = 'none';
+    grid.innerHTML = '';
+    return;
+  }
+
+  wrap.style.display = 'block';
+  grid.innerHTML = '';
+
+  currentAssets.forEach(function(a) {
+    var card = document.createElement('div');
+    card.className = 'asset-card';
+    var preview = '';
+    if (a.kind === 'image') {
+      preview = '<div class="asset-preview"><img src="' + esc(a.path) + '" alt="asset preview" loading="lazy"></div>';
+    } else if (a.kind === 'video') {
+      preview = '<div class="asset-preview"><video src="' + esc(a.path) + '" controls preload="metadata"></video></div>';
+    } else {
+      preview = '<div class="asset-preview">asset</div>';
+    }
+
+    card.innerHTML =
+      preview +
+      '<div class="asset-meta">' +
+        '<div class="asset-name" title="' + esc(a.path) + '">' + esc(a.path) + '</div>' +
+        '<div class="asset-sub">' + esc(a.stage) + ' · #' + String(a.idx + 1) + '</div>' +
+        '<a class="asset-link" href="' + esc(a.path) + '" target="_blank" rel="noopener">Open asset</a>' +
+      '</div>';
+    grid.appendChild(card);
+  });
+}
+
+function formatEventDuration(evt, idx, events) {
+  var ms = eventDeltaMs(evt, idx, events || []);
+  if (ms === null || ms === undefined) ms = extractEventDuration(evt);
+  if (ms === null || ms === undefined || Number.isNaN(ms)) return '—';
+  ms = Number(ms);
+  return ms < 1000 ? Math.round(ms) + 'ms' : (ms / 1000).toFixed(1) + 's';
+}
+
+function extractEventDuration(evt) {
+  if (!evt || typeof evt !== 'object') return null;
+  if (evt.duration_ms !== undefined && evt.duration_ms !== null) return evt.duration_ms;
+  if (evt.detail && typeof evt.detail === 'object') {
+    if (evt.detail.duration_ms !== undefined && evt.detail.duration_ms !== null) return evt.detail.duration_ms;
+    if (evt.detail.latency_ms !== undefined && evt.detail.latency_ms !== null) return evt.detail.latency_ms;
+    if (evt.detail.elapsed_ms !== undefined && evt.detail.elapsed_ms !== null) return evt.detail.elapsed_ms;
+  }
+  return null;
+}
+
+function extractEventTsMs(evt) {
+  if (!evt || typeof evt !== 'object') return null;
+  if (typeof evt.ts_ms === 'number') return evt.ts_ms;
+  if (evt.detail && typeof evt.detail.ts_ms === 'number') return evt.detail.ts_ms;
+  if (evt.timeline && typeof evt.timeline.ts_ms === 'number') return evt.timeline.ts_ms;
+  return null;
+}
+
+function eventDeltaMs(evt, idx, events) {
+  if (!Array.isArray(events) || idx < 0 || idx >= events.length) return null;
+  var now = extractEventTsMs(evt);
+  if (now === null || now === undefined) return null;
+
+  var prev = 0;
+  for (var i = idx - 1; i >= 0; i--) {
+    var p = extractEventTsMs(events[i]);
+    if (p !== null && p !== undefined) {
+      prev = p;
+      break;
+    }
+  }
+  return Math.max(0, Number(now) - Number(prev));
+}
+
+function countFailedEvents(events) {
+  if (!Array.isArray(events)) return 0;
+  return events.filter(function(evt) {
+    var s = ((evt && evt.status) || '').toLowerCase();
+    return s === 'failed' || s === 'error' || s === 'partial';
+  }).length;
+}
+
+function outcomeStripHtml(events) {
+  if (!Array.isArray(events) || !events.length) return '';
+  var dots = events.slice(0, 24).map(function(evt) {
+    var s = ((evt && evt.status) || '').toLowerCase();
+    var cls = s === 'passed' || s === 'ok' ? 'ok' :
+      (s === 'failed' || s === 'error' || s === 'partial' ? 'fail' :
+      (s === 'skipped' || s === 'skip' ? 'skip' : 'warn'));
+    return '<span class="ti-dot ' + cls + '"></span>';
+  }).join('');
+  var extra = events.length > 24 ? '<span style="font-size:.66rem;color:var(--tx3)">+' + (events.length - 24) + '</span>' : '';
+  return '<div class="ti-strip">' + dots + extra + '</div>';
+}
+
+function stepIconForEvent(evt) {
+  var stage = ((evt && evt.stage) || '').toLowerCase();
+  if (stage.indexOf('setup') >= 0 || stage.indexOf('driver') >= 0 || stage.indexOf('env') >= 0) return '⚙';
+  if (stage.indexOf('navigate') >= 0 || stage.indexOf('goto') >= 0 || stage.indexOf('url') >= 0) return '🧭';
+  if (stage.indexOf('assert') >= 0 || stage.indexOf('expect') >= 0) return '✓';
+  if (stage.indexOf('intent') >= 0 || stage.indexOf('click') >= 0 || stage.indexOf('fill') >= 0 || stage.indexOf('select') >= 0) return '👆';
+  if (stage.indexOf('log') >= 0) return '📋';
+  return '◎';
+}
+
+function renderStepTimeline(events) {
+  var wrap = document.getElementById('step-timeline-wrap');
+  var timeline = document.getElementById('step-timeline');
+  var empty = document.getElementById('step-timeline-empty');
+
+  if (!Array.isArray(events) || !events.length) {
+    wrap.style.display = runLive ? 'block' : 'none';
+    timeline.innerHTML = '';
+    empty.style.display = runLive ? 'block' : 'none';
+    return;
+  }
+
+  wrap.style.display = 'block';
+  empty.style.display = 'none';
+  timeline.innerHTML = '';
+
+  events.forEach(function(evt, idx) {
+    var delta = eventDeltaMs(evt, idx, events);
+    if (delta === null || delta === undefined) delta = extractEventDuration(evt);
+    if (delta === null || delta === undefined || Number(delta) <= 0) delta = 1;
+    delta = Number(delta);
+
+    var seg = document.createElement('div');
+    var status = ((evt && evt.status) || '').toLowerCase();
+    var cls = status === 'passed' || status === 'ok' ? 'ok' :
+      (status === 'failed' || status === 'error' || status === 'partial' ? 'fail' :
+      (status === 'skipped' || status === 'skip' ? 'skip' : 'warn'));
+    if (runLive && idx === events.length - 1) cls = 'running';
+
+    seg.className = 'step-seg ' + cls;
+    seg.style.flexGrow = String(Math.max(1, delta));
+    seg.title = (evt.stage || 'event') + ' · ' + (delta < 1000 ? Math.round(delta) + 'ms' : (delta / 1000).toFixed(1) + 's') + ' · ' + fmtDetail(evt);
+    seg.onclick = function() {
+      var row = document.getElementById('ev-row-' + idx);
+      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    timeline.appendChild(seg);
+  });
+}
+
+function inferTotalMs(events) {
+  if (!Array.isArray(events) || !events.length) return 0;
+  var lastTs = null;
+  for (var i = events.length - 1; i >= 0; i--) {
+    var t = extractEventTsMs(events[i]);
+    if (t !== null && t !== undefined) {
+      lastTs = Number(t);
+      break;
+    }
+  }
+  if (lastTs !== null && !Number.isNaN(lastTs) && lastTs > 0) return lastTs;
+
+  var sum = 0;
+  events.forEach(function(evt) {
+    var d = extractEventDuration(evt);
+    if (d !== null && d !== undefined && !Number.isNaN(Number(d))) sum += Number(d);
+    else sum += 1;
+  });
+  return sum;
+}
+
+function extractTimelineDuration(timeline) {
+  if (!timeline || typeof timeline !== 'object') return 0;
+  if (typeof timeline.duration_ms === 'number') return timeline.duration_ms;
+  return 0;
+}
+
+function showRunProgress(elapsedMs, baselineMs, tsMs) {
+  var bar = document.getElementById('run-progress');
+  var fill = document.getElementById('run-progress-fill');
+  var label = document.getElementById('run-progress-label');
+
+  bar.style.display = 'block';
+
+  var base = baselineMs > 0 ? baselineMs : Math.max(1, elapsedMs);
+  var pct = Math.max(0, Math.min(100, (elapsedMs / base) * 100));
+  fill.style.width = pct + '%';
+
+  var tsText = (typeof tsMs === 'number') ? (' @ ' + Math.round(tsMs) + 'ms') : '';
+  label.textContent = Math.round(elapsedMs) + 'ms' + tsText;
+}
+
+function updateRunProgressFromEvents(events) {
+  if (!runLive) return;
+  var elapsed = inferTotalMs(events);
+  showRunProgress(elapsed, lastRunDurationMs, elapsed);
 }
 
 function esc(s) {
@@ -599,6 +1540,7 @@ function esc(s) {
 // ============================================================
 loadStatus();
 fetchReport();
+fetchTests();
 connectWs();
 </script>
 </body>

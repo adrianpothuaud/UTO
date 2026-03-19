@@ -24,10 +24,12 @@ fn report_event(
             events.push(ReportEvent {
                 stage: stage.to_string(),
                 status: status.to_string(),
-                detail,
+                detail: detail.clone(),
             });
         }
     }
+
+    crate::live_stream::emit_report_event(stage, status, detail);
 }
 
 /// Starts a new managed session with a simple target identifier.

@@ -230,6 +230,60 @@ uto ui [OPTIONS]
 - `uto-cli` gains `ui` sub-command; all existing commands remain unchanged
 - All Phase 4 layer boundaries remain intact
 
+## Phase 5bis: UTO UI Improvements — Information Richness, Time Preview, E2E Coverage
+
+**Status:** Complete (Iterations 5.5, 5.6, 5.7, 5.8 delivered — 2026-03-19)
+
+A post-delivery review of Phase 5 against Cypress and Playwright UI baselines identified four gaps that were resolved before Phase 6 (UTO Studio):
+
+1. ✅ **Test blocks lack information richness** — RESOLVED: sidebar items now show step count + failure breakdown + colored outcome dots; event rows display per-step duration, step-type icons (⚙ 🧭 👆 ✓ 📋), and smart intent/assert/navigate formatting; live active-step pulse animation highlights currently executing step.
+2. ✅ **No streaming time preview** — RESOLVED: horizontal step timeline strip renders proportional bars per event with clickable navigation; event table has Duration column showing per-step timing; toolbar progress indicator shows elapsed run time.
+3. ✅ **No end-to-end test coverage** — RESOLVED: `uto-ui/tests/integration.rs` with 8 WebSocket lifecycle tests covering report push on connect, run lifecycle sequence, concurrent run guard, multi-client broadcast, late-joiner report delivery, and SPA structural assertions.
+4. ✅ **Reportless UX gap** — RESOLVED: `GET /api/tests` endpoint discovers tests from source before any run; UI renders discovered tests grouped by file; per-test inline ▷ buttons + Run Selected control trigger selective execution via `trigger_run.payload`; `uto run --test-bin <bin> --test-name <name>` CLI filtering complete.
+
+**All Phase 5bis Deliverables:**
+- Per-step duration column (⧗ `42ms`) and step-type icons (⚙ 🧭 👆 ✓ 📋 ◎)
+- Sidebar outcome strips (colored dots per event) and error badges for failed tests
+- Smart `fmtDetail()` formatting (intent → candidates, assert → expected/actual, navigate → URL)
+- Live active-step pulse animation with left-border accent
+- `runner.rs` attaches `ts_ms` (wall-clock offset from run start) to every broadcast event
+- Horizontal step timeline strip with proportional bars, clickable navigation, and live progress pulse
+- Toolbar progress indicator during live runs
+- 8 integration tests in `uto-ui/tests/integration.rs` covering WebSocket lifecycle and SPA structure
+- Source test discovery (`GET /api/tests`) without prior report/run context
+- UI-driven selective test execution with `Run Selected` control and inline ▷ buttons
+- CLI-owned selective filtering (`uto run --test-bin <bin> --test-name <name>`)
+- Keyboard shortcuts (R = run all, Enter = run selected, ↑/↓ = navigate tests)
+- Grouped test display by test_bin (Cypress-like file grouping)
+
+See `docs/0019-phase-5bis-ui-improvements.md` for detailed iteration breakdown and acceptance criteria.
+
+## Phase 5.5: Library Ergonomics and CLI Flexibility
+
+**Status:** Complete
+
+Phase 5.5 refactored CLI and test helper architecture to support:
+
+1. **Library-first usage**: `uto-test` now works as a standalone Rust library without `uto init` scaffolding
+   - Re-exported core session types (`UtoSession`, `WebSession`, `MobileSession`)
+   - Added comprehensive library usage documentation with examples
+   - `startNewSession()` works in any Rust project with `uto-test` as a dependency
+   - No `uto.json` required for library mode
+
+2. **CLI CWD inference**: `uto run`, `uto report`, and `uto ui` now default to current directory when `--project` is omitted
+   - Updated parsing logic to make `--project` optional (defaults to ".")
+   - Help text reflects optional argument syntax (`[--project <path>]`)
+   - Backwards compatible with existing workflows
+
+3. **Publishing readiness**:
+   - Added README.md for all core crates (`uto-test`, `uto-core`, `uto-reporter`, `uto-logger`)
+   - Updated Cargo.toml metadata (license, repository, homepage, keywords, categories)
+   - Added dual MIT/Apache-2.0 licensing
+
+**Deliverables:** All Phase 5.5 completion criteria met (see ADR 0020). 143 tests passing.
+
+See `docs/0020-phase-5.5-library-ergonomics.md` for detailed specification and implementation notes.
+
 ## Phase 6: UTO Studio — Visual Test Authoring
 
 **Status:** Planned — see ADR 0016
@@ -374,6 +428,6 @@ cross-platform test job remains stable without custom runner provisioning.
 *   **Gemini/Copilot parity automation:** Run `./scripts/sync_ai_configs.sh` after updating `.github/` customization files, and verify parity with `./scripts/check_ai_config_sync.sh`.
 *   **Rustdoc:** All public functions, structs, and enums should be thoroughly documented using standard Rustdoc comments (`///`). This is crucial for generating useful library documentation.
 *   **Design Documents:** For significant changes or new features, consider updating or adding to the design documents in the `/docs` directory. This includes the `manifesto.md` and architectural decision records.
-*   **Current framework ADRs:** Include ADR 0010 (Phase 4 planning), ADR 0011 (shared `uto-test` helper crate + clean SoC guidelines), ADR 0014 (Phase 5 UI Mode specification), ADR 0015 (downloadable install script and onboarding), ADR 0016 (UTO Studio — visual test authoring), and ADR 0017 (competitive vision and exit strategy).
+-   **Current framework ADRs:** Include ADR 0010 (Phase 4 planning), ADR 0011 (shared `uto-test` helper crate + clean SoC guidelines), ADR 0014 (Phase 5 UI Mode specification), ADR 0015 (downloadable install script and onboarding), ADR 0016 (UTO Studio — visual test authoring), ADR 0017 (competitive vision and exit strategy), and ADR 0019 (Phase 5bis — UTO UI information richness, streaming time preview, and E2E coverage).
 *   **Commit Messages:** Write clear and concise commit messages that explain the "what" and "why" of a change.
 *   **Phase reference examples:** Maintain one committed runnable project per development phase under `examples/phases/` so each phase has a durable implementation reference in-repo.

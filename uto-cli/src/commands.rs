@@ -1,8 +1,15 @@
 //! CLI command implementations.
 
 use std::fs;
+use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
+use std::thread;
+use std::time::Duration;
 use std::time::Instant;
 
 use crate::config::{
@@ -43,6 +50,169 @@ fn truncate_for_report(input: &str, max_chars: usize) -> String {
     }
     out.push_str("\n...<truncated>...");
     out
+}
+
+fn sanitize_filename_segment(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' {
+            out.push(ch);
+        } else {
+            out.push('_');
+        }
+    }
+
+    if out.is_empty() {
+        "test".to_string()
+    } else {
+        out
+    }
+}
+
+fn per_test_live_stream_path(report_path: &Path, case: &DiscoveredTestCase) -> PathBuf {
+    let file_name = format!(
+        "{}__{}.jsonl",
+        sanitize_filename_segment(&case.test_bin),
+        sanitize_filename_segment(&case.test_name)
+    );
+
+    report_path
+        .parent()
+        .unwrap_or_else(|| Path::new("."))
+        .join("live-events")
+        .join(file_name)
+}
+
+fn absolutize_path(path: PathBuf) -> Result<PathBuf, String> {
+    if path.is_absolute() {
+        Ok(path)
+    } else {
+        let cwd = std::env::current_dir().map_err(|err| err.to_string())?;
+        Ok(cwd.join(path))
+    }
+}
+
+fn append_live_stream_line(path: &Path, line: &str) -> Result<(), String> {
+    use std::io::Write;
+
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+        .map_err(|err| {
+            format!(
+                "Failed to open live event stream '{}': {err}",
+                path.display()
+            )
+        })?;
+
+    file.write_all(line.as_bytes())
+        .and_then(|_| file.write_all(b"\n"))
+        .map_err(|err| {
+            format!(
+                "Failed to append live event stream '{}': {err}",
+                path.display()
+            )
+        })
+}
+
+fn drain_live_event_updates(
+    source: &Path,
+    sink: &Path,
+    consumed_bytes: &mut usize,
+    carry: &mut String,
+) -> Result<(), String> {
+    let data = match fs::read(source) {
+        Ok(data) => data,
+        Err(err) if err.kind() == ErrorKind::NotFound => return Ok(()),
+        Err(err) => {
+            return Err(format!(
+                "Failed to read live event source '{}': {err}",
+                source.display()
+            ));
+        }
+    };
+
+    if data.len() <= *consumed_bytes {
+        return Ok(());
+    }
+
+    let delta = &data[*consumed_bytes..];
+    *consumed_bytes = data.len();
+
+    let delta_text = std::str::from_utf8(delta).map_err(|err| {
+        format!(
+            "Live event source '{}' emitted invalid UTF-8: {err}",
+            source.display()
+        )
+    })?;
+    carry.push_str(delta_text);
+
+    while let Some(newline_idx) = carry.find('\n') {
+        let line = carry[..newline_idx].trim();
+        if !line.is_empty() {
+            append_live_stream_line(sink, line)?;
+        }
+        let remainder = carry[newline_idx + 1..].to_string();
+        *carry = remainder;
+    }
+
+    Ok(())
+}
+
+fn spawn_live_event_forwarder(
+    source: PathBuf,
+    sink: PathBuf,
+    stop_flag: Arc<AtomicBool>,
+) -> thread::JoinHandle<Result<(), String>> {
+    thread::spawn(move || {
+        let mut consumed_bytes = 0usize;
+        let mut carry = String::new();
+
+        while !stop_flag.load(Ordering::Relaxed) {
+            drain_live_event_updates(&source, &sink, &mut consumed_bytes, &mut carry)?;
+            thread::sleep(Duration::from_millis(25));
+        }
+
+        drain_live_event_updates(&source, &sink, &mut consumed_bytes, &mut carry)?;
+
+        if !carry.trim().is_empty() {
+            append_live_stream_line(&sink, carry.trim())?;
+        }
+
+        Ok(())
+    })
+}
+
+/// Reads all `ReportEvent` entries from a per-test live-stream JSONL file and
+/// injects them into a test handle.  Skips envelope-level events (test_started,
+/// test_finished, runner.test_command) that are already recorded by the CLI.
+fn inject_live_events_into_handle(handle: &mut uto_reporter::TestRunHandle, jsonl_path: &Path) {
+    let content = match fs::read_to_string(jsonl_path) {
+        Ok(c) => c,
+        Err(_) => return,
+    };
+    for line in content.lines() {
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+        let envelope: uto_runner::LiveEventEnvelope = match serde_json::from_str(line) {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        match envelope.payload {
+            uto_runner::LiveEventPayload::ReportEvent { event } => {
+                // Skip runner.test_command — the CLI records its own version.
+                if event.stage.starts_with("runner.test_command") {
+                    continue;
+                }
+                handle.event(&event.stage, &event.status, event.detail);
+            }
+            // TestStarted / TestFinished are envelope-level; skip.
+            _ => {}
+        }
+    }
 }
 
 fn extract_fn_name(line: &str) -> Option<String> {
@@ -344,6 +514,8 @@ fn run_legacy_project_runner(
         .arg("--json")
         .arg("--report-file")
         .arg(report_path.display().to_string())
+        .env("UTO_REPORT_JSON", report_path.display().to_string())
+        .env("UTO_REPORT_FILE", report_path.display().to_string())
         .env("RUST_LOG", "info");
 
     if driver_trace {
@@ -366,10 +538,26 @@ fn run_cli_owned_tests(
     config: &UtoProjectConfig,
     effective_target: &str,
     report_path: &Path,
+    live_events_jsonl: Option<&Path>,
     driver_trace: bool,
+    test_bin_filter: Option<&str>,
+    test_name_filter: Option<&str>,
 ) -> Result<(), String> {
     let discovered = discover_project_tests(project, &config.tests_dir)?;
-    let selected = select_tests_for_target(discovered, effective_target);
+    let selected = select_tests_for_target(discovered, effective_target)
+        .into_iter()
+        .filter(|case| {
+            let bin_ok = match test_bin_filter {
+                Some(bin) => case.test_bin == bin,
+                None => true,
+            };
+            let name_ok = match test_name_filter {
+                Some(name) => case.test_name == name,
+                None => true,
+            };
+            bin_ok && name_ok
+        })
+        .collect::<Vec<_>>();
 
     if selected.is_empty() {
         return Err(format!(
@@ -384,8 +572,59 @@ fn run_cli_owned_tests(
     let report_file = report_path.display().to_string();
     let mut suite = uto_reporter::SuiteReport::new(true, Some(report_file), effective_target);
 
+    if let Some(path) = live_events_jsonl {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).map_err(|err| err.to_string())?;
+        }
+        if path.exists() {
+            fs::remove_file(path).map_err(|err| {
+                format!(
+                    "Failed to reset live event stream '{}': {err}",
+                    path.display()
+                )
+            })?;
+        }
+    }
+
     for case in selected {
         let mut handle = suite.begin_test(&case.test_name);
+        let live_stream_config = live_events_jsonl.map(|path| uto_runner::LiveEventConfig {
+            file_path: path.to_path_buf(),
+            test_bin: case.test_bin.clone(),
+            test_name: case.test_name.clone(),
+            target: Some(effective_target.to_string()),
+        });
+        let test_command_detail = serde_json::json!({
+            "binary": case.test_bin,
+            "name": case.test_name,
+            "target": effective_target,
+            "tags": case.tags,
+            "timeout_ms": case.timeout_ms,
+        });
+
+        handle.event(
+            "runner.test_command",
+            "running",
+            test_command_detail.clone(),
+        );
+        if let Some(config) = &live_stream_config {
+            uto_runner::append_live_event(
+                &config.file_path,
+                &uto_runner::LiveEventEnvelope::test_started(config),
+            )?;
+            uto_runner::append_live_event(
+                &config.file_path,
+                &uto_runner::LiveEventEnvelope::report_event(
+                    config,
+                    uto_reporter::ReportEvent {
+                        stage: "runner.test_command".to_string(),
+                        status: "running".to_string(),
+                        detail: test_command_detail,
+                    },
+                ),
+            )?;
+        }
+
         let mut cmd = Command::new("cargo");
         cmd.current_dir(project)
             .arg("test")
@@ -400,14 +639,66 @@ fn run_cli_owned_tests(
             cmd.env("UTO_DRIVER_TRACE", "1");
         }
 
+        // Always create a per-test JSONL so the subprocess can emit live events
+        // and we can inject them into the suite report after the process exits.
+        // The forwarder thread (for UI streaming) is only spawned when a sink path
+        // (`live_events_jsonl`) is also present.
+        let raw_live_stream_path = per_test_live_stream_path(report_path, &case);
+        if let Some(parent) = raw_live_stream_path.parent() {
+            fs::create_dir_all(parent).map_err(|err| err.to_string())?;
+        }
+        if raw_live_stream_path.exists() {
+            fs::remove_file(&raw_live_stream_path).map_err(|err| {
+                format!(
+                    "Failed to reset test live stream '{}': {err}",
+                    raw_live_stream_path.display()
+                )
+            })?;
+        }
+        cmd.env(
+            uto_runner::UTO_LIVE_EVENTS_FILE_ENV,
+            raw_live_stream_path.display().to_string(),
+        )
+        .env(uto_runner::UTO_LIVE_EVENTS_TEST_BIN_ENV, &case.test_bin)
+        .env(uto_runner::UTO_LIVE_EVENTS_TEST_NAME_ENV, &case.test_name)
+        .env(uto_runner::UTO_LIVE_EVENTS_TARGET_ENV, effective_target);
+        let forwarder_stop = Arc::new(AtomicBool::new(false));
+        let forwarder = match live_events_jsonl {
+            Some(sink) => Some(spawn_live_event_forwarder(
+                raw_live_stream_path.clone(),
+                sink.to_path_buf(),
+                Arc::clone(&forwarder_stop),
+            )),
+            None => None,
+        };
+
         let started = Instant::now();
-        let output = cmd.output().map_err(|e| {
-            format!(
-                "Failed to execute test '{}' from '{}': {e}",
-                case.test_name, case.test_bin
-            )
-        })?;
+        let output = match cmd.output() {
+            Ok(output) => output,
+            Err(err) => {
+                forwarder_stop.store(true, Ordering::Relaxed);
+                if let Some(join_handle) = forwarder {
+                    match join_handle.join() {
+                        Ok(Ok(())) => {}
+                        Ok(Err(join_err)) => return Err(join_err),
+                        Err(_) => return Err("Live event forwarder thread panicked".to_string()),
+                    }
+                }
+                return Err(format!(
+                    "Failed to execute test '{}' from '{}': {err}",
+                    case.test_name, case.test_bin
+                ));
+            }
+        };
         let duration_ms = started.elapsed().as_millis() as u64;
+        forwarder_stop.store(true, Ordering::Relaxed);
+        if let Some(join_handle) = forwarder {
+            match join_handle.join() {
+                Ok(Ok(())) => {}
+                Ok(Err(err)) => return Err(err),
+                Err(_) => return Err("Live event forwarder thread panicked".to_string()),
+            }
+        }
 
         handle.event(
             "runner.test_command",
@@ -422,12 +713,27 @@ fn run_cli_owned_tests(
             }),
         );
 
+        // Merge sub-process events (intent, session, env, driver) from the
+        // per-test live JSONL into the suite report handle.
+        inject_live_events_into_handle(&mut handle, &raw_live_stream_path);
+
         if output.status.success() {
             handle.event(
                 "test.result",
                 "ok",
                 serde_json::json!({ "outcome": "passed" }),
             );
+            if let Some(config) = &live_stream_config {
+                uto_runner::append_live_event(
+                    &config.file_path,
+                    &uto_runner::LiveEventEnvelope::test_finished(
+                        config,
+                        "passed",
+                        None,
+                        duration_ms,
+                    ),
+                )?;
+            }
             suite.record_test(handle, "passed", None);
             continue;
         }
@@ -455,6 +761,9 @@ fn run_cli_owned_tests(
             }),
         );
 
+        // Merge sub-process events from the per-test live JSONL (partial run).
+        inject_live_events_into_handle(&mut handle, &raw_live_stream_path);
+
         suite.record_test(
             handle,
             "failed",
@@ -463,6 +772,21 @@ fn run_cli_owned_tests(
                 case.test_bin, case.test_name
             )),
         );
+
+        if let Some(config) = &live_stream_config {
+            uto_runner::append_live_event(
+                &config.file_path,
+                &uto_runner::LiveEventEnvelope::test_finished(
+                    config,
+                    "failed",
+                    Some(format!(
+                        "cargo test failed for {}::{}",
+                        case.test_bin, case.test_name
+                    )),
+                    duration_ms,
+                ),
+            )?;
+        }
     }
 
     suite.finish();
@@ -488,12 +812,15 @@ pub mod init {
             &std::env::current_dir().map_err(|e| e.to_string())?,
         )?;
 
-        if !parsed.uto_root.join("uto-core").exists() {
-            return Err(format!(
-                "Invalid --uto-root '{}': expected uto-core directory at {}",
-                parsed.uto_root.display(),
-                parsed.uto_root.join("uto-core").display()
-            ));
+        // Validate uto_root if provided (development mode)
+        if let Some(ref uto_root) = parsed.uto_root {
+            if !uto_root.join("uto-core").exists() {
+                return Err(format!(
+                    "Invalid --uto-root '{}': expected uto-core directory at {}",
+                    uto_root.display(),
+                    uto_root.join("uto-core").display()
+                ));
+            }
         }
 
         if parsed.project_dir.exists() {
@@ -517,13 +844,23 @@ pub mod init {
             .unwrap_or("uto-project")
             .to_string();
 
+        // Generate Cargo.toml based on mode
+        let cargo_toml_content = match &parsed.uto_root {
+            Some(uto_root) => templates::cargo_toml_path_deps(&project_name, uto_root),
+            None => templates::cargo_toml_crates_io(&project_name),
+        };
+
         let config = UtoProjectConfig {
             schema_version: PROJECT_SCHEMA_VERSION.to_string(),
             project_name: project_name.clone(),
             tests_dir: "tests".to_string(),
             default_target: parsed.template.clone(),
             report_dir: ".uto/reports".to_string(),
-            uto_root: parsed.uto_root.display().to_string(),
+            uto_root: parsed
+                .uto_root
+                .as_ref()
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(|| "crates.io".to_string()),
             report_schema: DEFAULT_REPORT_SCHEMA_VERSION.to_string(),
             framework_version: Some(DEFAULT_FRAMEWORK_VERSION.to_string()),
         };
@@ -531,11 +868,8 @@ pub mod init {
         config.validate()?;
 
         write_json(parsed.project_dir.join("uto.json"), &config)?;
-        fs::write(
-            parsed.project_dir.join("Cargo.toml"),
-            templates::cargo_toml(&project_name, &parsed.uto_root),
-        )
-        .map_err(|e| e.to_string())?;
+        fs::write(parsed.project_dir.join("Cargo.toml"), cargo_toml_content)
+            .map_err(|e| e.to_string())?;
         fs::write(
             parsed.project_dir.join("src/lib.rs"),
             templates::project_lib_rs(),
@@ -580,12 +914,27 @@ pub mod run {
         let report_path = parsed
             .report_json
             .unwrap_or_else(|| parsed.project.join(report_dir).join("last-run.json"));
+        let report_path = absolutize_path(report_path)?;
+        let live_events_jsonl = match parsed.live_events_jsonl {
+            Some(path) => Some(absolutize_path(path)?),
+            None => None,
+        };
 
         if let Some(parent) = report_path.parent() {
             fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
 
         if has_legacy_runner(&parsed.project) {
+            if parsed.test_bin.is_some()
+                || parsed.test_name.is_some()
+                || live_events_jsonl.is_some()
+            {
+                return Err(
+                    "Single-test selection and live event streaming are not supported in legacy runner mode. \
+                     Remove src/bin/uto_project_runner.rs to enable CLI-owned execution."
+                        .to_string(),
+                );
+            }
             enforce_legacy_runner_gate(&config, &parsed.project)?;
             return run_legacy_project_runner(
                 &parsed.project,
@@ -600,7 +949,10 @@ pub mod run {
             &config,
             effective_target.as_str(),
             &report_path,
+            live_events_jsonl.as_deref(),
             parsed.driver_trace,
+            parsed.test_bin.as_deref(),
+            parsed.test_name.as_deref(),
         )
     }
 }

@@ -5,7 +5,10 @@ use uto_core::{
 };
 use uto_reporter::ReportEvent;
 
+use std::fs;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub(crate) type SharedEvents = Arc<Mutex<Vec<ReportEvent>>>;
 
@@ -58,10 +61,45 @@ impl ManagedSession {
                 guard.push(ReportEvent {
                     stage: stage.to_string(),
                     status: status.to_string(),
-                    detail,
+                    detail: detail.clone(),
                 });
             }
         }
+
+        crate::live_stream::emit_report_event(stage, status, detail);
+    }
+
+    /// Captures a screenshot and saves it to the reports directory.
+    /// Returns the relative path from the project root.
+    async fn capture_screenshot(&self, label: &str, suffix: &str) -> Option<String> {
+        let png_bytes = match self.inner.as_ref() {
+            Some(SessionInner::Web(session)) => session.screenshot().await.ok()?,
+            Some(SessionInner::Mobile(session)) => session.screenshot().await.ok()?,
+            None => return None,
+        };
+
+        // Generate filename: screenshot_{label}_{suffix}_{timestamp}.png
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .ok()?
+            .as_millis();
+        let safe_label = label.replace(|c: char| !c.is_alphanumeric(), "_");
+        let filename = format!("screenshot_{}_{}_{}ms.png", safe_label, suffix, timestamp);
+
+        // Save to .uto/reports/screenshots/
+        let screenshot_dir = PathBuf::from(".uto/reports/screenshots");
+        if let Err(e) = fs::create_dir_all(&screenshot_dir) {
+            log::warn!("Failed to create screenshot directory: {e}");
+            return None;
+        }
+
+        let path = screenshot_dir.join(&filename);
+        if let Err(e) = fs::write(&path, &png_bytes) {
+            log::warn!("Failed to write screenshot to {}: {e}", path.display());
+            return None;
+        }
+
+        Some(format!(".uto/reports/screenshots/{}", filename))
     }
 
     /// Returns the normalized target kind.
@@ -184,24 +222,46 @@ impl ManagedSession {
 
     /// Clicks by intent label.
     pub async fn click_intent(&self, label: &str) -> UtoResult<()> {
+        // Capture screenshot before action
+        let screenshot_before = self.capture_screenshot(label, "before_click").await;
+
+        // Resolve the element via managed select() so we capture intent.select event + selector
+        let element = self.select(label).await?;
+
+        // Perform the click via the inner session
         let result = match self.inner.as_ref() {
-            Some(SessionInner::Web(session)) => session.click_intent(label).await,
-            Some(SessionInner::Mobile(session)) => session.click_intent(label).await,
+            Some(SessionInner::Web(session)) => session.click(&element).await,
+            Some(SessionInner::Mobile(session)) => session.click(&element).await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
         };
 
+        // Capture screenshot after action
+        let screenshot_after = self.capture_screenshot(label, "after_click").await;
+
         match &result {
             Ok(()) => self.record_event(
                 "intent.click",
                 "ok",
-                serde_json::json!({ "target": self.target(), "label": label }),
+                serde_json::json!({
+                    "target": self.target(),
+                    "label": label,
+                    "resolved_selector": element.selector,
+                    "screenshot_before": screenshot_before,
+                    "screenshot_after": screenshot_after,
+                }),
             ),
             Err(err) => self.record_event(
                 "intent.click",
                 "failed",
-                serde_json::json!({ "target": self.target(), "label": label, "error": err.to_string() }),
+                serde_json::json!({
+                    "target": self.target(),
+                    "label": label,
+                    "resolved_selector": element.selector,
+                    "screenshot_before": screenshot_before,
+                    "error": err.to_string()
+                }),
             ),
         }
 
@@ -210,24 +270,48 @@ impl ManagedSession {
 
     /// Fills an input by intent label.
     pub async fn fill_intent(&self, label: &str, value: &str) -> UtoResult<()> {
+        // Capture screenshot before action
+        let screenshot_before = self.capture_screenshot(label, "before_fill").await;
+
+        // Resolve the element via managed select() so we capture intent.select event + selector
+        let element = self.select(label).await?;
+
+        // Perform the type_text via the inner session
         let result = match self.inner.as_ref() {
-            Some(SessionInner::Web(session)) => session.fill_intent(label, value).await,
-            Some(SessionInner::Mobile(session)) => session.fill_intent(label, value).await,
+            Some(SessionInner::Web(session)) => session.type_text(&element, value).await,
+            Some(SessionInner::Mobile(session)) => session.type_text(&element, value).await,
             None => Err(UtoError::SessionCommandFailed(
                 "session already closed".to_string(),
             )),
         };
 
+        // Capture screenshot after action
+        let screenshot_after = self.capture_screenshot(label, "after_fill").await;
+
         match &result {
             Ok(()) => self.record_event(
                 "intent.fill",
                 "ok",
-                serde_json::json!({ "target": self.target(), "label": label, "value": value }),
+                serde_json::json!({
+                    "target": self.target(),
+                    "label": label,
+                    "value": value,
+                    "resolved_selector": element.selector,
+                    "screenshot_before": screenshot_before,
+                    "screenshot_after": screenshot_after,
+                }),
             ),
             Err(err) => self.record_event(
                 "intent.fill",
                 "failed",
-                serde_json::json!({ "target": self.target(), "label": label, "error": err.to_string() }),
+                serde_json::json!({
+                    "target": self.target(),
+                    "label": label,
+                    "value": value,
+                    "resolved_selector": element.selector,
+                    "screenshot_before": screenshot_before,
+                    "error": err.to_string()
+                }),
             ),
         }
 
@@ -252,6 +336,58 @@ impl ManagedSession {
             ),
             Err(err) => self.record_event(
                 "assert.get_text",
+                "failed",
+                serde_json::json!({ "target": self.target(), "selector": element.selector, "error": err.to_string() }),
+            ),
+        }
+
+        result
+    }
+
+    /// Clicks the given element.
+    pub async fn click(&self, element: &UtoElement) -> UtoResult<()> {
+        let result = match self.inner.as_ref() {
+            Some(SessionInner::Web(session)) => session.click(element).await,
+            Some(SessionInner::Mobile(session)) => session.click(element).await,
+            None => Err(UtoError::SessionCommandFailed(
+                "session already closed".to_string(),
+            )),
+        };
+
+        match &result {
+            Ok(()) => self.record_event(
+                "session.click",
+                "ok",
+                serde_json::json!({ "target": self.target(), "selector": element.selector }),
+            ),
+            Err(err) => self.record_event(
+                "session.click",
+                "failed",
+                serde_json::json!({ "target": self.target(), "selector": element.selector, "error": err.to_string() }),
+            ),
+        }
+
+        result
+    }
+
+    /// Types `text` into the given element (clears existing content first).
+    pub async fn type_text(&self, element: &UtoElement, text: &str) -> UtoResult<()> {
+        let result = match self.inner.as_ref() {
+            Some(SessionInner::Web(session)) => session.type_text(element, text).await,
+            Some(SessionInner::Mobile(session)) => session.type_text(element, text).await,
+            None => Err(UtoError::SessionCommandFailed(
+                "session already closed".to_string(),
+            )),
+        };
+
+        match &result {
+            Ok(()) => self.record_event(
+                "session.type_text",
+                "ok",
+                serde_json::json!({ "target": self.target(), "selector": element.selector }),
+            ),
+            Err(err) => self.record_event(
+                "session.type_text",
                 "failed",
                 serde_json::json!({ "target": self.target(), "selector": element.selector, "error": err.to_string() }),
             ),

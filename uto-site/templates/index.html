@@ -15,7 +15,7 @@
       Core implementation details remain intentionally private while beta partners help shape the public release.
     </p>
     <div class="hero-actions">
-      <a href="{{ base_path }}early-access/" class="btn btn-primary">Apply for Beta</a>
+      <a href="https://github.com/adrianpothuaud/UTO/discussions/13" class="btn btn-primary" target="_blank" rel="noopener noreferrer">Apply for Beta</a>
       <a href="#beta" class="btn btn-secondary">Join Enthusiast Circle</a>
     </div>
   </div>
@@ -46,6 +46,69 @@
     <span>Cross-surface automation vision</span>
     <span>Private beta, limited seats</span>
     <span>Built for the next decade</span>
+  </div>
+</section>
+
+<section class="section-container showcase-details" id="what-why">
+  <h2 class="section-title reveal" data-reveal>What UTO Is and Why It Matters</h2>
+  <div class="detail-columns">
+    <article class="detail-card reveal" data-reveal>
+      <h3>What Is UTO?</h3>
+      <p>
+        UTO is a unified automation platform for web and mobile execution with an operator-focused workflow.
+        It is designed to feel complete out of the box, not stitched together from multiple tools.
+      </p>
+    </article>
+    <article class="detail-card reveal" data-reveal>
+      <h3>Why UTO?</h3>
+      <p>
+        Most teams are trapped between brittle selectors, fragmented toolchains, and weak run transparency.
+        UTO targets that gap with one consistent model from authoring to diagnostics.
+      </p>
+    </article>
+    <article class="detail-card reveal" data-reveal>
+      <h3>Killer Flags</h3>
+      <ul class="killer-list">
+        <li>Single platform story across web and mobile.</li>
+        <li>Execution and observability as one product surface.</li>
+        <li>Technical depth with a roadmap designed for category leadership.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="section-container example-section" id="example">
+  <h2 class="section-title reveal" data-reveal>Example Flow</h2>
+  <p class="section-sub reveal" data-reveal>
+    Public sample only. Full implementation details are provided to approved beta teams.
+  </p>
+  <div class="example-grid reveal" data-reveal>
+    <div class="code-window">
+      <div class="code-window-bar">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="code-window-title">cli flow</span>
+      </div>
+      <pre class="code-block"><code><span class="kw">uto</span> init ./my-suite --template web
+<span class="kw">uto</span> run --project ./my-suite --target web
+<span class="kw">uto</span> report --project ./my-suite --html
+<span class="kw">uto</span> ui --project ./my-suite</code></pre>
+    </div>
+    <div class="code-window">
+      <div class="code-window-bar">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="code-window-title">test shape</span>
+      </div>
+      <pre class="code-block"><code><span class="kw">#[tokio::test]</span>
+<span class="kw">async fn</span> smoke_journey() -> uto_core::error::UtoResult<()> {
+    let s = uto_test::startNewSession("chrome").await?;
+    s.goto("https://example.com").await?;
+    s.close().await
+}</code></pre>
+    </div>
   </div>
 </section>
 
@@ -129,8 +192,8 @@
       Details are confidential, outcomes are not.
     </p>
     <div class="hero-actions cta-actions">
-      <a href="{{ base_path }}early-access/" class="btn btn-primary btn-large">Request Beta Access</a>
-      <a href="mailto:contact@uto.dev?subject=UTO%20Enthusiast%20Circle" class="btn btn-secondary btn-large">Join Enthusiast Circle</a>
+      <a href="https://github.com/adrianpothuaud/UTO/discussions/13" class="btn btn-primary btn-large" target="_blank" rel="noopener noreferrer">Apply via GitHub Discussion</a>
+      <a href="{{ base_path }}early-access/" class="btn btn-secondary btn-large">See Beta Details</a>
     </div>
   </div>
 </section>

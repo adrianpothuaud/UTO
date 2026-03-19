@@ -60,6 +60,27 @@ impl Drop for DriverProcess {
     ///
     /// This ensures driver processes are killed when their owner is dropped
     /// without an explicit `stop()` call (e.g. after a test panic or early return).
+    ///
+    /// # RUST LEARNING: The Drop trait
+    ///
+    /// `Drop` is similar to destructors in C++ or `finally` blocks in Java.
+    /// It's automatically called when a value goes out of scope:
+    ///
+    /// ```rust,ignore
+    /// {
+    ///     let driver = DriverProcess::start(...).await?;
+    ///     // ... use driver ...
+    /// } // <- Drop::drop() called here automatically
+    /// ```
+    ///
+    /// **Why is this important?**
+    /// If a test panics or returns early, Rust guarantees `drop()` runs,
+    /// preventing orphaned driver processes that would consume system resources.
+    ///
+    /// **Error handling in Drop:**
+    /// We use `let _ = ...` to ignore errors because `drop()` can't return a Result.
+    /// This is a "best-effort" cleanup - we try to kill the process, but if it
+    /// fails, there's nothing we can do at this point.
     fn drop(&mut self) {
         let _ = self.child.kill();
         let _ = self.child.wait();
@@ -76,7 +97,25 @@ impl Drop for DriverProcess {
 /// either discovered on the system or provisioned by [`crate::env::provisioning`].
 ///
 /// The driver is ready to accept connections once this function returns.
+///
+/// # RUST LEARNING: Error propagation with `?`
+///
+/// This function uses the `?` operator extensively for clean error handling.
+/// Each `?` checks if the operation succeeded (Ok) or failed (Err):
+/// - If Ok: unwraps the value and continues
+/// - If Err: immediately returns the error, converted to UtoError
 pub async fn start_chromedriver(binary_path: &PathBuf) -> UtoResult<DriverProcess> {
+    // RUST LEARNING NOTE: Option to Result conversion
+    //
+    // `pick_unused_port()` returns `Option<u16>`:
+    // - `Some(port)` if a free port was found
+    // - `None` if no ports are available
+    //
+    // `.ok_or(...)` converts:
+    // - `Some(port)` -> `Ok(port)`
+    // - `None` -> `Err(UtoError::NoFreePort)`
+    //
+    // The `?` then unwraps Ok(port) or returns early with the error.
     let port = pick_unused_port().ok_or(UtoError::NoFreePort)?;
     let port_arg = format!("--port={port}");
 
@@ -86,10 +125,23 @@ pub async fn start_chromedriver(binary_path: &PathBuf) -> UtoResult<DriverProces
         binary_path.display()
     );
 
+    // RUST LEARNING NOTE: Process groups for clean shutdown
+    //
+    // `.group_spawn()` (from `command_group` crate) is crucial for clean shutdown:
+    //
+    // - On Unix: Creates a new process group (PGID)
+    // - On Windows: Creates a Job Object
+    //
+    // This ensures that when we kill the driver process, all its child processes
+    // (like Chrome instances it spawns) are also terminated. Without this, orphaned
+    // processes would survive after tests finish.
+    //
+    // `.map_err(|e| ...)` transforms the I/O error into a UtoError with context.
+    // `format!("{e}")` converts the error to a string for our error message.
     let child = std::process::Command::new(binary_path)
         .arg(&port_arg)
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null()) // Discard stdout
+        .stderr(std::process::Stdio::null()) // Discard stderr
         .group_spawn()
         .map_err(|e| UtoError::DriverStartFailed(format!("{e}")))?;
 

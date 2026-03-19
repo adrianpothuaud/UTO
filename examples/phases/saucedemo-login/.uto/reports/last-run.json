@@ -1,0 +1,184 @@
+{
+  "schema_version": "uto-suite/v1",
+  "framework": "uto",
+  "suite_id": "suite-1773922592348-83245",
+  "mode": "web",
+  "status": "passed",
+  "timeline": {
+    "started_at_unix_ms": 1773922592348,
+    "finished_at_unix_ms": 1773922594482,
+    "duration_ms": 2134
+  },
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "tests": [
+    {
+      "name": "login_nominal_valid_credentials_lands_on_products",
+      "status": "passed",
+      "timeline": {
+        "started_at_unix_ms": 1773922592348,
+        "finished_at_unix_ms": 1773922594482,
+        "duration_ms": 2134
+      },
+      "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "running",
+          "detail": {
+            "binary": "login_test",
+            "name": "login_nominal_valid_credentials_lands_on_products",
+            "target": "web",
+            "tags": [],
+            "timeout_ms": null
+          }
+        },
+        {
+          "stage": "runner.test_command",
+          "status": "ok",
+          "detail": {
+            "binary": "login_test",
+            "name": "login_nominal_valid_credentials_lands_on_products",
+            "target": "web",
+            "tags": [],
+            "timeout_ms": null,
+            "duration_ms": 2131
+          }
+        },
+        {
+          "stage": "env.chrome_discovery",
+          "status": "ok",
+          "detail": {
+            "chrome_version": "146.0.7680.153"
+          }
+        },
+        {
+          "stage": "env.chromedriver_provision",
+          "status": "ok",
+          "detail": {
+            "path": "/Users/adrian/.uto/cache/chromedriver/146/chromedriver"
+          }
+        },
+        {
+          "stage": "driver.chromedriver_start",
+          "status": "ok",
+          "detail": {
+            "url": "http://localhost:20696",
+            "port": 20696
+          }
+        },
+        {
+          "stage": "session.web_create",
+          "status": "ok",
+          "detail": {
+            "driver_url": "http://localhost:20696"
+          }
+        },
+        {
+          "stage": "session.goto",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "url": "https://www.saucedemo.com"
+          }
+        },
+        {
+          "stage": "intent.select",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Username",
+            "resolved_selector": "#user-name"
+          }
+        },
+        {
+          "stage": "intent.fill",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Username",
+            "value": "standard_user",
+            "resolved_selector": "#user-name",
+            "screenshot_before": ".uto/reports/screenshots/screenshot_Username_before_fill_1773922594026ms.png",
+            "screenshot_after": ".uto/reports/screenshots/screenshot_Username_after_fill_1773922594170ms.png"
+          }
+        },
+        {
+          "stage": "intent.select",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Password",
+            "resolved_selector": "#password"
+          }
+        },
+        {
+          "stage": "intent.fill",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Password",
+            "value": "secret_sauce",
+            "resolved_selector": "#password",
+            "screenshot_before": ".uto/reports/screenshots/screenshot_Password_before_fill_1773922594186ms.png",
+            "screenshot_after": ".uto/reports/screenshots/screenshot_Password_after_fill_1773922594287ms.png"
+          }
+        },
+        {
+          "stage": "intent.select",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Login",
+            "resolved_selector": "#login-button"
+          }
+        },
+        {
+          "stage": "intent.click",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Login",
+            "resolved_selector": "#login-button",
+            "screenshot_before": ".uto/reports/screenshots/screenshot_Login_before_click_1773922594312ms.png",
+            "screenshot_after": ".uto/reports/screenshots/screenshot_Login_after_click_1773922594412ms.png"
+          }
+        },
+        {
+          "stage": "session.find_element",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "selector": ".inventory_list",
+            "resolved_selector": ".inventory_list",
+            "label": "Sauce Labs Backpack\ncarry.allTheThings() with the sleek, streamlined Sly Pack that melds uncompromising style with unequaled laptop and tablet protection.\n$29.99\nAdd to cart\nSauce Labs Bike Light\nA red light isn't the desired state in testing but it sure helps when riding your bike at night. Water-resistant with 3 lighting modes, 1 AAA battery included.\n$9.99\nAdd to cart\nSauce Labs Bolt T-Shirt\nGet your testing superhero on with the Sauce Labs bolt T-shirt. From American Apparel, 100% ringspun combed cotton, heather gray with red bolt.\n$15.99\nAdd to cart\nSauce Labs Fleece Jacket\nIt's not every day that you come across a midweight quarter-zip fleece jacket capable of handling everything from a relaxing day outdoors to a busy day at the office.\n$49.99\nAdd to cart\nSauce Labs Onesie\nRib snap infant onesie for the junior automation engineer in development. Reinforced 3-snap bottom closure, two-needle hemmed sleeved and bottom won't unravel.\n$7.99\nAdd to cart\nTest.allTheThings() T-Shirt (Red)\nThis classic Sauce Labs t-shirt is perfect to wear when cozying up to your keyboard to automate a few tests. Super-soft and comfy ringspun combed cotton.\n$15.99\nAdd to cart"
+          }
+        },
+        {
+          "stage": "session.close",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
+          }
+        },
+        {
+          "stage": "driver.stop",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
+          }
+        },
+        {
+          "stage": "test.result",
+          "status": "ok",
+          "detail": {
+            "outcome": "passed"
+          }
+        }
+      ]
+    }
+  ]
+}

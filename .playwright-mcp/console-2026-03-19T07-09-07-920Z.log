@@ -1,0 +1,2 @@
+[      43ms] ReferenceError: fetchReport is not defined
+    at http://127.0.0.1:4020/:1075:1

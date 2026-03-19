@@ -37,9 +37,13 @@ fn print_help() {
     println!(
         "UTO CLI\n\n\
          Commands:\n  \
-           uto init <project-dir> [--template web|mobile] [--uto-root <path>]\n  \
-           uto run --project <project-dir> [--target web|mobile] [--report-json <path>] [--driver-trace]\n  \
-           uto report --project <project-dir> [--input <report-path>] [--html] [--html-output <report.html>]\n  \
-           uto ui [--project <project-dir>] [--port <port>] [--open] [--watch] [--report <report-path>]"
+           uto init <project-dir> [--template web|mobile] [--dev] [--uto-root <path>]\n  \
+           uto run [--project <project-dir>] [--target web|mobile] [--report-json <path>] [--live-events-jsonl <path>] [--driver-trace] [--test-bin <bin>] [--test-name <name>]\n  \
+           uto report [--project <project-dir>] [--input <report-path>] [--html] [--html-output <report.html>]\n  \
+           uto ui [--project <project-dir>] [--port <port>] [--open] [--watch] [--report <report-path>]\n\n\
+         Init modes:\n  \
+           Production (default): Generates projects with crates.io dependencies\n  \
+           Development (--dev):  Generates projects with path dependencies to UTO workspace\n\n\
+         Note: If --project is omitted, the current directory is used."
     );
 }

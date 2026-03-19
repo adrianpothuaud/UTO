@@ -1,0 +1,6 @@
+[ 2236285ms] [WARNING] WS parse error TypeError: Cannot read properties of null (reading 'test_bin')
+    at selectTest (http://127.0.0.1:4020/:583:75)
+    at renderSuite (http://127.0.0.1:4020/:450:25)
+    at loadReport (http://127.0.0.1:4020/:407:5)
+    at handleMsg (http://127.0.0.1:4020/:316:30)
+    at WebSocket.<anonymous> (http://127.0.0.1:4020/:295:11) @ http://127.0.0.1:4020/:294

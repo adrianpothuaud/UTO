@@ -385,6 +385,57 @@ a:hover {
   color: var(--text-muted);
 }
 
+.showcase-details {
+  padding-top: 3.2rem;
+}
+
+.detail-columns {
+  margin-top: 1.8rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.detail-card {
+  background: linear-gradient(165deg, rgba(10, 36, 45, 0.7) 0%, rgba(7, 23, 29, 0.86) 100%);
+  border: 1px solid rgba(124, 230, 208, 0.2);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+}
+
+.detail-card h3 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.08rem;
+}
+
+.detail-card p {
+  margin: 0.55rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.94rem;
+}
+
+.killer-list {
+  margin: 0.6rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--text-muted);
+}
+
+.killer-list li {
+  margin-bottom: 0.32rem;
+}
+
+.example-section {
+  padding-top: 1.8rem;
+}
+
+.example-grid {
+  margin-top: 1.7rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
 .pillars {
   position: relative;
 }
@@ -668,6 +719,14 @@ a:hover {
   .pillars-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .detail-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .example-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -690,6 +749,10 @@ a:hover {
   }
 
   .pillars-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-columns {
     grid-template-columns: 1fr;
   }
 }

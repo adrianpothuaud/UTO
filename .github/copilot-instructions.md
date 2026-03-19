@@ -9,13 +9,14 @@ Framework product direction:
 - Build toward a first-class CLI lifecycle (`init`, `run`, `report`) for end users.
 - Treat reporting and observability as core features, not optional add-ons.
 - Ensure test execution visibility is clear from environment setup to intent resolution, element/action steps, assertions, and relevant driver communication outcomes.
-- Phase 5 targets an interactive UI mode (`uto ui`) — a local browser-based interface for running, watching, and debugging test suites, platform-agnostic and compatible with all Phase 4+ projects (see ADR 0014).
+- Phase 5 delivered an interactive UI mode (`uto ui`) — a local browser-based interface for running, watching, and debugging test suites, platform-agnostic and compatible with all Phase 4+ projects (see ADR 0014).
+- Phase 5bis (complete as of 2026-03-19) enhanced the UI with per-step duration, visual timeline, step-type icons, reportless discovery, and selective test execution (see ADR 0019).
+- Phase 5.5 (complete as of 2026-03-19) enabled UTO as a standalone Rust library and added CWD inference to CLI commands (see ADR 0020).
 
 Current delivery status:
 
-- Phase 3 is complete.
-- Phase 4.1 (CLI baseline), 4.2 (HTML reporting), and 4.3 (mobile hardening) are complete.
-- Phase 4.4 (onboarding, troubleshooting, and examples) is in progress.
+- Phases 1–5.5 are complete.
+- Phase 6 (UTO Studio — visual, selector-free test authoring for web and mobile) follows Phase 5.5 (see ADR 0016).
 - Generated and reference test projects now consume `uto-test` and favor a simple helper-driven session API (`startNewSession`) so setup/session code remains transparent but concise.
 
 - Prefer solutions that preserve the "discover or deploy" workflow described in `docs/0001-zero-config-infrastructure.md`.

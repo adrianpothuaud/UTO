@@ -4,7 +4,7 @@ Date: 2026-03-18
 
 ## Status
 
-**Accepted — Phase 3 Complete, Phase 4 In Progress (Phase 4.1–4.3 Complete, Phase 4.4 In Progress)**
+**Accepted — Phases 1–5 Complete (Phase 4.1–4.4 Complete, Phase 5.1–5.4 Complete)**
 
 ## Phase 3 Completion Assessment
 
@@ -295,8 +295,8 @@ Status update (2026-03-18):
 | HTML reporting | Native offline HTML generation | Phase 4.2 complete |
 | Mobile hardening | Fixture coverage + graceful skip | Phase 4.3 complete |
 | Test coverage | 85%+ on core + CLI | 114 tests, comprehensive |
-| Example projects | ≥3 committed, runnable | 1 (phase3-intent) |
-| Documentation | "Getting Started" + troubleshooting | In progress (guide + troubleshooting baseline added) |
+| Example projects | ≥3 committed, runnable | 4 (phase3-intent, phase4-framework, phase5-ui-mode, ui-showcase) |
+| Documentation | "Getting Started" + troubleshooting | ✅ Complete (guide, troubleshooting, site navigation updated) |
 | CI green rate | 100% on main | Stable (114 tests) |
 | User feedback | Framework adoption path clear | Mobile parity reached |
 
@@ -306,7 +306,7 @@ Status update (2026-03-18):
 |------------|--------|-----------|
 | ONNX model selection | Not started | Use stub engine; real model in Phase 5 |
 | Mobile CI environment | Partially available (Android emulator) | Graceful skip; document assumptions |
-| Framework CLI design | In progress | Align with Go/Rust CLI conventions |
+| Framework CLI design | ✅ Complete | init/run/report/ui commands stable |
 | Report schema stability | Started (ADR 0009 draft) | Lock schema version; allow extensions |
 
 ### Phase 5+ Roadmap (Future Planning)
@@ -399,15 +399,18 @@ Each Phase 4 iteration will be accepted when:
 
 ---
 
-## Immediate Next Steps
+## Phase 4 Completion Record
 
-To complete Phase 4.4 and close Phase 4:
+Phase 4 (all iterations 4.1–4.4) is complete. The following items were delivered to close Phase 4:
 
-1. **Expand Phase examples** — add at least one additional committed reference project under `examples/phases/` aligned with framework workflows
-2. **Complete static-site onboarding pages** — mirror Getting Started and troubleshooting guidance in `uto-site/content/`
-3. **Publish report schema reference examples** — document event semantics and sample payloads for CI tooling consumers
-4. **Document iOS parity assumptions** — capture current status/limitations and expected host setup
-5. **Finalize Phase 4 acceptance review** — verify docs/examples parity and run full validation gates
+1. ✅ **Phase examples expanded** — phase3-intent, phase4-framework, phase5-ui-mode, and ui-showcase committed under `examples/phases/`
+2. ✅ **Static-site onboarding pages** — Getting Started and troubleshooting mirrored in `uto-site/content/`
+3. ✅ **Documentation** — `docs/0013-getting-started-and-troubleshooting.md` written and site navigation updated
+4. ✅ **Phase 4 acceptance review** — workspace builds cleanly, 150+ tests green, all ADRs updated
+
+Phase 5 (UI Mode) is also complete. See ADR 0014 for the full delivery record.
+
+Phase 6 (UTO Studio — visual test authoring) is the current next milestone. See ADR 0016.
 
 ---
 

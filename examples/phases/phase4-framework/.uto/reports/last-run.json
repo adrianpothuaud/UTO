@@ -1,13 +1,13 @@
 {
   "schema_version": "uto-suite/v1",
   "framework": "uto",
-  "suite_id": "suite-1773895022706-58564",
+  "suite_id": "suite-1773928235883-53576",
   "mode": "web",
   "status": "passed",
   "timeline": {
-    "started_at_unix_ms": 1773895022706,
-    "finished_at_unix_ms": 1773895040666,
-    "duration_ms": 17960
+    "started_at_unix_ms": 1773928235883,
+    "finished_at_unix_ms": 1773928253056,
+    "duration_ms": 17173
   },
   "summary": {
     "total": 4,
@@ -20,11 +20,22 @@
       "name": "web_example_phase4_hero_copy_is_visible_or_skips",
       "status": "passed",
       "timeline": {
-        "started_at_unix_ms": 1773895022706,
-        "finished_at_unix_ms": 1773895035744,
-        "duration_ms": 13038
+        "started_at_unix_ms": 1773928235883,
+        "finished_at_unix_ms": 1773928249272,
+        "duration_ms": 13389
       },
       "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "running",
+          "detail": {
+            "binary": "web_example",
+            "name": "web_example_phase4_hero_copy_is_visible_or_skips",
+            "target": "web",
+            "tags": [],
+            "timeout_ms": null
+          }
+        },
         {
           "stage": "runner.test_command",
           "status": "ok",
@@ -32,7 +43,79 @@
             "binary": "web_example",
             "name": "web_example_phase4_hero_copy_is_visible_or_skips",
             "target": "web",
-            "duration_ms": 13037
+            "tags": [],
+            "timeout_ms": null,
+            "duration_ms": 13388
+          }
+        },
+        {
+          "stage": "env.chrome_discovery",
+          "status": "ok",
+          "detail": {
+            "chrome_version": "146.0.7680.153"
+          }
+        },
+        {
+          "stage": "env.chromedriver_provision",
+          "status": "ok",
+          "detail": {
+            "path": "/Users/adrian/.uto/cache/chromedriver/146/chromedriver"
+          }
+        },
+        {
+          "stage": "driver.chromedriver_start",
+          "status": "ok",
+          "detail": {
+            "url": "http://localhost:21608",
+            "port": 21608
+          }
+        },
+        {
+          "stage": "session.web_create",
+          "status": "ok",
+          "detail": {
+            "driver_url": "http://localhost:21608"
+          }
+        },
+        {
+          "stage": "session.goto",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "url": "data:text/html,<html><head><title>UTO Phase 4</title></head><body><main><h1 id='hero'>Phase 4 Framework</h1><p id='summary'>Managed sessions keep setup concise without hiding results.</p></main></body></html>"
+          }
+        },
+        {
+          "stage": "session.find_element",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "selector": "#hero",
+            "resolved_selector": "#hero",
+            "label": "Phase 4 Framework"
+          }
+        },
+        {
+          "stage": "assert.get_text",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "selector": "#hero",
+            "text": "Phase 4 Framework"
+          }
+        },
+        {
+          "stage": "session.close",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
+          }
+        },
+        {
+          "stage": "driver.stop",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
           }
         },
         {
@@ -48,11 +131,22 @@
       "name": "web_example_phase4_title_is_non_empty_or_skips",
       "status": "passed",
       "timeline": {
-        "started_at_unix_ms": 1773895035744,
-        "finished_at_unix_ms": 1773895036906,
-        "duration_ms": 1162
+        "started_at_unix_ms": 1773928249273,
+        "finished_at_unix_ms": 1773928250262,
+        "duration_ms": 989
       },
       "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "running",
+          "detail": {
+            "binary": "web_example",
+            "name": "web_example_phase4_title_is_non_empty_or_skips",
+            "target": "web",
+            "tags": [],
+            "timeout_ms": null
+          }
+        },
         {
           "stage": "runner.test_command",
           "status": "ok",
@@ -60,7 +154,68 @@
             "binary": "web_example",
             "name": "web_example_phase4_title_is_non_empty_or_skips",
             "target": "web",
-            "duration_ms": 1161
+            "tags": [],
+            "timeout_ms": null,
+            "duration_ms": 989
+          }
+        },
+        {
+          "stage": "env.chrome_discovery",
+          "status": "ok",
+          "detail": {
+            "chrome_version": "146.0.7680.153"
+          }
+        },
+        {
+          "stage": "env.chromedriver_provision",
+          "status": "ok",
+          "detail": {
+            "path": "/Users/adrian/.uto/cache/chromedriver/146/chromedriver"
+          }
+        },
+        {
+          "stage": "driver.chromedriver_start",
+          "status": "ok",
+          "detail": {
+            "url": "http://localhost:17992",
+            "port": 17992
+          }
+        },
+        {
+          "stage": "session.web_create",
+          "status": "ok",
+          "detail": {
+            "driver_url": "http://localhost:17992"
+          }
+        },
+        {
+          "stage": "session.goto",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "url": "data:text/html,<html><head><title>UTO Phase 4</title></head><body><main><h1 id='hero'>Phase 4 Framework</h1><p id='summary'>Managed sessions keep setup concise without hiding results.</p></main></body></html>"
+          }
+        },
+        {
+          "stage": "session.title",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "title": "UTO Phase 4"
+          }
+        },
+        {
+          "stage": "session.close",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
+          }
+        },
+        {
+          "stage": "driver.stop",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
           }
         },
         {
@@ -76,11 +231,22 @@
       "name": "web_example_phase4_form_flow_or_skips",
       "status": "passed",
       "timeline": {
-        "started_at_unix_ms": 1773895036906,
-        "finished_at_unix_ms": 1773895039445,
-        "duration_ms": 2539
+        "started_at_unix_ms": 1773928250262,
+        "finished_at_unix_ms": 1773928252268,
+        "duration_ms": 2006
       },
       "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "running",
+          "detail": {
+            "binary": "web_intent_example",
+            "name": "web_example_phase4_form_flow_or_skips",
+            "target": "web",
+            "tags": [],
+            "timeout_ms": null
+          }
+        },
         {
           "stage": "runner.test_command",
           "status": "ok",
@@ -88,7 +254,120 @@
             "binary": "web_intent_example",
             "name": "web_example_phase4_form_flow_or_skips",
             "target": "web",
-            "duration_ms": 2539
+            "tags": [],
+            "timeout_ms": null,
+            "duration_ms": 2005
+          }
+        },
+        {
+          "stage": "env.chrome_discovery",
+          "status": "ok",
+          "detail": {
+            "chrome_version": "146.0.7680.153"
+          }
+        },
+        {
+          "stage": "env.chromedriver_provision",
+          "status": "ok",
+          "detail": {
+            "path": "/Users/adrian/.uto/cache/chromedriver/146/chromedriver"
+          }
+        },
+        {
+          "stage": "driver.chromedriver_start",
+          "status": "ok",
+          "detail": {
+            "url": "http://localhost:17615",
+            "port": 17615
+          }
+        },
+        {
+          "stage": "session.web_create",
+          "status": "ok",
+          "detail": {
+            "driver_url": "http://localhost:17615"
+          }
+        },
+        {
+          "stage": "session.goto",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "url": "data:text/html,<html><body><input id='e' aria-label='Email' type='text'/><button id='s' aria-label='Submit' onclick=\"document.getElementById('o').textContent=document.getElementById('e').value\">Submit</button><p id='o'>-</p></body></html>"
+          }
+        },
+        {
+          "stage": "intent.select",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Email",
+            "resolved_selector": "#e"
+          }
+        },
+        {
+          "stage": "intent.fill",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Email",
+            "value": "suite@uto.dev",
+            "resolved_selector": "#e",
+            "screenshot_before": ".uto/reports/screenshots/screenshot_Email_before_fill_1773928251956ms.png",
+            "screenshot_after": ".uto/reports/screenshots/screenshot_Email_after_fill_1773928252086ms.png"
+          }
+        },
+        {
+          "stage": "intent.select",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Submit",
+            "resolved_selector": "#s"
+          }
+        },
+        {
+          "stage": "intent.click",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Submit",
+            "resolved_selector": "#s",
+            "screenshot_before": ".uto/reports/screenshots/screenshot_Submit_before_click_1773928252110ms.png",
+            "screenshot_after": ".uto/reports/screenshots/screenshot_Submit_after_click_1773928252202ms.png"
+          }
+        },
+        {
+          "stage": "session.find_element",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "selector": "#o",
+            "resolved_selector": "#o",
+            "label": "suite@uto.dev"
+          }
+        },
+        {
+          "stage": "assert.get_text",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "selector": "#o",
+            "text": "suite@uto.dev"
+          }
+        },
+        {
+          "stage": "session.close",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
+          }
+        },
+        {
+          "stage": "driver.stop",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
           }
         },
         {
@@ -104,11 +383,22 @@
       "name": "web_example_phase4_navigation_flow_or_skips",
       "status": "passed",
       "timeline": {
-        "started_at_unix_ms": 1773895039445,
-        "finished_at_unix_ms": 1773895040666,
-        "duration_ms": 1221
+        "started_at_unix_ms": 1773928252268,
+        "finished_at_unix_ms": 1773928253056,
+        "duration_ms": 788
       },
       "events": [
+        {
+          "stage": "runner.test_command",
+          "status": "running",
+          "detail": {
+            "binary": "web_intent_example",
+            "name": "web_example_phase4_navigation_flow_or_skips",
+            "target": "web",
+            "tags": [],
+            "timeout_ms": null
+          }
+        },
         {
           "stage": "runner.test_command",
           "status": "ok",
@@ -116,7 +406,88 @@
             "binary": "web_intent_example",
             "name": "web_example_phase4_navigation_flow_or_skips",
             "target": "web",
-            "duration_ms": 1220
+            "tags": [],
+            "timeout_ms": null,
+            "duration_ms": 787
+          }
+        },
+        {
+          "stage": "env.chrome_discovery",
+          "status": "ok",
+          "detail": {
+            "chrome_version": "146.0.7680.153"
+          }
+        },
+        {
+          "stage": "env.chromedriver_provision",
+          "status": "ok",
+          "detail": {
+            "path": "/Users/adrian/.uto/cache/chromedriver/146/chromedriver"
+          }
+        },
+        {
+          "stage": "driver.chromedriver_start",
+          "status": "ok",
+          "detail": {
+            "url": "http://localhost:20835",
+            "port": 20835
+          }
+        },
+        {
+          "stage": "session.web_create",
+          "status": "ok",
+          "detail": {
+            "driver_url": "http://localhost:20835"
+          }
+        },
+        {
+          "stage": "session.goto",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "url": "data:text/html,<html><body><button id='lnk' aria-label='Go to next page' onclick=\"document.title='Next'\">Go to next page</button></body></html>"
+          }
+        },
+        {
+          "stage": "intent.select",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Go to next page",
+            "resolved_selector": "#lnk"
+          }
+        },
+        {
+          "stage": "intent.click",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "label": "Go to next page",
+            "resolved_selector": "#lnk",
+            "screenshot_before": ".uto/reports/screenshots/screenshot_Go_to_next_page_before_click_1773928252929ms.png",
+            "screenshot_after": ".uto/reports/screenshots/screenshot_Go_to_next_page_after_click_1773928252999ms.png"
+          }
+        },
+        {
+          "stage": "session.title",
+          "status": "ok",
+          "detail": {
+            "target": "chrome",
+            "title": "Next"
+          }
+        },
+        {
+          "stage": "session.close",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
+          }
+        },
+        {
+          "stage": "driver.stop",
+          "status": "ok",
+          "detail": {
+            "target": "chrome"
           }
         },
         {

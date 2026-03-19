@@ -133,9 +133,16 @@ tr:hover td{background:var(--bg4)}
 .c-idx{color:var(--tx2);font-size:.76rem;width:36px}
 .c-stage{font-family:var(--mono);font-size:.8rem;min-width:160px}
 .c-status{width:82px}
+.c-readable{font-size:.83rem;min-width:180px;max-width:340px}
 .c-detail{font-family:var(--mono);font-size:.76rem;color:var(--tx2)}
+.ev-icon{margin-right:5px;opacity:.75}
 .c-detail pre{white-space:pre-wrap;word-break:break-word;margin:0}
 td.empty{text-align:center;color:var(--tx2);padding:20px;font-size:.85rem}
+.screenshots{display:flex;gap:8px;margin-top:6px}
+.screenshot-link{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none}
+.screenshot-thumb{width:80px;height:60px;object-fit:cover;border:1px solid var(--bd);border-radius:3px;cursor:pointer}
+.screenshot-thumb:hover{opacity:.85;border-color:var(--primary)}
+.screenshot-label{font-size:.7rem;color:var(--tx2)}
 
 /* --- Footer --- */
 footer{border-top:1px solid var(--bd);padding:14px 20px;color:var(--tx2);font-size:.75rem;text-align:center;margin-top:8px}
@@ -181,7 +188,7 @@ const SCRIPT: &str = r#"
             if(show)vis++;
         });
         var tb=tbl.querySelector('tbody'),er=tb.querySelector('.erow');
-        if(vis===0){if(!er){var tr=document.createElement('tr');tr.className='erow';tr.innerHTML='<td colspan="4" class="empty">No matching events.</td>';tb.appendChild(tr);}}
+        if(vis===0){if(!er){var tr=document.createElement('tr');tr.className='erow';tr.innerHTML='<td colspan="5" class="empty">No matching events.</td>';tb.appendChild(tr);}}
         else if(er){er.remove();}
         var mc=panel&&panel.querySelector('.match-count');
         if(mc){
@@ -574,7 +581,8 @@ fn events_panel_html(events: &[ReportEvent], table_id: &str) -> String {
             "<th class=\"c-idx\">#</th>",
             "<th class=\"c-stage\">Stage</th>",
             "<th class=\"c-status\">Status</th>",
-            "<th class=\"c-detail\">Detail</th>",
+            "<th class=\"c-readable\">Summary</th>",
+            "<th class=\"c-detail\">Raw JSON</th>",
             "</tr></thead>",
             "<tbody>{rows}</tbody>",
             "</table>",
@@ -588,25 +596,237 @@ fn events_panel_html(events: &[ReportEvent], table_id: &str) -> String {
 
 fn event_rows_html(events: &[ReportEvent], _table_id: &str) -> String {
     if events.is_empty() {
-        return "<tr><td colspan=\"4\" class=\"empty\">No events recorded.</td></tr>".to_string();
+        return "<tr><td colspan=\"5\" class=\"empty\">No events recorded.</td></tr>".to_string();
     }
     let mut buf = String::new();
     for (i, ev) in events.iter().enumerate() {
-        let detail_str = serde_json::to_string_pretty(&ev.detail)
-            .unwrap_or_else(|_| "\"<invalid>\"".to_string());
         let status_norm = normalise_status(&ev.status);
         let bc = badge_class(status_norm);
+        let icon = stage_icon(&ev.stage);
+        let readable = fmt_event_detail_readable(&ev.stage, &ev.detail, &ev.status);
+        let detail_str = serde_json::to_string_pretty(&ev.detail)
+            .unwrap_or_else(|_| "\"<invalid>\"".to_string());
+
+        // Check for screenshots in detail
+        let screenshot_html = render_screenshots(&ev.detail);
+
         buf.push_str(&format!(
-            "<tr data-s=\"{status_norm}\"><td class=\"c-idx\">{n}</td><td class=\"c-stage\">{stage}</td><td class=\"c-status\"><span class=\"badge {bc}\">{status}</span></td><td class=\"c-detail\"><pre>{detail}</pre></td></tr>",
+            concat!(
+                "<tr data-s=\"{status_norm}\">",
+                "<td class=\"c-idx\">{n}</td>",
+                "<td class=\"c-stage\"><span class=\"ev-icon\" title=\"{stage_raw}\">{icon}</span>{stage}</td>",
+                "<td class=\"c-status\"><span class=\"badge {bc}\">{status}</span></td>",
+                "<td class=\"c-readable\">{readable}{screenshots}</td>",
+                "<td class=\"c-detail\"><pre>{detail}</pre></td>",
+                "</tr>"
+            ),
             n = i + 1,
+            stage_raw = escape_html(&ev.stage),
+            icon = icon,
             stage = escape_html(&ev.stage),
             status_norm = status_norm,
             bc = bc,
             status = escape_html(&ev.status),
+            readable = escape_html(&readable),
+            screenshots = screenshot_html,
             detail = escape_html(&detail_str),
         ));
     }
     buf
+}
+
+/// Renders screenshot thumbnails if present in event detail.
+fn render_screenshots(detail: &serde_json::Value) -> String {
+    let before = string_field(detail, "screenshot_before");
+    let after = string_field(detail, "screenshot_after");
+
+    if before.is_empty() && after.is_empty() {
+        return String::new();
+    }
+
+    let mut html = String::from("<div class=\"screenshots\">");
+
+    if !before.is_empty() {
+        html.push_str(&format!(
+            "<a href=\"{}\" target=\"_blank\" class=\"screenshot-link\">\
+             <img src=\"{}\" alt=\"before\" class=\"screenshot-thumb\" title=\"Before action\"/>\
+             <span class=\"screenshot-label\">Before</span></a>",
+            escape_html(&before),
+            escape_html(&before)
+        ));
+    }
+
+    if !after.is_empty() {
+        html.push_str(&format!(
+            "<a href=\"{}\" target=\"_blank\" class=\"screenshot-link\">\
+             <img src=\"{}\" alt=\"after\" class=\"screenshot-thumb\" title=\"After action\"/>\
+             <span class=\"screenshot-label\">After</span></a>",
+            escape_html(&after),
+            escape_html(&after)
+        ));
+    }
+
+    html.push_str("</div>");
+    html
+}
+
+/// Returns a single-line human-readable summary for a report event.
+fn fmt_event_detail_readable(stage: &str, detail: &serde_json::Value, status: &str) -> String {
+    let s = stage.to_lowercase();
+    let d = detail;
+    let failed = status.eq_ignore_ascii_case("failed") || status.eq_ignore_ascii_case("error");
+    let suffix = if failed { " ✗" } else { "" };
+
+    if s.contains("log") {
+        return string_field(d, "message");
+    }
+    if s.contains("env.chrome_discovery") {
+        return format!("Chrome {}{}", string_field(d, "chrome_version"), suffix);
+    }
+    if s.contains("env.chromedriver_provision") {
+        return format!("ChromeDriver at {}{}", string_field(d, "path"), suffix);
+    }
+    if s.contains("env.mobile_setup") {
+        let dev = string_field(d, "device_serial");
+        return format!(
+            "Mobile env{}{}{}",
+            if dev.is_empty() { "" } else { " for " },
+            dev,
+            suffix
+        );
+    }
+    if s.contains("driver.chromedriver_start") {
+        return format!("ChromeDriver → {}{}", string_field(d, "url"), suffix);
+    }
+    if s.contains("driver.appium_start") {
+        return format!("Appium → {}{}", string_field(d, "url"), suffix);
+    }
+    if s.contains("driver.stop") {
+        return format!("Stop driver{}", suffix);
+    }
+    if s.contains("session.web_create") {
+        return format!(
+            "Web session via {}{}",
+            string_field(d, "driver_url"),
+            suffix
+        );
+    }
+    if s.contains("session.mobile_create") {
+        return format!(
+            "Mobile session via {}{}",
+            string_field(d, "driver_url"),
+            suffix
+        );
+    }
+    if s.contains("session.goto") {
+        return format!("→ {}{}", string_field(d, "url"), suffix);
+    }
+    if s.contains("session.find_element") {
+        return format!("Find {}{}", string_field(d, "selector"), suffix);
+    }
+    if s.contains("session.click") {
+        return format!("Click {}{}", string_field(d, "selector"), suffix);
+    }
+    if s.contains("session.type_text") {
+        return format!("Type into {}{}", string_field(d, "selector"), suffix);
+    }
+    if s.contains("session.close") {
+        return format!("Close session{}", suffix);
+    }
+    // Intent events — selector-free interactions
+    if s.contains("intent.fill") {
+        let label = string_field(d, "label");
+        let resolved = string_field(d, "resolved_selector");
+        if failed {
+            return format!("Fill \u{201c}{label}\u{201d} — not resolved ✗");
+        }
+        return if resolved.is_empty() {
+            format!("Fill \u{201c}{label}\u{201d}")
+        } else {
+            format!("Fill \u{201c}{label}\u{201d} \u{2192} {resolved}")
+        };
+    }
+    if s.contains("intent.click") {
+        let label = string_field(d, "label");
+        let resolved = string_field(d, "resolved_selector");
+        if failed {
+            return format!("Click \u{201c}{label}\u{201d} — not resolved ✗");
+        }
+        return if resolved.is_empty() {
+            format!("Click \u{201c}{label}\u{201d}")
+        } else {
+            format!("Click \u{201c}{label}\u{201d} \u{2192} {resolved}")
+        };
+    }
+    if s.contains("intent.select") {
+        let label = string_field(d, "label");
+        let resolved = string_field(d, "resolved_selector");
+        if failed {
+            return format!("Resolve \u{201c}{label}\u{201d} — not found ✗");
+        }
+        return if resolved.is_empty() {
+            format!("Resolve \u{201c}{label}\u{201d}")
+        } else {
+            format!("Resolve \u{201c}{label}\u{201d} \u{2192} {resolved}")
+        };
+    }
+    if s.contains("assert.get_text") {
+        let text = string_field(d, "text");
+        return if text.is_empty() {
+            format!("Read text from {}{}", string_field(d, "selector"), suffix)
+        } else {
+            format!("Read \u{201c}{text}\u{201d}{suffix}")
+        };
+    }
+    if s.contains("runner.test_command") {
+        return if failed {
+            format!("Run {} ✗", string_field(d, "binary"))
+        } else {
+            format!("Run {}", string_field(d, "binary"))
+        };
+    }
+    if s.contains("test.result") {
+        return string_field(d, "outcome");
+    }
+    // Fallback: show error or first string value
+    if let Some(err) = d.get("error").and_then(|v| v.as_str()) {
+        return format!("Error: {err}");
+    }
+    if let Some(msg) = d.get("message").and_then(|v| v.as_str()) {
+        return msg.to_string();
+    }
+    String::new()
+}
+
+fn string_field(detail: &serde_json::Value, key: &str) -> String {
+    detail
+        .get(key)
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string()
+}
+
+fn stage_icon(stage: &str) -> &'static str {
+    let s = stage.to_lowercase();
+    if s.starts_with("env.") || s.starts_with("driver.") || s.contains("setup") {
+        return "⚙";
+    }
+    if s.contains("goto") || s.contains("navigate") {
+        return "🧭";
+    }
+    if s.contains("intent.fill") || s.contains("intent.click") || s.contains("intent.select") {
+        return "✦";
+    }
+    if s.contains("assert") || s.contains("get_text") {
+        return "✓";
+    }
+    if s.contains("session.close") {
+        return "⏹";
+    }
+    if s.contains("runner.") || s.contains("test.") {
+        return "▶";
+    }
+    "◎"
 }
 
 fn tests_section_html(tests: &[TestCaseResult]) -> String {
@@ -692,7 +912,8 @@ fn test_item_html(tc: &TestCaseResult, idx: usize) -> String {
             "<th class=\"c-idx\">#</th>",
             "<th class=\"c-stage\">Stage</th>",
             "<th class=\"c-status\">Status</th>",
-            "<th class=\"c-detail\">Detail</th>",
+            "<th class=\"c-readable\">Summary</th>",
+            "<th class=\"c-detail\">Raw JSON</th>",
             "</tr></thead>",
             "<tbody>{rows}</tbody>",
             "</table></div>"

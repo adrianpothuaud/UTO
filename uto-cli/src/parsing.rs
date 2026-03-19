@@ -2,11 +2,30 @@
 
 use std::path::{Path, PathBuf};
 
+/// Attempts to find the UTO workspace root by walking up from the given directory,
+/// looking for a directory that contains `uto-core/`.
+fn find_uto_workspace_root(start: &Path) -> Option<PathBuf> {
+    let mut current = start;
+    // Walk up at most 10 levels to avoid infinite loops
+    for _ in 0..10 {
+        if current.join("uto-core").exists() {
+            return Some(current.to_path_buf());
+        }
+        match current.parent() {
+            Some(parent) => current = parent,
+            None => break,
+        }
+    }
+    None
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct InitArgs {
     pub project_dir: PathBuf,
     pub template: String,
-    pub uto_root: PathBuf,
+    /// UTO workspace root for path dependencies (dev mode only).
+    /// None = use crates.io dependencies (production mode).
+    pub uto_root: Option<PathBuf>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -14,7 +33,10 @@ pub struct RunArgs {
     pub project: PathBuf,
     pub target: Option<String>,
     pub report_json: Option<PathBuf>,
+    pub live_events_jsonl: Option<PathBuf>,
     pub driver_trace: bool,
+    pub test_bin: Option<String>,
+    pub test_name: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -51,7 +73,8 @@ pub fn parse_init_args(args: &[String], current_dir: &Path) -> Result<InitArgs, 
 
     let project_dir = PathBuf::from(project_token);
     let mut template = "web".to_string();
-    let mut uto_root = current_dir.to_path_buf();
+    let mut uto_root: Option<PathBuf> = None;
+    let mut dev_mode = false;
 
     let mut i = 1usize;
     while i < args.len() {
@@ -63,8 +86,12 @@ pub fn parse_init_args(args: &[String], current_dir: &Path) -> Result<InitArgs, 
             }
             "--uto-root" => {
                 let value = get_flag_value(args, i, "--uto-root")?;
-                uto_root = PathBuf::from(value);
+                uto_root = Some(PathBuf::from(value));
+                dev_mode = true;
                 i += 1;
+            }
+            "--dev" => {
+                dev_mode = true;
             }
             flag if flag.starts_with('-') => {
                 return Err(format!("Unknown init option: {flag}"));
@@ -78,6 +105,31 @@ pub fn parse_init_args(args: &[String], current_dir: &Path) -> Result<InitArgs, 
         i += 1;
     }
 
+    // Development mode: use path dependencies to UTO workspace
+    let uto_root = if dev_mode {
+        let root = match uto_root {
+            Some(root) => root,
+            None => match find_uto_workspace_root(current_dir) {
+                Some(root) => root,
+                None => {
+                    return Err(format!(
+                            "Development mode requires UTO workspace root (directory containing uto-core/).\n\
+                             Current directory: {}\n\n\
+                             Either:\n\
+                             1. Run 'uto init --dev' from within the UTO source tree, or\n\
+                             2. Specify --uto-root explicitly: uto init <project> --uto-root /path/to/UTO\n\
+                             3. Remove --dev to use crates.io dependencies (production mode)",
+                            current_dir.display()
+                        ));
+                }
+            },
+        };
+        Some(root)
+    } else {
+        // Production mode: use crates.io dependencies (no workspace root needed)
+        None
+    };
+
     Ok(InitArgs {
         project_dir,
         template,
@@ -89,7 +141,10 @@ pub fn parse_run_args(args: &[String]) -> Result<RunArgs, String> {
     let mut project: Option<PathBuf> = None;
     let mut target: Option<String> = None;
     let mut report_json: Option<PathBuf> = None;
+    let mut live_events_jsonl: Option<PathBuf> = None;
     let mut driver_trace = false;
+    let mut test_bin: Option<String> = None;
+    let mut test_name: Option<String> = None;
 
     let mut i = 0usize;
     while i < args.len() {
@@ -109,8 +164,23 @@ pub fn parse_run_args(args: &[String]) -> Result<RunArgs, String> {
                 report_json = Some(PathBuf::from(value));
                 i += 1;
             }
+            "--live-events-jsonl" => {
+                let value = get_flag_value(args, i, "--live-events-jsonl")?;
+                live_events_jsonl = Some(PathBuf::from(value));
+                i += 1;
+            }
             "--driver-trace" => {
                 driver_trace = true;
+            }
+            "--test-bin" => {
+                let value = get_flag_value(args, i, "--test-bin")?;
+                test_bin = Some(value.to_string());
+                i += 1;
+            }
+            "--test-name" => {
+                let value = get_flag_value(args, i, "--test-name")?;
+                test_name = Some(value.to_string());
+                i += 1;
             }
             flag if flag.starts_with('-') => {
                 return Err(format!("Unknown run option: {flag}"));
@@ -122,13 +192,14 @@ pub fn parse_run_args(args: &[String]) -> Result<RunArgs, String> {
         i += 1;
     }
 
-    let project = project.ok_or_else(|| "run requires --project <project-dir>".to_string())?;
-
     Ok(RunArgs {
-        project,
+        project: project.unwrap_or_else(|| PathBuf::from(".")),
         target,
         report_json,
+        live_events_jsonl,
         driver_trace,
+        test_bin,
+        test_name,
     })
 }
 
@@ -170,9 +241,8 @@ pub fn parse_report_args(args: &[String]) -> Result<ReportArgs, String> {
         i += 1;
     }
 
-    let project = project.ok_or_else(|| "report requires --project <project-dir>".to_string())?;
     Ok(ReportArgs {
-        project,
+        project: project.unwrap_or_else(|| PathBuf::from(".")),
         input,
         html,
         html_output,
@@ -294,13 +364,35 @@ mod tests {
 
         assert_eq!(parsed.project_dir, PathBuf::from("sample"));
         assert_eq!(parsed.template, "mobile");
-        assert_eq!(parsed.uto_root, PathBuf::from("/repo"));
+        assert_eq!(parsed.uto_root, Some(PathBuf::from("/repo")));
     }
 
     #[test]
-    fn parse_run_args_requires_project() {
-        let err = parse_run_args(&[]).expect_err("should fail");
-        assert!(err.contains("run requires --project"));
+    fn parse_init_args_defaults_to_crates_io_mode() {
+        let args = vec![
+            "sample".to_string(),
+            "--template".to_string(),
+            "web".to_string(),
+        ];
+        let parsed = parse_init_args(&args, Path::new("/tmp")).expect("parse init args");
+
+        assert_eq!(parsed.project_dir, PathBuf::from("sample"));
+        assert_eq!(parsed.template, "web");
+        // Production mode: no uto_root (uses crates.io deps)
+        assert_eq!(parsed.uto_root, None);
+    }
+
+    #[test]
+    fn parse_init_args_dev_mode_requires_workspace() {
+        let args = vec!["sample".to_string(), "--dev".to_string()];
+        let err = parse_init_args(&args, Path::new("/tmp")).expect_err("should fail");
+        assert!(err.contains("Development mode requires UTO workspace root"));
+    }
+
+    #[test]
+    fn parse_run_args_defaults_to_cwd() {
+        let parsed = parse_run_args(&[]).expect("should succeed with empty args");
+        assert_eq!(parsed.project, PathBuf::from("."));
     }
 
     #[test]
@@ -312,6 +404,29 @@ mod tests {
         ];
         let err = parse_run_args(&args).expect_err("should fail");
         assert!(err.contains("Unknown run option"));
+    }
+
+    #[test]
+    fn parse_run_args_supports_test_filters() {
+        let args = vec![
+            "--project".to_string(),
+            "demo".to_string(),
+            "--live-events-jsonl".to_string(),
+            ".uto/reports/live.jsonl".to_string(),
+            "--test-bin".to_string(),
+            "web_example".to_string(),
+            "--test-name".to_string(),
+            "web_smoke".to_string(),
+        ];
+
+        let parsed = parse_run_args(&args).expect("parse run args");
+        assert_eq!(parsed.project, PathBuf::from("demo"));
+        assert_eq!(
+            parsed.live_events_jsonl,
+            Some(PathBuf::from(".uto/reports/live.jsonl"))
+        );
+        assert_eq!(parsed.test_bin.as_deref(), Some("web_example"));
+        assert_eq!(parsed.test_name.as_deref(), Some("web_smoke"));
     }
 
     #[test]
@@ -329,9 +444,9 @@ mod tests {
     }
 
     #[test]
-    fn parse_report_args_requires_project() {
-        let err = parse_report_args(&[]).expect_err("should fail");
-        assert!(err.contains("report requires --project"));
+    fn parse_report_args_defaults_to_cwd() {
+        let parsed = parse_report_args(&[]).expect("should succeed with empty args");
+        assert_eq!(parsed.project, PathBuf::from("."));
     }
 
     #[test]

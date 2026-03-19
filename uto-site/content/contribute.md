@@ -33,13 +33,17 @@ We are onboarding a limited number of engineering teams and automation enthusias
 
 ## How to Apply
 
-Send a short note to [contact@uto.dev](mailto:contact@uto.dev) with:
+Apply directly in GitHub Discussions here:
+
+- [https://github.com/adrianpothuaud/UTO/discussions/13](https://github.com/adrianpothuaud/UTO/discussions/13)
+
+In your application, include:
 
 1. Team profile and current automation setup.
 2. Biggest quality engineering challenge today.
 3. Why you want to join the UTO private beta.
 
-We review applications on a rolling basis and respond within a few business days.
+We review applications on a rolling basis and respond in the discussion thread.
 
 ---
 

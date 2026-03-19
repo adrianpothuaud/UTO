@@ -1,19 +1,44 @@
 //! Integration tests for the UTO session layer.
 //!
-//! ## Structure
+//! # RUST LEARNING: Integration tests vs unit tests
+//!
+//! **Integration tests** (in `tests/` directory) test the public API from
+//! a user's perspective. They:
+//! - Live in a separate binary from the library
+//! - Can only access public items (no `pub(crate)`)
+//! - Test real-world usage scenarios
+//!
+//! **Unit tests** (in `src/` with `#[cfg(test)]`) test implementation details:
+//! - Live in the same module as the code
+//! - Can access private items
+//! - Test individual functions and edge cases
+//!
+//! ## Test Organization
 //!
 //! | Test group | What is exercised |
 //! |---|---|
 //! | `mobile_capabilities_*` | `MobileCapabilities` / `MobilePlatform` serialisation — **pure unit tests**, no I/O |
 //! | `web_session_*` | `WebSession` against a real ChromeDriver + headless Chrome |
 //!
+//! ## Test Strategy
+//!
 //! The `web_session_*` tests require Chrome and ChromeDriver to be installed.
-//! They skip gracefully when ChromeDriver is not found on the host.
+//! They **skip gracefully** when ChromeDriver is not found on the host, which:
+//! - Prevents CI failures when dependencies aren't available
+//! - Allows contributors to run tests locally without full setup
+//! - Provides clear feedback about what's being skipped
 //!
 //! Run the external-network test (requires internet) with:
 //! ```sh
 //! cargo test -- --ignored
 //! ```
+//!
+//! # RUST LEARNING: Test attributes
+//!
+//! - `#[test]`: Marks a function as a test (synchronous)
+//! - `#[tokio::test]`: Marks an async function as a test (requires tokio runtime)
+//! - `#[ignore]`: Skips the test by default (run with `--ignored`)
+//! - `#[should_panic]`: Test passes if it panics
 
 use std::path::PathBuf;
 
@@ -26,20 +51,62 @@ use uto_core::session::UtoSession;
 // ---------------------------------------------------------------------------
 
 /// Chrome arguments for headless / sandboxless environments (e.g. CI, Docker).
+///
+/// # RUST LEARNING: Array constants
+///
+/// `const` defines compile-time constants. `&[&str]` is a slice of string slices:
+/// - `&[...]`: A borrowed slice (reference to an array)
+/// - `&str`: A borrowed string slice
+/// - `&[&str]`: A slice where each element is a string slice
+///
+/// This allows us to pass these arguments by reference without heap allocation.
 const HEADLESS_ARGS: &[&str] = &["--headless=new", "--no-sandbox", "--disable-dev-shm-usage"];
 
 /// Returns the path to a `chromedriver` binary, or `None` if not found.
+///
+/// # RUST LEARNING: Option<T> for nullable values
+///
+/// Rust doesn't have `null`. Instead, we use `Option<T>`:
+/// - `Some(value)`: The value is present
+/// - `None`: The value is absent
+///
+/// This forces callers to explicitly handle the missing case, preventing
+/// null pointer errors at compile time.
 fn find_chromedriver() -> Option<PathBuf> {
+    // RUST LEARNING NOTE: Slice iteration with for-in
+    //
+    // `for p in &[...]` iterates over elements by reference.
+    // `&` before the array creates a slice, allowing iteration.
     for p in &["/usr/bin/chromedriver", "/usr/local/bin/chromedriver"] {
         let path = PathBuf::from(p);
         if path.exists() {
+            // RUST LEARNING NOTE: Early return with Some
+            //
+            // `return Some(path)` exits the function immediately with the value.
+            // This is a common pattern for "found it, stop searching".
             return Some(path);
         }
     }
+    // RUST LEARNING NOTE: Converting Result to Option
+    //
+    // `which::which()` returns `Result<PathBuf, Error>`.
+    // `.ok()` converts it to `Option<PathBuf>`:
+    // - `Ok(path)` becomes `Some(path)`
+    // - `Err(_)` becomes `None`
+    //
+    // This discards error details when we only care whether it succeeded.
     which::which("chromedriver").ok()
 }
 
 /// Starts the system ChromeDriver or returns `None` so the test can skip.
+///
+/// # RUST LEARNING: Async functions and error handling
+///
+/// This function demonstrates graceful failure for tests:
+/// - `find_chromedriver()?` uses the `?` operator on `Option`
+/// - If `None`, the function returns `None` immediately
+/// - If `Some(path)`, unwraps to `path` and continues
+/// - `.await.ok()` converts the `Result` from start_chromedriver to `Option`
 async fn start_system_chromedriver() -> Option<uto_core::driver::DriverProcess> {
     let path = find_chromedriver()?;
     uto_core::driver::start_chromedriver(&path).await.ok()
@@ -65,17 +132,75 @@ fn is_expected_mobile_environment_gap(message: &str) -> bool {
 // MobileCapabilities — pure unit tests (no I/O, no network)
 // ---------------------------------------------------------------------------
 
+/// Tests that Android capabilities serialize correctly to the Appium JSON format.
+///
+/// # RUST LEARNING: Pure unit tests
+///
+/// This is a **pure unit test** — no async, no I/O, just pure logic.
+/// It tests data transformation without dependencies on external systems.
+///
+/// **Why pure tests matter:**
+/// - Fast: No network, no processes, no waiting
+/// - Reliable: Can't fail due to environment issues
+/// - Clear: Test exactly one thing
 #[test]
 fn mobile_capabilities_android_minimal() {
+    // RUST LEARNING NOTE: Method chaining for test setup
+    //
+    // `MobileCapabilities::android()` creates a capabilities object,
+    // then we immediately call `.to_json_pub()` on it.
     let caps = MobileCapabilities::android("emulator-5554");
     let json = caps.to_json_pub();
 
+    // RUST LEARNING NOTE: Assertions
+    //
+    // `assert_eq!(left, right)` panics if the values aren't equal,
+    // causing the test to fail. The macro shows both values in the error.
     assert_eq!(json["platformName"], "Android");
     assert_eq!(json["appium:deviceName"], "emulator-5554");
     assert_eq!(json["appium:automationName"], "UiAutomator2");
+
+    // RUST LEARNING NOTE: Negative assertions
+    //
+    // `assert!(condition)` panics if the condition is false.
+    // `.is_none()` checks if an Option is None.
+    // Combined: "assert that this field is absent from the JSON".
     assert!(json.get("appium:platformVersion").is_none());
     assert!(json.get("appium:app").is_none());
 }
+/// Starts the system ChromeDriver or returns `None` so the test can skip.
+///
+/// # RUST LEARNING: Async functions and error handling
+///
+/// This function demonstrates graceful failure for tests:
+/// - `find_chromedriver()?` uses the `?` operator on `Option`
+/// - If `None`, the function returns `None` immediately
+/// - If `Some(path)`, unwraps to `path` and continues
+/// - `.await.ok()` converts the `Result` from start_chromedriver to `Option`
+async fn start_system_chromedriver() -> Option<uto_core::driver::DriverProcess> {
+    let path = find_chromedriver()?;
+    uto_core::driver::start_chromedriver(&path).await.ok()
+}
+
+/// Starts Appium from PATH or returns `None` so the test can skip.
+async fn start_system_appium() -> Option<uto_core::driver::DriverProcess> {
+    let path = uto_core::env::platform::find_appium()?;
+    uto_core::driver::start_appium(&path).await.ok()
+}
+
+fn is_expected_mobile_environment_gap(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+
+    (lower.contains("unknown command") && lower.contains("404"))
+        || lower.contains("no devices/emulators found")
+        || lower.contains("could not find a connected android device")
+        || lower.contains("could not find a driver for automationname")
+        || lower.contains("uiautomator2")
+}
+
+// ---------------------------------------------------------------------------
+// MobileCapabilities — pure unit tests (no I/O, no network)
+// ---------------------------------------------------------------------------
 
 #[test]
 fn mobile_capabilities_ios_minimal() {

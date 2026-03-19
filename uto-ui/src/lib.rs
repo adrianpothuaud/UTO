@@ -10,7 +10,8 @@
 //!
 //! - [`server`] — Axum-based HTTP + WebSocket server with embedded SPA and REST API.
 //! - [`runner`] — Subprocess bridge: spawns `uto run --project <dir>`, relays
-//!   stdout/stderr as live log events over WebSocket, broadcasts `run_finished` on completion.
+//!   stdout/stderr as live log events, forwards structured per-test execution
+//!   events over WebSocket, and broadcasts `run_finished` on completion.
 //! - [`watcher`] — Filesystem watcher: watches the project `tests/` directory for changes and
 //!   auto-triggers a re-run (debounced at 300 ms) when `--watch` is enabled.
 //!

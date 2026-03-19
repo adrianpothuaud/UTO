@@ -3,6 +3,12 @@ name = "uto-test-macros"
 version = "0.1.0"
 edition = "2021"
 description = "Procedural macros for UTO test authoring"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/uinf/uto"
+homepage = "https://utotest.dev"
+documentation = "https://docs.rs/uto-test-macros"
+keywords = ["macros", "testing", "automation"]
+categories = ["development-tools::testing"]
 
 [lib]
 proc-macro = true
