@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="examples-page">
+
+  <section class="examples-hero">
+    <div class="examples-hero-inner">
+      <h1 class="examples-title">Examples &amp; Demos</h1>
+      <p class="examples-subtitle">
+        Real UTO test scripts, CLI workflows, UI mode demonstrations, and Studio recordings.
+        Everything shown here runs today on the current codebase.
+      </p>
+    </div>
+  </section>
+
+  <!-- Quick start flow -->
+  <section class="section-container" id="quickstart">
+    <h2 class="section-title">Five-Minute Quick Start</h2>
+    <p class="section-sub">From zero to a running test with HTML report.</p>
+
+    <div class="steps-flow">
+      <div class="step-block">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Install UTO</h3>
+          <div class="code-window">
+            <div class="code-window-bar">
+              <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+              <span class="code-window-title">terminal</span>
+            </div>
+            <pre class="code-block"><code><span class="comment"># macOS / Linux</span>
+curl -fsSL https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.sh | bash
+
+<span class="comment"># Windows (PowerShell)</span>
+irm https://raw.githubusercontent.com/adrianpothuaud/UTO/main/install.ps1 | iex</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Scaffold a project</h3>
+          <div class="code-window">
+            <div class="code-window-bar">
+              <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+              <span class="code-window-title">terminal</span>
+            </div>
+            <pre class="code-block"><code><span class="kw">uto</span> init ./my-suite <span class="flag">--template</span> web
+<span class="kw">cd</span> ./my-suite</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Run the generated test</h3>
+          <div class="code-window">
+            <div class="code-window-bar">
+              <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+              <span class="code-window-title">terminal</span>
+            </div>
+            <pre class="code-block"><code><span class="kw">uto</span> run <span class="flag">--target</span> web</code></pre>
+          </div>
+          <div class="terminal-output">
+            <pre><code>  UTO runner  →  phase: discovery
+  Found 1 test binary
+  [ smoke_journey ] running...
+  [ smoke_journey ] ✓ passed  (1.2s)
+  Suite: 1 passed, 0 failed</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Generate an HTML report</h3>
+          <div class="code-window">
+            <div class="code-window-bar">
+              <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+              <span class="code-window-title">terminal</span>
+            </div>
+            <pre class="code-block"><code><span class="kw">uto</span> report <span class="flag">--html</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-block">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h3>Open the interactive UI</h3>
+          <div class="code-window">
+            <div class="code-window-bar">
+              <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+              <span class="code-window-title">terminal</span>
+            </div>
+            <pre class="code-block"><code><span class="kw">uto</span> ui <span class="flag">--open</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Test script examples -->
+  <section class="section-container" id="test-scripts">
+    <h2 class="section-title">Test Script Examples</h2>
+    <p class="section-sub">Real-world patterns using the <code>uto-test</code> intent API.</p>
+
+    <div class="example-tabs">
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="web">Web</button>
+        <button class="tab-btn" data-tab="mobile">Mobile</button>
+        <button class="tab-btn" data-tab="cross-platform">Cross-Platform</button>
+        <button class="tab-btn" data-tab="studio-generated">Studio-Generated</button>
+      </div>
+
+      <!-- Web examples -->
+      <div class="tab-content active" id="tab-web">
+        <h3>Login flow</h3>
+        <div class="code-window">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">tests/login.rs</span>
+          </div>
+          <pre class="code-block"><code><span class="kw">use</span> uto_test::startNewSession;
+
+<span class="attr">#[tokio::test]</span>
+<span class="kw">async fn</span> login_and_reach_dashboard() -> uto_core::error::UtoResult&lt;()&gt; {
+    <span class="kw">let</span> s = startNewSession(<span class="str">"chrome"</span>).await?;
+    s.goto(<span class="str">"https://app.example.com/login"</span>).await?;
+    s.fill_intent(<span class="str">"Username"</span>, <span class="str">"alice@example.com"</span>).await?;
+    s.fill_intent(<span class="str">"Password"</span>, <span class="str">"correct-horse"</span>).await?;
+    s.click_intent(<span class="str">"Sign in"</span>).await?;
+    s.assert_visible(<span class="str">"Dashboard"</span>).await?;
+    s.close().await
+}</code></pre>
+        </div>
+
+        <h3>E-commerce checkout</h3>
+        <div class="code-window">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">tests/checkout.rs</span>
+          </div>
+          <pre class="code-block"><code><span class="attr">#[tokio::test]</span>
+<span class="kw">async fn</span> add_to_cart_and_checkout() -> UtoResult&lt;()&gt; {
+    <span class="kw">let</span> s = startNewSession(<span class="str">"chrome"</span>).await?;
+    s.goto(<span class="str">"https://shop.example.com/products"</span>).await?;
+
+    <span class="comment">// Works even if the button moves in the layout</span>
+    s.click_intent(<span class="str">"Add to Cart"</span>).await?;
+    s.assert_visible(<span class="str">"Cart (1)"</span>).await?;
+
+    s.click_intent(<span class="str">"Proceed to Checkout"</span>).await?;
+    s.fill_intent(<span class="str">"Card number"</span>, <span class="str">"4242 4242 4242 4242"</span>).await?;
+    s.click_intent(<span class="str">"Place order"</span>).await?;
+    s.assert_visible(<span class="str">"Order confirmed"</span>).await?;
+    s.close().await
+}</code></pre>
+        </div>
+
+        <h3>Search and filter</h3>
+        <div class="code-window">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">tests/search.rs</span>
+          </div>
+          <pre class="code-block"><code><span class="attr">#[tokio::test]</span>
+<span class="kw">async fn</span> search_returns_relevant_results() -> UtoResult&lt;()&gt; {
+    <span class="kw">let</span> s = startNewSession(<span class="str">"chrome"</span>).await?;
+    s.goto(<span class="str">"https://docs.example.com"</span>).await?;
+    s.fill_intent(<span class="str">"Search"</span>, <span class="str">"getting started"</span>).await?;
+    s.assert_visible(<span class="str">"Quick Start Guide"</span>).await?;
+    s.assert_gone(<span class="str">"No results found"</span>).await?;
+    s.close().await
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Mobile examples -->
+      <div class="tab-content" id="tab-mobile">
+        <h3>Android login</h3>
+        <div class="code-window">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">tests/android_login.rs</span>
+          </div>
+          <pre class="code-block"><code><span class="attr">#[tokio::test]</span>
+<span class="kw">async fn</span> android_login() -> UtoResult&lt;()&gt; {
+    <span class="comment">// Same intent API — just a different platform string</span>
+    <span class="kw">let</span> s = startNewSession(<span class="str">"android"</span>).await?;
+    s.click_intent(<span class="str">"Email"</span>).await?;
+    s.fill_intent(<span class="str">"Email"</span>, <span class="str">"alice@example.com"</span>).await?;
+    s.fill_intent(<span class="str">"Password"</span>, <span class="str">"correct-horse"</span>).await?;
+    s.click_intent(<span class="str">"Sign in"</span>).await?;
+    s.assert_visible(<span class="str">"Home"</span>).await?;
+    s.close().await
+}</code></pre>
+        </div>
+
+        <h3>iOS onboarding</h3>
+        <div class="code-window">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">tests/ios_onboarding.rs</span>
+          </div>
+          <pre class="code-block"><code><span class="attr">#[tokio::test]</span>
+<span class="kw">async fn</span> ios_onboarding_completes() -> UtoResult&lt;()&gt; {
+    <span class="kw">let</span> s = startNewSession(<span class="str">"ios"</span>).await?;
+    s.assert_visible(<span class="str">"Welcome to the app"</span>).await?;
+    s.click_intent(<span class="str">"Get started"</span>).await?;
+    s.click_intent(<span class="str">"Allow notifications"</span>).await?;
+    s.assert_visible(<span class="str">"Your feed"</span>).await?;
+    s.close().await
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Cross-platform example -->
+      <div class="tab-content" id="tab-cross-platform">
+        <h3>Shared helper — same test logic for web and mobile</h3>
+        <div class="code-window">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">tests/cross_platform.rs</span>
+          </div>
+          <pre class="code-block"><code><span class="kw">use</span> uto_test::startNewSession;
+<span class="kw">use</span> uto_core::session::UtoSession;
+
+<span class="comment">/// Shared login assertion — runs on any platform</span>
+<span class="kw">async fn</span> verify_login(s: &amp;dyn UtoSession) -> UtoResult&lt;()&gt; {
+    s.assert_visible(<span class="str">"Dashboard"</span>).await?;
+    s.assert_visible(<span class="str">"Welcome, Alice"</span>).await
+}
+
+<span class="attr">#[tokio::test]</span>
+<span class="kw">async fn</span> web_login_succeeds() -> UtoResult&lt;()&gt; {
+    <span class="kw">let</span> s = startNewSession(<span class="str">"chrome"</span>).await?;
+    s.goto(<span class="str">"https://app.example.com"</span>).await?;
+    s.fill_intent(<span class="str">"Email"</span>, <span class="str">"alice@example.com"</span>).await?;
+    s.fill_intent(<span class="str">"Password"</span>, <span class="str">"pass"</span>).await?;
+    s.click_intent(<span class="str">"Sign in"</span>).await?;
+    verify_login(&amp;*s).await?;
+    s.close().await
+}
+
+<span class="attr">#[tokio::test]</span>
+<span class="kw">async fn</span> android_login_succeeds() -> UtoResult&lt;()&gt; {
+    <span class="kw">let</span> s = startNewSession(<span class="str">"android"</span>).await?;
+    s.fill_intent(<span class="str">"Email"</span>, <span class="str">"alice@example.com"</span>).await?;
+    s.fill_intent(<span class="str">"Password"</span>, <span class="str">"pass"</span>).await?;
+    s.click_intent(<span class="str">"Sign in"</span>).await?;
+    verify_login(&amp;*s).await?; <span class="comment">// same assertion, different platform</span>
+    s.close().await
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Studio-generated example -->
+      <div class="tab-content" id="tab-studio-generated">
+        <h3>Code generated by UTO Studio (Phase 6)</h3>
+        <p class="example-note">
+          The following code was produced by UTO Studio's visual recorder.
+          The tester clicked through a live browser session — no code was written by hand.
+        </p>
+        <div class="code-window studio-generated">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">tests/checkout_recorded.rs  <span class="badge-studio">⏺ Studio-generated</span></span>
+          </div>
+          <pre class="code-block"><code><span class="comment">// Generated by UTO Studio — 2026-03-20T14:23:11Z
+// Session: web / chrome  ·  Steps: 8  ·  Duration: 2m 14s</span>
+
+<span class="attr">#[tokio::test]</span>
+<span class="kw">async fn</span> checkout_flow() -> uto_core::error::UtoResult&lt;()&gt; {
+    <span class="kw">let</span> s = uto_test::startNewSession(<span class="str">"chrome"</span>).await?;
+    s.goto(<span class="str">"https://saucedemo.com"</span>).await?;
+    s.fill_intent(<span class="str">"Username"</span>, <span class="str">"standard_user"</span>).await?;
+    s.fill_intent(<span class="str">"Password"</span>, <span class="str">"secret_sauce"</span>).await?;
+    s.click_intent(<span class="str">"Login"</span>).await?;
+    s.click_intent(<span class="str">"Add to cart"</span>).await?;
+    s.click_intent(<span class="str">"Shopping cart"</span>).await?;
+    s.click_intent(<span class="str">"Checkout"</span>).await?;
+    s.assert_visible(<span class="str">"Checkout: Your Information"</span>).await?;
+    s.close().await
+}</code></pre>
+        </div>
+        <div class="studio-cta">
+          <p>Start recording your own tests:</p>
+          <div class="code-window">
+            <div class="code-window-bar">
+              <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+              <span class="code-window-title">terminal</span>
+            </div>
+            <pre class="code-block"><code><span class="kw">uto</span> ui <span class="flag">--studio</span> <span class="flag">--open</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UI Mode Demo -->
+  <section class="section-container" id="ui-mode">
+    <h2 class="section-title">UTO UI Mode</h2>
+    <p class="section-sub">
+      An interactive browser-based runner for watching and debugging test suites.
+      Launch with <code>uto ui</code>.
+    </p>
+
+    <div class="ui-demo-layout">
+      <div class="ui-demo-screenshot">
+        <div class="mock-ui">
+          <div class="mock-ui-topbar">
+            <span class="mock-logo">UTO</span>
+            <span class="mock-project">my-suite</span>
+            <span class="mock-status ready">● ready</span>
+            <button class="mock-run-btn">▶ Run All</button>
+          </div>
+          <div class="mock-ui-body">
+            <div class="mock-sidebar">
+              <div class="mock-test-group">
+                <div class="mock-test-file">tests/login.rs</div>
+                <div class="mock-test-item passed">
+                  <span class="mock-dot passed"></span>
+                  login_and_reach_dashboard
+                  <span class="mock-duration">1.2s</span>
+                </div>
+              </div>
+              <div class="mock-test-group">
+                <div class="mock-test-file">tests/checkout.rs</div>
+                <div class="mock-test-item passed">
+                  <span class="mock-dot passed"></span>
+                  add_to_cart_and_checkout
+                  <span class="mock-duration">3.4s</span>
+                </div>
+                <div class="mock-test-item failed">
+                  <span class="mock-dot failed"></span>
+                  checkout_without_login
+                  <span class="mock-duration">0.8s</span>
+                </div>
+              </div>
+            </div>
+            <div class="mock-events">
+              <div class="mock-event-header">Event Log</div>
+              <div class="mock-event navigate">🧭 goto("https://app.example.com")<span class="mock-event-time">12ms</span></div>
+              <div class="mock-event action">👆 click_intent("Sign in")<span class="mock-event-time">234ms</span></div>
+              <div class="mock-event assert">✓ assert_visible("Dashboard")<span class="mock-event-time">456ms</span></div>
+              <div class="mock-event failed">✗ assert_visible("Payment form") — not found<span class="mock-event-time">789ms</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ui-demo-features">
+        <h3>What the UI gives you</h3>
+        <ul class="feature-list">
+          <li>
+            <span class="feature-icon">🗂</span>
+            <div>
+              <strong>Test tree panel</strong><br>
+              Tests grouped by file. Color-coded outcomes. Inline ▷ run-single buttons.
+            </div>
+          </li>
+          <li>
+            <span class="feature-icon">⧗</span>
+            <div>
+              <strong>Per-step timeline</strong><br>
+              Horizontal timeline strip with proportional duration bars. Click to jump to any step.
+            </div>
+          </li>
+          <li>
+            <span class="feature-icon">📡</span>
+            <div>
+              <strong>Live log streaming</strong><br>
+              stdout/stderr streamed in real time over WebSocket during active runs.
+            </div>
+          </li>
+          <li>
+            <span class="feature-icon">👁</span>
+            <div>
+              <strong>Watch mode</strong><br>
+              <code>uto ui --watch</code> auto-reruns on file save. 300ms debounce.
+            </div>
+          </li>
+          <li>
+            <span class="feature-icon">📋</span>
+            <div>
+              <strong>Report replay</strong><br>
+              <code>uto ui --report last-run.json</code> loads any saved artifact.
+            </div>
+          </li>
+        </ul>
+        <div class="code-window">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">launch commands</span>
+          </div>
+          <pre class="code-block"><code><span class="comment"># Standard mode</span>
+<span class="kw">uto</span> ui <span class="flag">--open</span>
+
+<span class="comment"># Watch mode</span>
+<span class="kw">uto</span> ui <span class="flag">--watch</span> <span class="flag">--open</span>
+
+<span class="comment"># Replay a saved report</span>
+<span class="kw">uto</span> ui <span class="flag">--report</span> .uto/reports/last-run.json
+
+<span class="comment"># Studio mode (Phase 6)</span>
+<span class="kw">uto</span> ui <span class="flag">--studio</span> <span class="flag">--open</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Studio Demo -->
+  <section class="section-container" id="studio">
+    <h2 class="section-title">UTO Studio — Visual Test Authoring</h2>
+    <p class="section-sub">
+      Record interactions in a live browser session. UTO Studio generates production-ready
+      Rust test code using the intent API — no selectors, no XPath.
+    </p>
+
+    <div class="studio-demo-layout">
+      <div class="studio-workflow">
+        <div class="studio-step">
+          <div class="studio-step-num">1</div>
+          <div class="studio-step-body">
+            <h4>Launch Studio</h4>
+            <div class="code-window small">
+              <div class="code-window-bar">
+                <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+              </div>
+              <pre class="code-block"><code><span class="kw">uto</span> ui <span class="flag">--studio</span> <span class="flag">--open</span></code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="studio-step">
+          <div class="studio-step-num">2</div>
+          <div class="studio-step-body">
+            <h4>Click ⏺ Record</h4>
+            <p>A browser session opens. Every click, fill, and navigation is captured.</p>
+          </div>
+        </div>
+        <div class="studio-step">
+          <div class="studio-step-num">3</div>
+          <div class="studio-step-body">
+            <h4>Interact naturally</h4>
+            <p>Use the app as a real user would. UTO recognizes elements visually — no selectors needed.</p>
+          </div>
+        </div>
+        <div class="studio-step">
+          <div class="studio-step-num">4</div>
+          <div class="studio-step-body">
+            <h4>Stop and save</h4>
+            <p>Click ⏹ Stop. Studio generates a complete Rust test function and saves it to your <code>tests/</code> directory.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="studio-api-box">
+        <h3>Studio REST API</h3>
+        <table class="api-table">
+          <thead>
+            <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>GET</td><td>/api/studio/status</td><td>Recording state + step count</td></tr>
+            <tr><td>POST</td><td>/api/studio/start</td><td>Begin recording session</td></tr>
+            <tr><td>POST</td><td>/api/studio/stop</td><td>Stop + receive generated code</td></tr>
+            <tr><td>POST</td><td>/api/studio/step</td><td>Append a recorded interaction</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="api-box-subtitle">Example stop response</h3>
+        <div class="code-window">
+          <div class="code-window-bar">
+            <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+            <span class="code-window-title">POST /api/studio/stop → 200</span>
+          </div>
+          <pre class="code-block"><code>{
+  <span class="str">"recording"</span>: false,
+  <span class="str">"step_count"</span>: 5,
+  <span class="str">"generated_code"</span>: <span class="str">"#[tokio::test]\nasync fn login_flow() ..."</span>
+}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="studio-phase-roadmap">
+      <h3>Phase 6 Delivery Roadmap</h3>
+      <div class="phase-items">
+        <div class="phase-item done">
+          <span class="phase-badge done">6.1 ✅</span>
+          <div>
+            <strong>Studio scaffold + recorder protocol</strong><br>
+            REST API, code generation, <code>--studio</code> flag, reference project
+          </div>
+        </div>
+        <div class="phase-item planned">
+          <span class="phase-badge planned">6.2</span>
+          <div>
+            <strong>Vision inspector overlay</strong><br>
+            Bounding boxes, confidence scores, intent suggestions during recording
+          </div>
+        </div>
+        <div class="phase-item planned">
+          <span class="phase-badge planned">6.3</span>
+          <div>
+            <strong>Code generation + file output</strong><br>
+            Save recorded tests directly to <code>tests/</code> with cargo check validation
+          </div>
+        </div>
+        <div class="phase-item planned">
+          <span class="phase-badge planned">6.4</span>
+          <div>
+            <strong>Assertion builder + replay</strong><br>
+            Visual assertion picker and in-Studio replay validation
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLI reference -->
+  <section class="section-container" id="cli">
+    <h2 class="section-title">CLI Reference</h2>
+    <div class="cli-grid">
+      <div class="cli-command">
+        <div class="cli-cmd-header">
+          <code>uto init</code>
+          <span class="cli-badge">scaffold</span>
+        </div>
+        <pre class="code-block cli-block"><code><span class="kw">uto</span> init &lt;project-dir&gt; [<span class="flag">--template</span> web|mobile]
+
+<span class="comment"># Examples</span>
+<span class="kw">uto</span> init ./my-tests
+<span class="kw">uto</span> init ./mobile-tests <span class="flag">--template</span> mobile</code></pre>
+        <p>Creates a new UTO project with a scaffolded <code>uto.json</code>, test template, and Cargo workspace.</p>
+      </div>
+      <div class="cli-command">
+        <div class="cli-cmd-header">
+          <code>uto run</code>
+          <span class="cli-badge">execute</span>
+        </div>
+        <pre class="code-block cli-block"><code><span class="kw">uto</span> run [<span class="flag">--project</span> .] [<span class="flag">--target</span> web|mobile]
+         [<span class="flag">--test-bin</span> &lt;bin&gt;] [<span class="flag">--test-name</span> &lt;name&gt;]
+
+<span class="comment"># Examples</span>
+<span class="kw">uto</span> run
+<span class="kw">uto</span> run <span class="flag">--target</span> mobile
+<span class="kw">uto</span> run <span class="flag">--test-name</span> login_flow</code></pre>
+        <p>Discovers and executes tests. Emits a structured JSON report to <code>.uto/reports/</code>.</p>
+      </div>
+      <div class="cli-command">
+        <div class="cli-cmd-header">
+          <code>uto report</code>
+          <span class="cli-badge">report</span>
+        </div>
+        <pre class="code-block cli-block"><code><span class="kw">uto</span> report [<span class="flag">--html</span>] [<span class="flag">--html-output</span> &lt;path&gt;]
+
+<span class="comment"># Examples</span>
+<span class="kw">uto</span> report <span class="flag">--html</span>
+<span class="kw">uto</span> report <span class="flag">--html-output</span> ./results.html</code></pre>
+        <p>Reads the last run report and generates an offline, self-contained HTML file with dark/light theme toggle.</p>
+      </div>
+      <div class="cli-command">
+        <div class="cli-cmd-header">
+          <code>uto ui</code>
+          <span class="cli-badge">interactive</span>
+        </div>
+        <pre class="code-block cli-block"><code><span class="kw">uto</span> ui [<span class="flag">--open</span>] [<span class="flag">--watch</span>] [<span class="flag">--studio</span>]
+       [<span class="flag">--port</span> 4000] [<span class="flag">--report</span> &lt;path&gt;]
+
+<span class="comment"># Examples</span>
+<span class="kw">uto</span> ui <span class="flag">--open</span>
+<span class="kw">uto</span> ui <span class="flag">--watch</span>
+<span class="kw">uto</span> ui <span class="flag">--studio</span> <span class="flag">--open</span></code></pre>
+        <p>Launches the interactive UI server. <code>--studio</code> enables Phase 6 visual recording mode.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function() {
+  var btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tab = this.getAttribute('data-tab');
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+      this.classList.add('active');
+      var el = document.getElementById('tab-' + tab);
+      if (el) el.classList.add('active');
+    });
+  });
+}());
+</script>
+{% endblock content %}

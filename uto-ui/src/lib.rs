@@ -14,6 +14,7 @@
 //!   events over WebSocket, and broadcasts `run_finished` on completion.
 //! - [`watcher`] — Filesystem watcher: watches the project `tests/` directory for changes and
 //!   auto-triggers a re-run (debounced at 300 ms) when `--watch` is enabled.
+//! - [`studio`] — Phase 6 UTO Studio scaffold: visual test authoring and recording backend.
 //!
 //! ## Quick start
 //!
@@ -23,9 +24,20 @@
 //! let opts = UiOptions { port: 4000, ..Default::default() };
 //! start_server_sync(opts).expect("server error");
 //! ```
+//!
+//! ## Studio mode (Phase 6)
+//!
+//! ```no_run
+//! use uto_ui::{UiOptions, start_server_sync};
+//!
+//! let opts = UiOptions { port: 4000, studio: true, ..Default::default() };
+//! start_server_sync(opts).expect("server error");
+//! ```
 
 pub(crate) mod runner;
 pub mod server;
+pub mod studio;
 pub(crate) mod watcher;
 
 pub use server::{start_server, start_server_sync, UiOptions};
+pub use studio::{generate_test_code, RecordedStep, StepKind, StudioState};
