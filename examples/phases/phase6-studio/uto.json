@@ -1,0 +1,10 @@
+{
+  "schema_version": "1",
+  "project_name": "phase6-studio",
+  "tests_dir": "tests",
+  "default_target": "web",
+  "report_dir": ".uto/reports",
+  "uto_root": "../../..",
+  "report_schema": "uto-suite/v1",
+  "framework_version": "6.0"
+}

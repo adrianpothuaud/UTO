@@ -40,10 +40,12 @@ fn print_help() {
            uto init <project-dir> [--template web|mobile] [--dev] [--uto-root <path>]\n  \
            uto run [--project <project-dir>] [--target web|mobile] [--report-json <path>] [--live-events-jsonl <path>] [--driver-trace] [--test-bin <bin>] [--test-name <name>]\n  \
            uto report [--project <project-dir>] [--input <report-path>] [--html] [--html-output <report.html>]\n  \
-           uto ui [--project <project-dir>] [--port <port>] [--open] [--watch] [--report <report-path>]\n\n\
+           uto ui [--project <project-dir>] [--port <port>] [--open] [--watch] [--report <report-path>] [--studio]\n\n\
          Init modes:\n  \
            Production (default): Generates projects with crates.io dependencies\n  \
            Development (--dev):  Generates projects with path dependencies to UTO workspace\n\n\
+         Studio mode (Phase 6):\n  \
+           uto ui --studio   Launch UTO Studio -- visual test authoring and recording\n\n\
          Note: If --project is omitted, the current directory is used."
     );
 }

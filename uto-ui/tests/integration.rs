@@ -42,6 +42,7 @@ async fn launch_server_with_project(
         open: false,
         watch: false,
         report,
+        studio: false,
     };
 
     let handle = tokio::spawn(async move { start_server(opts).await });

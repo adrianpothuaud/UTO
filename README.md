@@ -25,13 +25,13 @@ Where Cypress is web-only and Playwright is selector-brittle, UTO delivers selec
 | Vision-first recognition | ❌ | ❌ | ✅ |
 | Selector-free tests | ❌ | ❌ | ✅ |
 | Zero-config setup | ❌ | ❌ | ✅ |
-| Visual test recorder | Stalled | CLI-only | 🎯 Phase 6 |
+| Visual test recorder | Stalled | CLI-only | ✅ Phase 6.1 |
 | Cross-platform reporting | ❌ | ❌ | ✅ |
 | Compiled performance | ❌ | ❌ | ✅ |
 
 ## Current Status
 
-Phases 1–5.5 are complete. The framework ships a full CLI lifecycle, structured JSON/HTML reporting, mobile parity, an interactive UI mode with rich test observation capabilities, and library-first ergonomics:
+Phases 1–5.5 are complete. Phase 6 (UTO Studio) is in progress — Iteration 6.1 delivered. The framework ships a full CLI lifecycle, structured JSON/HTML reporting, mobile parity, an interactive UI mode with rich test observation capabilities, library-first ergonomics, and the Studio recording scaffold:
 
 - Zero-config browser and SDK discovery + driver provisioning
 - Web and mobile automation via a unified session API
@@ -41,8 +41,9 @@ Phases 1–5.5 are complete. The framework ships a full CLI lifecycle, structure
 - Interactive `uto ui` mode with real-time event stream, watch mode, report replay, selective test execution, per-step duration, step timeline, and keyboard shortcuts
 - **Library-first design**: Use UTO as a Rust library without CLI scaffolding (Phase 5.5)
 - **CLI convenience**: Optional `--project` argument with CWD inference (Phase 5.5)
+- **UTO Studio 6.1**: `uto ui --studio` with REST recording API and Rust code generation
 
-Phase 6 (UTO Studio — visual test authoring) is next.
+Phase 6.2–6.4 (vision inspector overlay, file output, assertion builder) are next.
 
 ## Install
 
@@ -119,7 +120,7 @@ Environment variables:
 - Phase 5: Interactive UI mode (`uto ui`) ✅
 - Phase 5bis: UTO UI improvements — information richness, streaming time preview, E2E coverage, reportless discovery ✅
 - Phase 5.5: Library ergonomics + CLI flexibility (UTO as standalone Rust library, CWD inference) ✅
-- Phase 6: UTO Studio — visual, selector-free test authoring for web and mobile 🎯
+- Phase 6: UTO Studio — visual, selector-free test authoring for web and mobile (6.1 ✅ delivered)
 - Phase 7+: Self-healing tests, CI/CD ecosystem integrations, cloud reporting
 
 See `docs/` for architecture decision records and `GEMINI.md` for internal project context.

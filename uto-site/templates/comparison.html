@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="comparison-page">
+
+  <!-- Hero -->
+  <section class="comparison-hero">
+    <div class="comparison-hero-inner">
+      <h1 class="comparison-title">UTO vs. The World</h1>
+      <p class="comparison-subtitle">
+        A precise, category-by-category comparison of UTO against every major test automation framework.
+        No marketing claims — just technical facts.
+      </p>
+    </div>
+  </section>
+
+  <!-- TL;DR summary band -->
+  <section class="tldr-band">
+    <div class="tldr-inner">
+      <span class="tldr-label">TL;DR</span>
+      <span class="tldr-text">
+        UTO is the only framework that delivers <strong>vision-first element recognition</strong>,
+        <strong>unified web + mobile</strong> with one API, <strong>zero-config provisioning</strong>,
+        and a <strong>compiled Rust runtime</strong> — all in a single tool.
+      </span>
+    </div>
+  </section>
+
+  <!-- Master comparison table -->
+  <section class="section-container">
+    <h2 class="section-title">Feature Matrix</h2>
+    <p class="section-sub">
+      Every capability across the twelve most widely-used automation frameworks.
+      ✅ = native support &nbsp;·&nbsp; ⚠️ = partial / workaround &nbsp;·&nbsp; ❌ = not supported
+    </p>
+
+    <div class="table-scroll">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th class="feature-col">Capability</th>
+            <th class="uto-col">UTO</th>
+            <th>Cypress</th>
+            <th>Playwright</th>
+            <th>WebdriverIO</th>
+            <th>Selenium</th>
+            <th>Appium</th>
+            <th>Maestro</th>
+            <th>Taiko</th>
+            <th>NightWatch</th>
+            <th>TestCafe</th>
+            <th>Detox</th>
+            <th>Espresso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="category-row"><td colspan="13">Platform Coverage</td></tr>
+          <tr>
+            <td>Web (Chrome / Chromium)</td>
+            <td class="uto-cell">✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+            <td>⚠️</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Web (Firefox)</td>
+            <td class="uto-cell">⚠️</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td>
+            <td>❌</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Web (Safari / WebKit)</td>
+            <td class="uto-cell">⚠️</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td>
+            <td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Android (native)</td>
+            <td class="uto-cell">✅</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td>
+            <td>✅</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td>
+          </tr>
+          <tr>
+            <td>iOS (native)</td>
+            <td class="uto-cell">✅</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td>
+            <td>✅</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Single API for web + mobile</td>
+            <td class="uto-cell uto-win">✅ One API</td><td>❌</td><td>❌</td><td>⚠️</td><td>❌</td>
+            <td>⚠️</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+
+          <tr class="category-row"><td colspan="13">Test Authoring</td></tr>
+          <tr>
+            <td>No CSS / XPath selectors required</td>
+            <td class="uto-cell uto-win">✅ Intent API</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>⚠️</td><td>❌</td><td>⚠️</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Visual test recorder (no-code)</td>
+            <td class="uto-cell uto-win">✅ Studio</td><td>⚠️ Limited</td><td>⚠️ Codegen</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Selector-free recording</td>
+            <td class="uto-cell uto-win">✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Natural language test steps</td>
+            <td class="uto-cell uto-win">✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>⚠️</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+
+          <tr class="category-row"><td colspan="13">Vision and Resilience</td></tr>
+          <tr>
+            <td>ML-based element recognition</td>
+            <td class="uto-cell uto-win">✅ Phase 3</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Survives DOM / CSS refactors</td>
+            <td class="uto-cell uto-win">✅ Vision-first</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>⚠️</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Accessibility-boosted resolution</td>
+            <td class="uto-cell uto-win">✅ Weighted</td><td>❌</td><td>⚠️</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Works on canvas / custom components</td>
+            <td class="uto-cell uto-win">✅</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>⚠️</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+
+          <tr class="category-row"><td colspan="13">Infrastructure</td></tr>
+          <tr>
+            <td>Zero-config driver provisioning</td>
+            <td class="uto-cell uto-win">✅ Auto</td><td>✅</td><td>✅</td><td>⚠️</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>⚠️</td><td>⚠️</td><td>✅</td><td>⚠️</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>No Node.js / JVM runtime required</td>
+            <td class="uto-cell uto-win">✅ Rust binary</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Cold-start time</td>
+            <td class="uto-cell uto-win">&lt;100ms</td><td>~2–4s</td><td>~1–3s</td><td>~2–5s</td><td>~1–3s</td>
+            <td>~5–15s</td><td>~1–3s</td><td>~1–2s</td><td>~2–4s</td><td>~1–2s</td><td>~3–8s</td><td>~2–4s</td>
+          </tr>
+          <tr>
+            <td>Framework-managed driver lifecycle</td>
+            <td class="uto-cell uto-win">✅</td><td>✅</td><td>✅</td><td>⚠️</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>⚠️</td><td>⚠️</td><td>✅</td><td>✅</td><td>✅</td>
+          </tr>
+
+          <tr class="category-row"><td colspan="13">Observability and Reporting</td></tr>
+          <tr>
+            <td>Interactive UI runner</td>
+            <td class="uto-cell uto-win">✅ uto ui</td><td>✅ Launchpad</td><td>✅ UI Mode</td><td>⚠️</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>❌</td><td>⚠️</td><td>✅</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Structured JSON reports</td>
+            <td class="uto-cell uto-win">✅ Versioned</td><td>⚠️</td><td>✅</td><td>✅</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>❌</td><td>✅</td><td>✅</td><td>⚠️</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Offline HTML reports</td>
+            <td class="uto-cell uto-win">✅ Inline CSS</td><td>✅</td><td>✅ Trace</td><td>✅</td><td>❌</td>
+            <td>❌</td><td>⚠️</td><td>❌</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Per-step duration timeline</td>
+            <td class="uto-cell uto-win">✅</td><td>✅</td><td>✅</td><td>⚠️</td><td>❌</td>
+            <td>❌</td><td>⚠️</td><td>❌</td><td>⚠️</td><td>✅</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Live log streaming to UI</td>
+            <td class="uto-cell uto-win">✅ WebSocket</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td>
+            <td>❌</td><td>✅</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td><td>❌</td>
+          </tr>
+          <tr>
+            <td>Watch mode (re-run on file change)</td>
+            <td class="uto-cell uto-win">✅</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td>
+            <td>❌</td><td>⚠️</td><td>❌</td><td>⚠️</td><td>✅</td><td>❌</td><td>❌</td>
+          </tr>
+
+          <tr class="category-row"><td colspan="13">Language and Ecosystem</td></tr>
+          <tr>
+            <td>Primary language</td>
+            <td class="uto-cell">Rust</td><td>JS/TS</td><td>JS/TS</td><td>JS/TS</td><td>Java/Python/JS</td>
+            <td>Java/JS</td><td>YAML/JS</td><td>JS</td><td>JS/TS</td><td>JS/TS</td><td>JS/TS</td><td>Java/Kotlin</td>
+          </tr>
+          <tr>
+            <td>Type safety</td>
+            <td class="uto-cell uto-win">✅ Compiler</td><td>⚠️ TS only</td><td>⚠️ TS only</td><td>⚠️ TS only</td><td>⚠️</td>
+            <td>⚠️</td><td>❌</td><td>❌</td><td>⚠️ TS</td><td>⚠️ TS</td><td>⚠️ TS</td><td>✅</td>
+          </tr>
+          <tr>
+            <td>Open source</td>
+            <td class="uto-cell">⚠️ Beta</td><td>✅ MIT</td><td>✅ Apache</td><td>✅ MIT</td><td>✅ Apache</td>
+            <td>✅ Apache</td><td>✅ Apache</td><td>✅ MIT</td><td>✅ MIT</td><td>✅ MIT</td><td>✅ MIT</td><td>✅ Apache</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Detailed head-to-head sections -->
+  <section class="section-container" id="vs-cypress">
+    <h2 class="section-title">UTO vs. Cypress</h2>
+    <div class="vs-grid">
+      <div class="vs-card vs-them">
+        <h3>Cypress</h3>
+        <ul>
+          <li>✅ Best-in-class DX for web E2E testing</li>
+          <li>✅ Time-travel debugging with snapshots</li>
+          <li>✅ Large ecosystem (plugins, recipes)</li>
+          <li>❌ <strong>Web-only</strong> — no mobile support</li>
+          <li>❌ Selector-brittle tests (<code>cy.get('[data-cy=...]')</code>)</li>
+          <li>❌ Node.js runtime dependency (cold start, memory overhead)</li>
+          <li>❌ Studio feature effectively deprecated since v12</li>
+          <li>❌ Single-process model limits parallelism</li>
+        </ul>
+      </div>
+      <div class="vs-card vs-uto">
+        <h3>UTO</h3>
+        <ul>
+          <li>✅ <strong>Web + mobile</strong> in one framework</li>
+          <li>✅ Vision-first — tests survive refactors</li>
+          <li>✅ Compiled Rust: &lt;100ms cold start</li>
+          <li>✅ UTO Studio actively developed (Phase 6)</li>
+          <li>✅ Selector-free intent API</li>
+          <li>✅ Same report format for web and mobile</li>
+          <li>⚠️ Ecosystem still growing (private beta)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-compare">
+      <div class="code-window">
+        <div class="code-window-bar">
+          <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+          <span class="code-window-title">cypress — selector-based</span>
+        </div>
+        <pre class="code-block"><code><span class="kw">it</span>(<span class="str">'logs in'</span>, () => {
+  cy.visit(<span class="str">'https://app.example.com'</span>);
+  cy.get(<span class="str">'[data-cy="username"]'</span>).type(<span class="str">'alice'</span>);
+  cy.get(<span class="str">'[data-cy="password"]'</span>).type(<span class="str">'secret'</span>);
+  cy.get(<span class="str">'button.btn-primary'</span>).click();
+  cy.get(<span class="str">'.dashboard-header'</span>).should(<span class="str">'be.visible'</span>);
+}); <span class="comment">// breaks on every CSS refactor</span></code></pre>
+      </div>
+      <div class="code-window">
+        <div class="code-window-bar">
+          <span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span>
+          <span class="code-window-title">uto — intent-based</span>
+        </div>
+        <pre class="code-block"><code><span class="comment">// same test, survives any refactor</span>
+<span class="kw">#[tokio::test]</span>
+<span class="kw">async fn</span> login() -> UtoResult&lt;()&gt; {
+    let s = startNewSession(<span class="str">"chrome"</span>).await?;
+    s.goto(<span class="str">"https://app.example.com"</span>).await?;
+    s.fill_intent(<span class="str">"Username"</span>, <span class="str">"alice"</span>).await?;
+    s.fill_intent(<span class="str">"Password"</span>, <span class="str">"secret"</span>).await?;
+    s.click_intent(<span class="str">"Sign in"</span>).await?;
+    s.assert_visible(<span class="str">"Dashboard"</span>).await
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-container" id="vs-playwright">
+    <h2 class="section-title">UTO vs. Playwright</h2>
+    <div class="vs-grid">
+      <div class="vs-card vs-them">
+        <h3>Playwright</h3>
+        <ul>
+          <li>✅ Multi-browser (Chromium, Firefox, WebKit)</li>
+          <li>✅ Powerful tracing and video capture</li>
+          <li>✅ Active development by Microsoft</li>
+          <li>✅ <code>playwright codegen</code> recorder</li>
+          <li>❌ <strong>Web-only core</strong> — no native mobile</li>
+          <li>❌ Selector-based by default (even with <code>getByRole</code>)</li>
+          <li>❌ No visual recognition — fails on canvas / custom UI</li>
+          <li>❌ Node.js / Python / Java only — no compiled option</li>
+        </ul>
+      </div>
+      <div class="vs-card vs-uto">
+        <h3>UTO</h3>
+        <ul>
+          <li>✅ <strong>Web + Android + iOS</strong> from one API</li>
+          <li>✅ Vision model — works on canvas and custom components</li>
+          <li>✅ Intent API — more readable than <code>getByRole</code></li>
+          <li>✅ UTO Studio generates intent-first code</li>
+          <li>✅ Rust binary — no runtime to install per-project</li>
+          <li>⚠️ Firefox / WebKit support planned (Phase 7)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-container" id="vs-maestro">
+    <h2 class="section-title">UTO vs. Maestro</h2>
+    <div class="vs-grid">
+      <div class="vs-card vs-them">
+        <h3>Maestro (mobile.dev)</h3>
+        <ul>
+          <li>✅ YAML-based, human-readable mobile test scripts</li>
+          <li>✅ Selector-free intent steps for mobile</li>
+          <li>✅ Cross-platform (Android + iOS)</li>
+          <li>✅ No boilerplate — zero-setup for mobile</li>
+          <li>❌ <strong>Mobile-only</strong> — no web support</li>
+          <li>❌ YAML only — no type safety, limited logic</li>
+          <li>❌ No web-side unified runner or report</li>
+          <li>❌ No vision model — relies on accessibility tree</li>
+        </ul>
+      </div>
+      <div class="vs-card vs-uto">
+        <h3>UTO</h3>
+        <ul>
+          <li>✅ <strong>Web + mobile</strong> in one typed Rust API</li>
+          <li>✅ Vision-first + accessibility fallback</li>
+          <li>✅ Unified report format (web and mobile)</li>
+          <li>✅ Full programming language (conditions, loops, helpers)</li>
+          <li>✅ Matches Maestro's mobile-first ergonomics for intent steps</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-container" id="vs-others">
+    <h2 class="section-title">UTO vs. Other Frameworks</h2>
+    <div class="others-grid">
+      <div class="other-card">
+        <h3>WebdriverIO</h3>
+        <p>Powerful W3C WebDriver wrapper with extensive plugin ecosystem. Supports web + mobile via Appium but requires separate configuration. No intent API. No vision layer. Node.js dependency.</p>
+        <p class="other-verdict"><strong>UTO edge:</strong> intent API, vision layer, unified binary.</p>
+      </div>
+      <div class="other-card">
+        <h3>Taiko</h3>
+        <p>Node.js browser automation with a user-friendly API. Uses smart selectors (proximity, role) that are better than raw CSS, but still DOM-dependent. Web-only. No mobile. No vision.</p>
+        <p class="other-verdict"><strong>UTO edge:</strong> vision resilience, web + mobile, Rust performance.</p>
+      </div>
+      <div class="other-card">
+        <h3>NightWatch.js</h3>
+        <p>W3C WebDriver-based, integrated test runner and assertion library. Popular for teams coming from Mocha/Jasmine. No mobile. Selector-based. Node.js.</p>
+        <p class="other-verdict"><strong>UTO edge:</strong> intent API, vision, cross-platform, structured reports.</p>
+      </div>
+      <div class="other-card">
+        <h3>TestCafe</h3>
+        <p>Zero-config web testing using URL injection (no WebDriver). Great DX. Multi-browser. TypeScript-first. No mobile. No vision. The non-WebDriver approach limits low-level access.</p>
+        <p class="other-verdict"><strong>UTO edge:</strong> mobile parity, vision layer, intent-based authoring.</p>
+      </div>
+      <div class="other-card">
+        <h3>Selenium WebDriver</h3>
+        <p>The industry standard — widely supported but clearly legacy. Slow W3C protocol, no built-in runner, no reports, no vision. High setup friction. UTO uses the same W3C protocol but abstracts all of this away.</p>
+        <p class="other-verdict"><strong>UTO edge:</strong> everything above the protocol layer.</p>
+      </div>
+      <div class="other-card">
+        <h3>Detox (React Native)</h3>
+        <p>End-to-end testing for React Native apps. Gray-box testing with tight app process control. Fast and reliable for RN. Completely locked to React Native. No web. No non-RN mobile apps.</p>
+        <p class="other-verdict"><strong>UTO edge:</strong> platform-agnostic (native Android/iOS + web).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key differentiators summary -->
+  <section class="section-container differentiators">
+    <h2 class="section-title">The Three Asymmetric Advantages</h2>
+    <div class="diff-grid">
+      <div class="diff-card">
+        <div class="diff-number">01</div>
+        <h3>Vision-First Resilience</h3>
+        <p>
+          Every test written with Cypress or Playwright has an expiration date.
+          UTO tests identify elements by what they <em>look like</em> and what they <em>do</em>,
+          anchored by accessibility metadata. A button that says "Add to Cart" is still
+          recognizable after a full design system migration.
+        </p>
+        <div class="diff-quote">"Tests that survive your next design system refactor."</div>
+      </div>
+      <div class="diff-card">
+        <div class="diff-number">02</div>
+        <h3>Universal Platform Parity</h3>
+        <p>
+          One framework. One CLI. One report format. One debugging interface.
+          For both web and mobile. No bifurcation of tools, expertise, or reporting pipelines.
+          Your mobile team and web team use the same <code>uto-test</code> API.
+        </p>
+        <div class="diff-quote">"Write one test. Run it on Chrome, Android, and iOS."</div>
+      </div>
+      <div class="diff-card">
+        <div class="diff-number">03</div>
+        <h3>Zero Maintenance Overhead</h3>
+        <p>
+          UTO provisions drivers, manages processes, handles retries, generates test code,
+          and reports results. From <code>uto init</code> to a passing test with HTML report
+          in under five minutes — no driver version pinning, no PATH configuration,
+          no dependency conflicts.
+        </p>
+        <div class="diff-quote">"From zero to passing tests in five minutes."</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock content %}

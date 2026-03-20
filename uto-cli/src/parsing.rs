@@ -59,6 +59,8 @@ pub struct UiArgs {
     pub watch: bool,
     /// Path to an existing `uto-suite/v1` or `uto-report/v1` JSON artifact to replay.
     pub report: Option<PathBuf>,
+    /// Enable UTO Studio mode (Phase 6 — visual test authoring and recording).
+    pub studio: bool,
 }
 
 pub fn parse_init_args(args: &[String], current_dir: &Path) -> Result<InitArgs, String> {
@@ -256,6 +258,7 @@ pub fn parse_ui_args(args: &[String]) -> Result<UiArgs, String> {
     let mut open = false;
     let mut watch = false;
     let mut report: Option<PathBuf> = None;
+    let mut studio = false;
 
     let mut i = 0usize;
     while i < args.len() {
@@ -288,6 +291,9 @@ pub fn parse_ui_args(args: &[String]) -> Result<UiArgs, String> {
             "--watch" => {
                 watch = true;
             }
+            "--studio" => {
+                studio = true;
+            }
             "--report" => {
                 let value = get_flag_value(args, i, "--report")?;
                 report = Some(PathBuf::from(value));
@@ -309,6 +315,7 @@ pub fn parse_ui_args(args: &[String]) -> Result<UiArgs, String> {
         open,
         watch,
         report,
+        studio,
     })
 }
 
@@ -473,6 +480,7 @@ mod tests {
         assert!(!parsed.open);
         assert!(!parsed.watch);
         assert!(parsed.report.is_none());
+        assert!(!parsed.studio);
     }
 
     #[test]
@@ -493,6 +501,15 @@ mod tests {
         assert!(parsed.open);
         assert!(parsed.watch);
         assert_eq!(parsed.report, Some(PathBuf::from("out/last-run.json")));
+        assert!(!parsed.studio);
+    }
+
+    #[test]
+    fn parse_ui_args_studio_flag() {
+        let args = vec!["--studio".to_string()];
+        let parsed = parse_ui_args(&args).expect("parse ui args studio");
+        assert!(parsed.studio);
+        assert_eq!(parsed.port, 4000);
     }
 
     #[test]

@@ -16,6 +16,8 @@ Current phase references:
 
 - `examples/phases/phase3-intent`: committed Phase 3 intent-resolution project
 - `examples/phases/phase4-framework`: committed Phase 4 framework + reporting project
+- `examples/phases/phase5-ui-mode`: committed Phase 5 UI mode schema compatibility project
+- `examples/phases/phase6-studio`: committed Phase 6 Studio recording and code generation project
 
 ## Quick Validation
 

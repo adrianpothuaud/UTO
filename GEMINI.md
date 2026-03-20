@@ -286,7 +286,7 @@ See `docs/0020-phase-5.5-library-ergonomics.md` for detailed specification and i
 
 ## Phase 6: UTO Studio — Visual Test Authoring
 
-**Status:** Planned — see ADR 0016
+**Status:** In Progress — Iteration 6.1 delivered (see ADR 0021)
 
 Phase 6 delivers **UTO Studio**: a visual, interactive test recording and authoring environment that surpasses Cypress Studio and Playwright Codegen. Key capabilities:
 
@@ -299,7 +299,17 @@ Phase 6 delivers **UTO Studio**: a visual, interactive test recording and author
 
 UTO Studio is an enhanced mode of `uto ui` (launched via `uto ui --studio`), not a separate tool. It layers on the Phase 5 server and SPA infrastructure.
 
-See ADR 0016 for full specification, architecture, and Phase 6 delivery plan.
+**Iteration 6.1 Delivery (2026-03-20):**
+- `uto ui --studio` flag parsed and forwarded to the server layer
+- Four REST endpoints: `GET /api/studio/status`, `POST /api/studio/start`, `POST /api/studio/stop`, `POST /api/studio/step`
+- `uto-ui/src/studio.rs` — `StudioState`, `RecordedStep`, `StepKind`, `generate_test_code`
+- `/api/status` extended with `"studio": bool` field
+- `examples/phases/phase6-studio/` reference project with 9 passing tests
+- `uto-ui` exports `generate_test_code`, `RecordedStep`, `StepKind`, `StudioState`
+
+**Remaining iterations:** 6.2 (vision inspector overlay), 6.3 (file output + cargo check), 6.4 (assertion builder + replay).
+
+See ADR 0016 for full specification and ADR 0021 for Phase 6 kickoff record.
 
 ## Competitive Vision and Exit Strategy
 

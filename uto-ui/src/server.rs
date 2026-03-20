@@ -48,6 +48,8 @@ pub struct UiOptions {
     pub watch: bool,
     /// Path to a saved `uto-suite/v1` or `uto-report/v1` JSON artifact to replay. Default: `None`.
     pub report: Option<PathBuf>,
+    /// Enable UTO Studio mode (Phase 6 — visual test authoring and recording). Default: `false`.
+    pub studio: bool,
 }
 
 impl Default for UiOptions {
@@ -58,6 +60,7 @@ impl Default for UiOptions {
             open: false,
             watch: false,
             report: None,
+            studio: false,
         }
     }
 }
@@ -67,19 +70,23 @@ impl Default for UiOptions {
 // ---------------------------------------------------------------------------
 
 #[derive(Clone)]
-struct AppState {
+pub(crate) struct AppState {
     /// Display name derived from project directory or `uto.json`.
-    project_name: String,
+    pub(crate) project_name: String,
     /// Project directory — used when spawning a live run subprocess.
-    project: PathBuf,
+    pub(crate) project: PathBuf,
     /// Shared, mutable report artifact.  Updated after each live run.
-    report: Arc<RwLock<Option<serde_json::Value>>>,
+    pub(crate) report: Arc<RwLock<Option<serde_json::Value>>>,
     /// Broadcast channel for streaming live events to all WebSocket clients.
-    tx: broadcast::Sender<String>,
+    pub(crate) tx: broadcast::Sender<String>,
     /// Whether a run subprocess is currently active.
-    run_active: Arc<AtomicBool>,
+    pub(crate) run_active: Arc<AtomicBool>,
     /// Kill handle for the active run subprocess (if any).
-    kill_handle: Arc<Mutex<Option<crate::runner::KillHandle>>>,
+    pub(crate) kill_handle: Arc<Mutex<Option<crate::runner::KillHandle>>>,
+    /// Whether Studio mode (Phase 6) is enabled.
+    pub(crate) studio_mode: bool,
+    /// Studio state — shared mutable recording context.
+    pub(crate) studio: Arc<RwLock<crate::studio::StudioState>>,
 }
 
 // ---------------------------------------------------------------------------
@@ -96,6 +103,19 @@ fn create_router(state: AppState) -> Router {
         .route("/api/status", get(api_status))
         .route("/api/report", get(api_report))
         .route("/api/tests", get(api_tests))
+        .route("/api/studio/status", get(crate::studio::api_studio_status))
+        .route(
+            "/api/studio/start",
+            axum::routing::post(crate::studio::api_studio_start),
+        )
+        .route(
+            "/api/studio/stop",
+            axum::routing::post(crate::studio::api_studio_stop),
+        )
+        .route(
+            "/api/studio/step",
+            axum::routing::post(crate::studio::api_studio_add_step),
+        )
         .route("/ws", get(ws_handler))
         .nest_service("/.uto/reports", serve_reports)
         .with_state(state)
@@ -126,6 +146,7 @@ pub async fn start_server(opts: UiOptions) -> Result<(), String> {
     let project_name = derive_project_name(&opts.project);
 
     let (tx, _rx) = broadcast::channel(256);
+    let studio_mode = opts.studio;
     let state = AppState {
         project_name,
         project: opts.project.clone(),
@@ -133,7 +154,14 @@ pub async fn start_server(opts: UiOptions) -> Result<(), String> {
         tx,
         run_active: Arc::new(AtomicBool::new(false)),
         kill_handle: Arc::new(Mutex::new(None)),
+        studio_mode,
+        studio: Arc::new(RwLock::new(crate::studio::StudioState::default())),
     };
+
+    if studio_mode {
+        log::info!("UTO Studio mode enabled (Phase 6)");
+        println!("  Studio mode  →  enabled");
+    }
 
     // Start the filesystem watcher when `--watch` is enabled.
     if opts.watch {
@@ -211,6 +239,7 @@ async fn api_status(State(state): State<AppState>) -> impl IntoResponse {
     Json(serde_json::json!({
         "project": state.project_name,
         "status": if state.run_active.load(Ordering::Relaxed) { "running" } else { "ready" },
+        "studio": state.studio_mode,
     }))
 }
 
@@ -540,6 +569,8 @@ mod tests {
             tx,
             run_active: Arc::new(AtomicBool::new(false)),
             kill_handle: Arc::new(Mutex::new(None)),
+            studio_mode: false,
+            studio: Arc::new(RwLock::new(crate::studio::StudioState::default())),
         }
     }
 
@@ -552,6 +583,8 @@ mod tests {
             tx,
             run_active: Arc::new(AtomicBool::new(false)),
             kill_handle: Arc::new(Mutex::new(None)),
+            studio_mode: false,
+            studio: Arc::new(RwLock::new(crate::studio::StudioState::default())),
         }
     }
 
@@ -685,6 +718,8 @@ mod tests {
             tx,
             run_active: Arc::new(AtomicBool::new(false)),
             kill_handle: Arc::new(Mutex::new(None)),
+            studio_mode: false,
+            studio: Arc::new(RwLock::new(crate::studio::StudioState::default())),
         });
 
         let resp = app

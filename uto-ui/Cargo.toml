@@ -7,6 +7,7 @@ description = "UTO interactive UI mode — embedded HTTP + WebSocket server for 
 [dependencies]
 axum = { version = "0.8", features = ["ws"] }
 tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 log = "0.4"
 notify = "6"

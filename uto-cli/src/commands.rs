@@ -1057,6 +1057,7 @@ pub mod ui {
             open: parsed.open,
             watch: parsed.watch,
             report: parsed.report,
+            studio: parsed.studio,
         };
 
         uto_ui::start_server_sync(opts)
